@@ -1,3 +1,32 @@
+"""
+fix_entity_references.py - Replace unsupported HTML character entity references in .adoc files with AsciiDoc attribute references.
+
+USAGE:
+------
+# Replace entities in all .adoc files in the current directory:
+$ python fix_entity_references.py
+
+# Recursively replace entities in all .adoc files in the current directory and subdirectories:
+$ python fix_entity_references.py -r
+
+# Replace entities in a specific .adoc file only:
+$ python fix_entity_references.py -f path/to/file.adoc
+
+OPTIONS:
+--------
+-r, --recursive   Search subdirectories recursively for .adoc files.
+-f, --file FILE   Scan only the specified .adoc file.
+
+DESCRIPTION:
+------------
+This script scans AsciiDoc (.adoc) files for unsupported HTML character entity references (such as &copy;, &ldquo;, &lsaquo;, etc.) and replaces them with the appropriate built-in AsciiDoc attribute references (such as {copy}, {ldquo}, {lsaquo}, etc.), according to the Asciidoctor documentation.
+
+- Supported XML entities in DITA 1.3 (&amp;, &lt;, &gt;, &apos;, &quot;) are left unchanged.
+- All other mapped HTML entities are replaced.
+- If an entity is not mapped, a warning is printed and the entity is left unchanged.
+- The script preserves the original line endings for each line.
+"""
+
 import os
 import re
 import argparse
