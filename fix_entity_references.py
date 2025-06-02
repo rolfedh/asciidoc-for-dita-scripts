@@ -1,7 +1,17 @@
 """
 fix_entity_references.py - Replace unsupported HTML character entity references in .adoc files with AsciiDoc attribute references.
 
-USAGE:
+This script scans AsciiDoc (.adoc) files for unsupported HTML character entity references (e.g., &copy;, &ldquo;, &lsaquo;, etc.) and replaces them with the appropriate built-in AsciiDoc attribute references (e.g., {copy}, {ldquo}, {lsaquo}, etc.), according to the Asciidoctor documentation.
+
+Features:
+- Supports batch or single-file processing via CLI options.
+- Preserves original line endings for each line.
+- Ignores symlinks and only processes regular .adoc files.
+- Supported XML entities in DITA 1.3 (&amp;, &lt;, &gt;, &apos;, &quot;) are left unchanged.
+- All other mapped HTML entities are replaced; unmapped entities trigger a warning and are left unchanged.
+- Uses shared utilities from file_utils.py for file discovery, validation, argument parsing, and batch processing.
+
+Usage:
 ------
 # Replace entities in all .adoc files in the current directory:
 $ python fix_entity_references.py
@@ -12,23 +22,18 @@ $ python fix_entity_references.py -r
 # Replace entities in a specific .adoc file only:
 $ python fix_entity_references.py -f path/to/file.adoc
 
-OPTIONS:
+Options:
 --------
 -r, --recursive   Search subdirectories recursively for .adoc files.
 -f, --file FILE   Scan only the specified .adoc file.
 
-DESCRIPTION:
-------------
-This script scans AsciiDoc (.adoc) files for unsupported HTML character entity references (such as &copy;, &ldquo;, &lsaquo;, etc.) and replaces them with the appropriate built-in AsciiDoc attribute references (such as {copy}, {ldquo}, {lsaquo}, etc.), according to the Asciidoctor documentation.
-
-- Supported XML entities in DITA 1.3 (&amp;, &lt;, &gt;, &apos;, &quot;) are left unchanged.
-- All other mapped HTML entities are replaced.
-- If an entity is not mapped, a warning is printed and the entity is left unchanged.
-- The script preserves the original line endings for each line.
+For maintainers:
+----------------
+- Extend the entity_to_asciidoc mapping as new AsciiDoc attributes are added.
+- Use the shared utilities in file_utils.py for consistency and maintainability across scripts.
 """
 
-import argparse
-from file_utils import find_adoc_files, read_text_preserve_endings, write_text_preserve_endings, common_arg_parser, process_adoc_files
+from file_utils import read_text_preserve_endings, write_text_preserve_endings, common_arg_parser, process_adoc_files
 import re
 
 # Supported XML entities in DITA 1.3
@@ -36,11 +41,12 @@ supported = {"amp", "lt", "gt", "apos", "quot"}
 
 # Mapping of common HTML entities to AsciiDoc attribute references
 entity_to_asciidoc = {
-    "amp": "{amp}",        # & (ampersand)
-    "lt": "{lt}",          # < (less-than)
-    "gt": "{gt}",          # > (greater-than)
-    "apos": "{apos}",      # ' (apostrophe)
-    "quot": "{quot}",      # " (quotation mark)
+    # XML entities are supported in DITA and left unchanged
+    # "amp": "{amp}",        # & (ampersand)
+    # "lt": "{lt}",          # < (less-than)
+    # "gt": "{gt}",          # > (greater-than)
+    # "apos": "{apos}",      # ' (apostrophe)
+    # "quot": "{quot}",      # " (quotation mark)
     "brvbar": "{brvbar}",  # ¦ (broken bar)
     "bull": "{bull}",      # • (bullet)
     "copy": "{copy}",      # © (copyright sign)
@@ -73,6 +79,10 @@ entity_to_asciidoc = {
 entity_pattern = re.compile(r"&([a-zA-Z0-9]+);")
 
 def replace_entities(line):
+    """
+    Replace unsupported HTML character entity references in a line with AsciiDoc attribute references.
+    Leaves supported XML entities unchanged. Prints a warning for unmapped entities.
+    """
     def repl(match):
         entity = match.group(1)
         if entity in supported:
@@ -85,26 +95,20 @@ def replace_entities(line):
     return entity_pattern.sub(repl, line)
 
 def process_file(filepath):
-    # Read file as text, preserving line endings
+    """
+    Read a file, replace unsupported entities, and write back, preserving original line endings.
+    """
     lines = read_text_preserve_endings(filepath)
     new_lines = [(replace_entities(text), ending) for text, ending in lines]
     write_text_preserve_endings(filepath, new_lines)
     print(f"Processed {filepath} (preserved per-line endings)")
 
 def main():
+    """
+    Parse arguments and process .adoc files as specified by the user.
+    """
     parser = common_arg_parser("Replace unsupported HTML character entity references in .adoc files with AsciiDoc attributes.")
     args = parser.parse_args()
-
-    if args.file:
-        import os
-        if os.path.isfile(args.file) and args.file.endswith('.adoc') and not os.path.islink(args.file):
-            process_file(args.file)
-        else:
-            print(f"Error: {args.file} is not a valid .adoc file or is a symlink.")
-    else:
-        adoc_files = find_adoc_files('.', args.recursive)
-        for filepath in adoc_files:
-            process_file(filepath)
     process_adoc_files(args, process_file)
 
 if __name__ == "__main__":
