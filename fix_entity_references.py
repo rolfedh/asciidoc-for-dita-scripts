@@ -27,50 +27,52 @@ This script scans AsciiDoc (.adoc) files for unsupported HTML character entity r
 - The script preserves the original line endings for each line.
 """
 
-import os
-import re
 import argparse
+from file_utils import find_adoc_files, read_text_preserve_endings, write_text_preserve_endings, common_arg_parser, process_adoc_files
+import re
 
 # Supported XML entities in DITA 1.3
 supported = {"amp", "lt", "gt", "apos", "quot"}
 
 # Mapping of common HTML entities to AsciiDoc attribute references
 entity_to_asciidoc = {
-    "copy": "{copy}",      # ©
-    "reg": "{reg}",        # ®
-    "trade": "{trade}",    # ™
-    "mdash": "{mdash}",    # —
-    "ndash": "{ndash}",    # –
-    "hellip": "{hellip}",  # …
-    "lsquo": "{lsquo}",    # ‘
-    "rsquo": "{rsquo}",    # ’
-    "ldquo": "{ldquo}",    # “
-    "rdquo": "{rdquo}",    # ”
-    "deg": "{deg}",        # °
-    "plus": "{plus}",      # +
-    "brvbar": "{brvbar}",  # ¦
-    "sect": "{sect}",      # §
-    "para": "{para}",      # ¶
-    "middot": "{middot}",  # ·
-    "bull": "{bull}",      # •
-    "laquo": "{laquo}",    # «
-    "raquo": "{raquo}",    # »
-    "lsquo": "{lsquo}",    # ‘
-    "rsquo": "{rsquo}",    # ’
-    "sbquo": "{sbquo}",    # ‚
-    "bdquo": "{bdquo}",    # „
-    "dagger": "{dagger}",  # †
-    "Dagger": "{Dagger}",  # ‡
-    # Add more as needed from the Asciidoctor docs
+    "amp": "{amp}",        # & (ampersand)
+    "lt": "{lt}",          # < (less-than)
+    "gt": "{gt}",          # > (greater-than)
+    "apos": "{apos}",      # ' (apostrophe)
+    "quot": "{quot}",      # " (quotation mark)
+    "brvbar": "{brvbar}",  # ¦ (broken bar)
+    "bull": "{bull}",      # • (bullet)
+    "copy": "{copy}",      # © (copyright sign)
+    "deg": "{deg}",        # ° (degree sign)
+    "Dagger": "{Dagger}",  # ‡ (double dagger)
+    "dagger": "{dagger}",  # † (dagger)
+    "hellip": "{hellip}",  # … (ellipsis)
+    "laquo": "{laquo}",    # « (left-pointing double angle quotation mark)
+    "ldquo": "{ldquo}",    # “ (left double quotation mark)
+    "lsquo": "{lsquo}",    # ‘ (left single quotation mark)
+    "lsaquo": "{lsaquo}",  # ‹ (single left-pointing angle quotation mark)
+    "mdash": "{mdash}",    # — (em dash)
+    "middot": "{middot}",  # · (middle dot)
+    "ndash": "{ndash}",    # – (en dash)
+    "num": "{num}",        # # (number sign)
+    "para": "{para}",      # ¶ (pilcrow/paragraph sign)
+    "plus": "{plus}",      # + (plus sign)
+    "pound": "{pound}",    # £ (pound sign)
+    "quot": "{quot}",      # " (quotation mark)
+    "raquo": "{raquo}",    # » (right-pointing double angle quotation mark)
+    "reg": "{reg}",        # ® (registered sign)
+    "rsquo": "{rsquo}",    # ’ (right single quotation mark)
+    "rsaquo": "{rsaquo}",  # › (single right-pointing angle quotation mark)
+    "sect": "{sect}",      # § (section sign)
+    "sbquo": "{sbquo}",    # ‚ (single low-9 quotation mark)
+    "bdquo": "{bdquo}",    # „ (double low-9 quotation mark)
+    "trade": "{trade}",    # ™ (trademark sign)
 }
 
 entity_pattern = re.compile(r"&([a-zA-Z0-9]+);")
 
-# Regex to split lines and preserve their original line endings
-line_splitter = re.compile(rb'(.*?)(\r\n|\r|\n|$)')
-
 def replace_entities(line):
-    # Replace all occurrences, even if adjacent to markup or underscores
     def repl(match):
         entity = match.group(1)
         if entity in supported:
@@ -80,50 +82,21 @@ def replace_entities(line):
         else:
             print(f"Warning: No AsciiDoc attribute for &{entity};")
             return match.group(0)
-    # Use re.sub with overlapped matches if needed
     return entity_pattern.sub(repl, line)
 
 def process_file(filepath):
-    # Read file as bytes to preserve all line endings
-    with open(filepath, 'rb') as f:
-        content = f.read()
-    # Split into lines, preserving line endings
-    lines = []
-    for match in line_splitter.finditer(content):
-        text = match.group(1).decode('utf-8')
-        ending = match.group(2).decode('utf-8') if match.group(2) else ''
-        replaced = replace_entities(text)
-        lines.append(replaced + ending)
-        if not ending:
-            break
-    with open(filepath, 'w', encoding='utf-8', newline='') as f:
-        f.writelines(lines)
+    # Read file as text, preserving line endings
+    lines = read_text_preserve_endings(filepath)
+    new_lines = [(replace_entities(text), ending) for text, ending in lines]
+    write_text_preserve_endings(filepath, new_lines)
     print(f"Processed {filepath} (preserved per-line endings)")
 
-def find_adoc_files(root, recursive):
-    adoc_files = []
-    if recursive:
-        for dirpath, dirnames, filenames in os.walk(root):
-            for filename in filenames:
-                if filename.endswith('.adoc'):
-                    fullpath = os.path.join(dirpath, filename)
-                    if not os.path.islink(fullpath):
-                        adoc_files.append(fullpath)
-    else:
-        for filename in os.listdir(root):
-            if filename.endswith('.adoc'):
-                fullpath = os.path.join(root, filename)
-                if not os.path.islink(fullpath):
-                    adoc_files.append(fullpath)
-    return adoc_files
-
 def main():
-    parser = argparse.ArgumentParser(description="Replace unsupported HTML character entity references in .adoc files with AsciiDoc attributes.")
-    parser.add_argument('-r', '--recursive', action='store_true', help='Search subdirectories recursively')
-    parser.add_argument('-f', '--file', type=str, help='Scan only the specified .adoc file')
+    parser = common_arg_parser("Replace unsupported HTML character entity references in .adoc files with AsciiDoc attributes.")
     args = parser.parse_args()
 
     if args.file:
+        import os
         if os.path.isfile(args.file) and args.file.endswith('.adoc') and not os.path.islink(args.file):
             process_file(args.file)
         else:
@@ -132,6 +105,7 @@ def main():
         adoc_files = find_adoc_files('.', args.recursive)
         for filepath in adoc_files:
             process_file(filepath)
+    process_adoc_files(args, process_file)
 
 if __name__ == "__main__":
     main()
