@@ -1,7 +1,11 @@
 """
-Plugin for the AsciiDoc DITA toolkit: fix_entity_references
+Plugin for the AsciiDoc DITA toolkit: EntityReference
 
 This plugin replaces unsupported HTML character entity references in .adoc files with AsciiDoc attribute references.
+
+See: 
+- https://github.com/jhradilek/asciidoctor-dita-vale/blob/main/styles/AsciiDocDITA/EntityReference.yml
+- https://github.com/jhradilek/asciidoctor-dita-vale/tree/main/fixtures/EntityReference
 """
 __description__ = "Replace unsupported HTML character entity references in .adoc files with AsciiDoc attribute references."
 from file_utils import read_text_preserve_endings, write_text_preserve_endings, process_adoc_files, common_arg_parser
@@ -72,7 +76,7 @@ def main(args):
 
 def register_subcommand(subparsers):
     parser = subparsers.add_parser(
-        "fix-entities",
+        "entity-reference",
         help="Replace unsupported HTML character entity references in .adoc files with AsciiDoc attribute references."
     )
     parser.add_argument('-r', '--recursive', action='store_true', help='Search subdirectories recursively')

@@ -3,38 +3,54 @@ Scripts to fix or flag issues in that have been identified by [jhradilek/asciido
 
 ## Quick Start: How to Use the Toolkit
 
-The AsciiDoc DITA Toolkit provides a command-line interface (CLI) for processing AsciiDoc files in DITA-based publishing workflows. Each module (plugin) performs a specific transformation or check on your AsciiDoc files.
+The AsciiDoc DITA Toolkit provides a command-line interface (CLI) for processing AsciiDoc files in DITA-based publishing workflows. Each plugin performs a specific transformation or check on your AsciiDoc files.
 
-**Basic usage:**
+1. **Clone the repository to your local machine:**
 
 ```sh
-python3 asciidoc_toolkit.py <module> [options]
+git clone https://github.com/your-org/asciidoc-dita-toolkit.git
 ```
 
-- `<module>` is the name of the plugin you want to run (e.g., `fix-entities`).
-- `[options]` are module-specific arguments (use `-h` after the module name to see available options).
+2. **Change to your documentation directory:**
 
-**Example:**
+```sh
+cd /path/to/your/docs
+```
+
+3. **Get a list of the available plugins:**
+
+```sh
+python3 ~/asciidoc-dita-toolkit/asciidoc_toolkit.py --list-plugins
+```
+
+NOTE: For additional information about any plugin, look it up at https://github.com/jhradilek/asciidoctor-dita-vale?tab=readme-ov-file#available-rules
+
+NOTE: As new plugins are added to the `plugins/` directory, they automatically become available as subcommands.
+
+4. **Run the desired plugin:**
+
+```sh
+python3 ~/asciidoc-dita-toolkit/asciidoc_toolkit.py <plugin> [options]
+```
+
+- `<plugin>` is the name of the plugin you want to run (e.g., `entity-reference`).
+- `[options]` are plugin-specific arguments (use `-h` after the plugin name to see available options).
+
+**Examples:**
 
 To fix unsupported HTML character entity references in your `.adoc` files:
 
 ```sh
-python3 asciidoc_toolkit.py fix-entities -f path/to/file.adoc
+python3 ~/asciidoc-dita-toolkit/asciidoc_toolkit.py entity-reference -f path/to/file.adoc
 ```
 
 Or to process all `.adoc` files recursively in a directory:
 
 ```sh
-python3 asciidoc_toolkit.py fix-entities -r
+python3 ~/asciidoc-dita-toolkit/asciidoc_toolkit.py entity-reference -r
 ```
 
-**List available modules:**
 
-```sh
-python3 asciidoc_toolkit.py --list-plugins
-```
-
-As new modules are added to the `plugins/` directory, they will automatically become available as subcommands.
 
 ## Key Components
 
@@ -42,7 +58,7 @@ As new modules are added to the `plugins/` directory, they will automatically be
   The main CLI entry point. It dynamically discovers and runs processing plugins from the plugins directory, allowing for a modular, extensible command-line interface.
 
 - **plugins/**  
-  Contains individual processing scripts as plugins (e.g., fix_entity_references.py). Each plugin implements a specific transformation or check for AsciiDoc files and can be invoked as a CLI subcommand.
+  Contains individual processing scripts as plugins (e.g., EntityReference.py). Each plugin implements a specific transformation or check for AsciiDoc files and can be invoked as a CLI subcommand.
 
 - **file_utils.py**  
   Shared utility functions for file discovery, reading/writing with preserved line endings, and argument parsing. Used by all plugins to avoid code duplication.
