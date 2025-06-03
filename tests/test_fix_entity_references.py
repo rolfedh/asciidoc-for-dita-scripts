@@ -14,7 +14,7 @@ import os
 import sys
 import difflib
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../asciidoc-for-dita-scripts/plugins')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../asciidoc-dita-toolkit/plugins')))
 
 from fix_entity_references import replace_entities
 from asciidoc_testkit import get_fixture_pairs, run_linewise_test

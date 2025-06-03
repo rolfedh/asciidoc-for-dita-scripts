@@ -1,9 +1,9 @@
-# asciidoc-for-dita-scripts
+# AsciiDoc DITA Toolkit
 Scripts to fix or flag issues in that have been identified by [jhradilek/asciidoctor-dita-vale](https://github.com/jhradilek/asciidoctor-dita-vale)
 
 ## Quick Start: How to Use the Toolkit
 
-The AsciiDoc-for-DITA toolkit provides a command-line interface (CLI) for processing AsciiDoc files in DITA-based publishing workflows. Each module (plugin) performs a specific transformation or check on your AsciiDoc files.
+The AsciiDoc DITA Toolkit provides a command-line interface (CLI) for processing AsciiDoc files in DITA-based publishing workflows. Each module (plugin) performs a specific transformation or check on your AsciiDoc files.
 
 **Basic usage:**
 
