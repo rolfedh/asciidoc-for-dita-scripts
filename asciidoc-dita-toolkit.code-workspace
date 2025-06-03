@@ -3,6 +3,9 @@
 		{
 			"name": "asciidoc-dita-toolkit",
 			"path": "."
+		},
+		{
+			"path": "../asciidoctor-dita-vale"
 		}
 	],
 	"settings": {}

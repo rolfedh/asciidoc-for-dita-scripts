@@ -13,7 +13,17 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Ensure test fixture directory exists
-        run: mkdir -p asciidoctor-dita-vale/fixtures/EntityReference
+        run: mkdir -p tests/fixtures/EntityReference
+
+      - name: Download test fixtures from asciidoctor-dita-vale
+        run: |
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/jhradilek/asciidoctor-dita-vale.git temp-vale
+          cd temp-vale
+          git sparse-checkout set fixtures
+          cd ..
+          rm -rf tests/fixtures  # Remove old fixtures if present
+          mv temp-vale/fixtures tests/fixtures
+          rm -rf temp-vale
 
       - name: Set up Python
         uses: actions/setup-python@v5
