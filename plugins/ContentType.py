@@ -8,11 +8,6 @@ __description__ = "Add a :_mod-docs-content-type: label in .adoc files where tho
 
 import os
 
-ASSE = ":_mod-docs-content-type: ASSEMBLY"
-CON  = ":_mod-docs-content-type: CONCEPT"
-PROC = ":_mod-docs-content-type: PROCEDURE"
-REF  = ":_mod-docs-content-type: REFERENCE"
-
 class highlighter(object):
     def __init__(self, text):
        self.text = text
@@ -23,7 +18,7 @@ class highlighter(object):
     def highlight(self):                                                                                                                                                                                    
         return('\033[0;36m' + self.text + '\033[0m')
 
-def editor(filepath, label):
+def editor(filepath, label1, label2):
     # If the label does not exist, the editor adds it.
     try:
         with open(filepath, 'r+', encoding='utf-8') as f:
@@ -31,16 +26,16 @@ def editor(filepath, label):
             label_exists = False
 
             for line_content in lines:
-                if label.strip() == line_content.strip():
+                if label1.strip() == line_content.strip() or label2.strip() == line_content.strip():
                     label_exists = True
                     break
 
             if label_exists:
-                print(f"Skipping {filepath}, label '{label}' already present")
+                print(f"Skipping {filepath}, label already present")
             else:
-                print(highlighter(f"Editing: Adding {label} to {filepath}").bold())
+                print(highlighter(f"Editing: Adding {label1} to {filepath}").bold())
                 f.seek(0, 0)
-                f.write(label + "\n")
+                f.write(label1 + "\n")
 
                 # Adds content back
                 for line in lines:
@@ -59,19 +54,24 @@ def tree_walker(directory):
             if file.startswith(".") or not file.endswith(".adoc"):
                 continue
             filepath = os.path.join(root, file)
-            label = None
+            label1 = None
+            label2 = None
 
             if file.startswith("assembly_"):
-                label = ASSE        
+                label1 = ":_module-type: ASSEMBLY" 
+                label2 = ":_mod-docs-content-type: ASSEMBLY"
             elif file.startswith("con_"):
-                label = CON
+                label1 = ":_module-type: CONCEPT"
+                label2 = ":_mod-docs-content-type: CONCEPT"
             elif file.startswith("proc_"):
-                label = PROC
+                label1 = ":_module-type: PROCEDURE"
+                label2 = ":_mod-docs-content-type: PROCEDURE"
             elif file.startswith("ref_"):
-                label = REF
+                label1 = ":_module-type: REFERENCE"
+                label2 = ":_mod-docs-content-type: REFERENCE"
 
-            if label:
-                editor(filepath, label)
+            if label1 or label2:
+                editor(filepath, label1, label2)
             else:
                 pass
 
