@@ -1,5 +1,5 @@
 # asciidoc-for-dita-scripts
-Scripts to fix or flag issues in that have been identified by jhradilek/asciidoctor-dita-vale
+Scripts to fix or flag issues in that have been identified by [jhradilek/asciidoctor-dita-vale](https://github.com/jhradilek/asciidoctor-dita-vale)
 
 ## Quick Start: How to Use the Toolkit
 
