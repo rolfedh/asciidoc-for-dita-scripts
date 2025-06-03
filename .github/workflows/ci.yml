@@ -27,4 +27,4 @@ jobs:
 
       - name: Run tests
         run: |
-          python3 tests/test_EntityReference.py
+          python3 -m unittest discover -s tests

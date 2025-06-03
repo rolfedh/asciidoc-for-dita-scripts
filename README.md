@@ -103,3 +103,13 @@ For setup and contribution details, see `README.md`.
 * The project uses modern Python and robust testing practices.
 * You’ll help improve publishing workflows in the AsciiDoc and DITA communities.
 * Contributions are actively reviewed and maintained.
+
+## Running Tests
+
+To run all tests:
+
+```sh
+~/asciidoc-dita-toolkit main$ python3 -m unittest discover -s tests
+```
+
+This command finds and runs all test files in the `tests/` directory that match the pattern `test_*.py`.

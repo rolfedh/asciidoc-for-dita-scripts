@@ -13,6 +13,7 @@ Recommended: Integrate this script into CI to catch regressions.
 import os
 import sys
 import difflib
+import unittest
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../asciidoc-dita-toolkit/plugins')))
 
@@ -20,6 +21,12 @@ from EntityReference import replace_entities
 from asciidoc_testkit import get_fixture_pairs, run_linewise_test
 
 FIXTURE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../asciidoctor-dita-vale/fixtures/EntityReference'))
+
+
+class TestEntityReference(unittest.TestCase):
+    def test_basic_entity(self):
+        self.assertEqual(replace_entities("A &hellip; B"), "A {hellip} B")
+    # TODO: Add more test methods for edge cases, comments, warnings, etc.
 
 
 def main():
@@ -34,4 +41,4 @@ def main():
         print("All EntityReference tests passed.")
 
 if __name__ == "__main__":
-    main()
+    unittest.main()
