@@ -76,7 +76,7 @@ def main(args):
 
 def register_subcommand(subparsers):
     parser = subparsers.add_parser(
-        "entity-reference",
+        "EntityReference",
         help="Replace unsupported HTML character entity references in .adoc files with AsciiDoc attribute references."
     )
     parser.add_argument('-r', '--recursive', action='store_true', help='Search subdirectories recursively')

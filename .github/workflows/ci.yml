@@ -27,4 +27,4 @@ jobs:
 
       - name: Run tests
         run: |
-          python3 tests/test_fix_entity_references.py
+          python3 tests/test_EntityReference.py

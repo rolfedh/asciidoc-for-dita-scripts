@@ -42,7 +42,7 @@ python3 ~/asciidoc-dita-toolkit/asciidoc_toolkit.py --list-plugins
 python3 ~/asciidoc-dita-toolkit/asciidoc_toolkit.py <plugin> [options]
 ```
 
-* `<plugin>` is the name of the plugin to run (for example, `entity-reference`)
+* `<plugin>` is the name of the plugin to run (for example, `EntityReference`)
 * `[options]` include:
 
   * `-f` to target a specific file
@@ -54,13 +54,13 @@ python3 ~/asciidoc-dita-toolkit/asciidoc_toolkit.py <plugin> [options]
 To fix unsupported HTML character entity references in a file:
 
 ```sh
-python3 ~/asciidoc-dita-toolkit/asciidoc_toolkit.py entity-reference -f path/to/file.adoc
+python3 ~/asciidoc-dita-toolkit/asciidoc_toolkit.py EntityReference -f path/to/file.adoc
 ```
 
 To process all `.adoc` files recursively in the current directory:
 
 ```sh
-python3 ~/asciidoc-dita-toolkit/asciidoc_toolkit.py entity-reference -r
+python3 ~/asciidoc-dita-toolkit/asciidoc_toolkit.py EntityReference -r
 ```
 
 ## Toolkit components
