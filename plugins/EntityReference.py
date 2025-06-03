@@ -16,7 +16,7 @@ supported = {"amp", "lt", "gt", "apos", "quot"}
 
 # Mapping of common HTML entities to AsciiDoc attribute references
 entity_to_asciidoc = {
-    # XML entities are supported in DITA and left unchanged
+    # XML entities that are supported in DITA and left unchanged
     # "amp": "{amp}",        # & (ampersand)
     # "lt": "{lt}",          # < (less-than)
     # "gt": "{gt}",          # > (greater-than)
