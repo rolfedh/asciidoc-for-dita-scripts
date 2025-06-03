@@ -1,95 +1,105 @@
 # AsciiDoc DITA Toolkit
-Scripts to fix or flag issues in that have been identified by [jhradilek/asciidoctor-dita-vale](https://github.com/jhradilek/asciidoctor-dita-vale)
 
-## Quick Start: How to Use the Toolkit
+Scripts that fix or flag issues identified by the [jhradilek/asciidoctor-dita-vale](https://github.com/jhradilek/asciidoctor-dita-vale) project.
 
-The AsciiDoc DITA Toolkit provides a command-line interface (CLI) for processing AsciiDoc files in DITA-based publishing workflows. Each plugin performs a specific transformation or check on your AsciiDoc files.
+## Quick start
 
-1. **Clone the repository to your local machine:**
+The AsciiDoc DITA Toolkit is a command-line interface (CLI) that supports DITA-based publishing workflows. Each plugin in the toolkit performs a specific check or transformation on AsciiDoc content.
+
+### Step 1: Clone the repository
+
+If you are a user:
 
 ```sh
-git clone https://github.com/your-org/asciidoc-dita-toolkit.git
+git clone https://github.com/rolfedh/asciidoc-dita-toolkit.git
+````
+
+If you are a contributor, first fork the repository to your own GitHub account, then clone it:
+
+```sh
+git clone https://github.com/<your-org>/asciidoc-dita-toolkit.git
 ```
 
-2. **Change to your documentation directory:**
+### Step 2: Change to your documentation directory
 
 ```sh
 cd /path/to/your/docs
 ```
 
-3. **Get a list of the available plugins:**
+### Step 3: List available plugins
 
 ```sh
 python3 ~/asciidoc-dita-toolkit/asciidoc_toolkit.py --list-plugins
 ```
 
-NOTE: For additional information about any plugin, look it up at https://github.com/jhradilek/asciidoctor-dita-vale?tab=readme-ov-file#available-rules
+> **Note**: For plugin-specific details, see the [available rules](https://github.com/jhradilek/asciidoctor-dita-vale?tab=readme-ov-file#available-rules) in the `asciidoctor-dita-vale` repository.
 
-NOTE: As new plugins are added to the `plugins/` directory, they automatically become available as subcommands.
+> **Note**: Plugins added to the `plugins/` directory are automatically available as subcommands.
 
-4. **Run the desired plugin:**
+### Step 4: Run a plugin
 
 ```sh
 python3 ~/asciidoc-dita-toolkit/asciidoc_toolkit.py <plugin> [options]
 ```
 
-- `<plugin>` is the name of the plugin you want to run (e.g., `entity-reference`).
-- `[options]` are plugin-specific arguments (use `-h` after the plugin name to see available options).
+* `<plugin>` is the name of the plugin to run (for example, `entity-reference`)
+* `[options]` include:
 
-**Examples:**
+  * `-f` to target a specific file
+  * `-r` to recursively process a directory
+  * `-h` to display help for the plugin
 
-To fix unsupported HTML character entity references in your `.adoc` files:
+#### Examples
+
+To fix unsupported HTML character entity references in a file:
 
 ```sh
 python3 ~/asciidoc-dita-toolkit/asciidoc_toolkit.py entity-reference -f path/to/file.adoc
 ```
 
-Or to process all `.adoc` files recursively in a directory:
+To process all `.adoc` files recursively in the current directory:
 
 ```sh
 python3 ~/asciidoc-dita-toolkit/asciidoc_toolkit.py entity-reference -r
 ```
 
+## Toolkit components
 
+* **`asciidoc_toolkit.py`**
+  Entry point for the CLI. Automatically discovers and runs plugins from the `plugins/` directory.
 
-## Key Components
+* **`plugins/`**
+  Contains individual plugin scripts. Each plugin performs a specific transformation or validation on `.adoc` files.
 
-- **asciidoc_toolkit.py**  
-  The main CLI entry point. It dynamically discovers and runs processing plugins from the plugins directory, allowing for a modular, extensible command-line interface.
+* **`file_utils.py`**
+  Shared utility functions for file discovery, I/O with preserved line endings, and argument parsing.
 
-- **plugins/**  
-  Contains individual processing scripts as plugins (e.g., EntityReference.py). Each plugin implements a specific transformation or check for AsciiDoc files and can be invoked as a CLI subcommand.
+* **`tests/`**
+  Automated tests and fixtures that validate plugin behavior and prevent regressions.
 
-- **file_utils.py**  
-  Shared utility functions for file discovery, reading/writing with preserved line endings, and argument parsing. Used by all plugins to avoid code duplication.
+* **`requirements.txt`**
+  Lists Python dependencies for development and use.
 
-- **tests/**  
-  Contains automated test scripts and reusable test utilities (`asciidoc_testkit.py`). Tests use fixtures to ensure plugins work as expected and to prevent regressions.
+* **`README.md`**
+  Provides setup instructions, usage examples, and contribution guidelines.
 
-- **requirements.txt**  
-  Lists Python dependencies for development and running the toolkit.
+## Related resources
 
-- **README.md**  
-  Project documentation, including setup instructions, usage examples, and contribution guidelines.
-
-## Related Resources
-
-- **asciidoctor-dita-vale/**  
-  Contains Vale style rules and a comprehensive set of test fixtures for AsciiDoc/DITA processing. Useful for both linting and plugin test development.
-
----
+* **[`asciidoctor-dita-vale`](https://github.com/jhradilek/asciidoctor-dita-vale)**
+  A collection of Vale style rules and test fixtures for validating AsciiDoc content.
 
 ## Contributing
 
-Interested in contributing? The project is designed for maintainability, scalability, and easy onboarding.
+Want to contribute? Contributions are welcome and the project is designed for ease of onboarding.
 
-- New features or checks should be added as plugins in the plugins directory.
-- Shared logic should go in file_utils.py or `asciidoc_testkit.py`.
-- All new plugins should include automated tests in the tests directory, using the provided testkit and fixtures.
-- See README.md for setup and contribution details.
+* Add new functionality as plugins in the `plugins/` directory.
+* Place shared logic in `file_utils.py` or `asciidoc_testkit.py`.
+* Include tests for new plugins in the `tests/` directory.
 
-### Why Volunteer?
+For setup and contribution details, see `README.md`.
 
-- The project is actively maintained and designed for easy onboarding.
-- You’ll work with modern Python, robust testing, and a plugin-based architecture.
-- Your contributions will help improve open-source publishing workflows for the AsciiDoc and DITA communities.
+### Why contribute?
+
+* The project uses modern Python and robust testing practices.
+* You’ll help improve publishing workflows in the AsciiDoc and DITA communities.
+* Contributions are actively reviewed and maintained.
