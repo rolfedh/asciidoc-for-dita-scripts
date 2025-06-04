@@ -57,13 +57,16 @@ def tree_walker(directory):
             filepath = os.path.join(root, file)
             label = None
 
-            if file.startswith("assembly_"):
-                label = "ASSEMBLY" 
-            elif file.startswith("con_"):
+            if file.startswith("assembly_") or file.startswith("assembly-"):
+                label = "ASSEMBLY"
+
+            elif file.startswith("con_") or file.startswith("con-"):
                 label1 = ":_module-type: CONCEPT"
-            elif file.startswith("proc_"):
+
+            elif file.startswith("proc_") or file.startswith("proc-"):
                 label1 = ":_module-type: PROCEDURE"
-            elif file.startswith("ref_"):
+
+            elif file.startswith("ref_")  or file.startswith("ref-"):
                 label1 = ":_module-type: REFERENCE"
 
             if label
