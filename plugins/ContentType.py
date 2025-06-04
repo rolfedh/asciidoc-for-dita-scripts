@@ -27,7 +27,7 @@ def editor(filepath, label):
             label_exists = False
 
             for line_content in lines:
-                if re.search('(?:^|[\n\r]):_(?:mod-docs-content|content|module)-type:[ \t]+\S', line_content.strip()):
+                if re.search('^:_(?:mod-docs-content|content|module)-type:[ \t]+[^ \t]', line_content.strip()):
                     label_exists = True
                     break
 
@@ -61,15 +61,15 @@ def tree_walker(directory):
                 label = "ASSEMBLY"
 
             elif file.startswith("con_") or file.startswith("con-"):
-                label1 = ":_module-type: CONCEPT"
+                label = "CONCEPT"
 
             elif file.startswith("proc_") or file.startswith("proc-"):
-                label1 = ":_module-type: PROCEDURE"
+                label = "PROCEDURE"
 
             elif file.startswith("ref_")  or file.startswith("ref-"):
-                label1 = ":_module-type: REFERENCE"
+                label = "REFERENCE"
 
-            if label
+            if label:
                 editor(filepath, label)
             else:
                 pass
