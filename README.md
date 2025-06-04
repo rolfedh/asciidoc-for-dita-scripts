@@ -96,7 +96,7 @@ Want to contribute? Contributions are welcome and the project is designed for ea
 * Place shared logic in `file_utils.py` or `asciidoc_testkit.py`.
 * Include tests for new plugins in the `tests/` directory.
 
-For setup and contribution details, see `README.md`.
+For setup and contribution details, see the [contributor guide](docs/CONTRIBUTING.md).
 
 ### Why contribute?
 
