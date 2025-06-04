@@ -1,24 +1,24 @@
 # Contributors: Create plugins, test fixtures, and tests in asciidoc-dita-toolkit
 
-Here’s the recommended workflow for creating test artifacts, plugins, and tests in your current folder structure, and how to update your GitHub issue descriptions to reflect best practices:
+Here’s the recommended workflow for creating test artifacts, plugins, and tests in your current folder structure:
 
-### 1. **Creating/Updating Plugins**
-- Add new plugins to `asciidoc-dita-toolkit/plugins/` (e.g., `ExampleBlock.py`).
-- Follow the structure and docstring conventions used in `EntityReference.py` and `FixContentType.py`.
-- Each plugin should have a `register_subcommand` function and a clear `__description__`.
-
-### 2. **Importing and Organizing Test Fixtures**
+### 1. **Importing and Organizing Test Fixtures**
 - Download or sync the relevant fixture directory (e.g., `ExampleBlock/`) from the upstream repo (`asciidoctor-dita-vale/fixtures/ExampleBlock/`).
 - Place it in your repo at `asciidoc-dita-toolkit/tests/fixtures/ExampleBlock/`.
 - For each `.adoc` fixture, create a corresponding `.expected` file in the same directory.
 
+### 2. **Creating/Updating Plugins**
+- Add new plugins to `asciidoc-dita-toolkit/plugins/` (e.g., `ExampleBlock.py`).
+- Follow the structure and docstring conventions used in `EntityReference.py` and `FixContentType.py`.
+- Each plugin should have a `register_subcommand` function and a clear `__description__`.
+
 ### 3. **Writing/Updating Tests**
 - Add or update test files in `asciidoc-dita-toolkit/tests/` (e.g., `test_ExampleBlock.py`).
-- Use `unittest` and the shared testkit (asciidoc_testkit.py) for fixture-based and direct function tests.
+- Use `unittest` and the shared testkit (`asciidoc_testkit.py`) for fixture-based and direct function tests.
 - Point your test code to `tests/fixtures/ExampleBlock/` for fixture discovery.
 
 ### 4. **CI Integration**
-- Ensure your ci.yml downloads the latest fixtures (if needed) and runs all tests using:
+- Ensure your `ci.yml` downloads the latest fixtures (if needed) and runs all tests using:
   ```sh
   python3 -m unittest discover -s tests
   ```
@@ -32,9 +32,9 @@ Here’s the recommended workflow for creating test artifacts, plugins, and test
 
 | Task Type         | Location                                      | Notes                                 |
 |-------------------|-----------------------------------------------|---------------------------------------|
-| Plugin            | plugins                                    | Use `register_subcommand`, docstring  |
 | Test fixtures     | `tests/fixtures/<PluginName>/`                | `.adoc` and `.expected` pairs         |
+| Plugin            | `plugins/`                                    | Use `register_subcommand`, docstring  |
 | Test scripts      | `tests/test_<PluginName>.py`                  | Use `unittest`, point to fixtures     |
-| Shared test utils | asciidoc_testkit.py                   | For fixture discovery, assertions     |
-| CI config         | ci.yml                    | Download fixtures, run all tests      |
+| Shared test utils | `tests/asciidoc_testkit.py`                   | For fixture discovery, assertions     |
+| CI config         | `.github/workflows/ci.yml`                    | Download fixtures, run all tests      |
 
