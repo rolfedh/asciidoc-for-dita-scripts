@@ -6,6 +6,9 @@
 		},
 		{
 			"path": "../asciidoctor-dita-vale"
+		},
+		{
+			"path": "../doc-utils"
 		}
 	],
 	"settings": {}
