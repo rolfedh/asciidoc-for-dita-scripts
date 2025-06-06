@@ -8,7 +8,7 @@ See:
 - https://github.com/jhradilek/asciidoctor-dita-vale/tree/main/fixtures/EntityReference
 """
 __description__ = "Replace unsupported HTML character entity references in .adoc files with AsciiDoc attribute references."
-from file_utils import read_text_preserve_endings, write_text_preserve_endings, process_adoc_files, common_arg_parser
+from ..file_utils import read_text_preserve_endings, write_text_preserve_endings, process_adoc_files, common_arg_parser
 import re
 
 # Supported XML entities in DITA 1.3

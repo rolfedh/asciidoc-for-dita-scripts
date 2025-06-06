@@ -80,9 +80,8 @@ def main(args):
 
 def register_subcommand(subparsers):
     parser = subparsers.add_parser(
-        "fix-content-type",
+        "ContentType",
         help="Add a :_mod-docs-content-type: label in .adoc files where those are missing, based on filename."
     )
     parser.add_argument('-d', '--directory', type=str, default='.', help='Location in filesystem to modify asciidoc files.')
     parser.set_defaults(func=main)
-

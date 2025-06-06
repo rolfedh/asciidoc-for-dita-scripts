@@ -27,7 +27,7 @@ def print_plugin_list():
     plugins = discover_plugins()
     for modname in plugins:
         try:
-            module = importlib.import_module(f"plugins.{modname}")
+            module = importlib.import_module(f"asciidoc_dita.plugins.{modname}")
             desc = getattr(module, '__description__', None) or module.__doc__ or ''
             desc = desc.strip().split('\n')[0] if desc else ''
             print(f"  {modname:20} {desc}")
@@ -44,7 +44,7 @@ def main():
     plugin_modules = []
     for modname in plugins:
         try:
-            module = importlib.import_module(f"plugins.{modname}")
+            module = importlib.import_module(f"asciidoc_dita.plugins.{modname}")
             module.register_subcommand(subparsers)
             plugin_modules.append(module)
         except Exception as e:
