@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "asciidoc-dita-toolkit"
+version = "0.1.0"
+description = "A toolkit for working with AsciiDoc and DITA."
+readme = "README.md"
+requires-python = ">=3.7"
+license = {file = "LICENSE"}
+authors = [
+  {name = "Rolfe Dlugy-Hegwer"}
+]
+dependencies = [
+  # Add any required dependencies here
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/asciidoc-dita-toolkit"

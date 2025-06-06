@@ -1,115 +1,58 @@
-# AsciiDoc DITA Toolkit
+# asciidoc-dita-toolkit
 
-Scripts that fix or flag issues identified by the [jhradilek/asciidoctor-dita-vale](https://github.com/jhradilek/asciidoctor-dita-vale) project.
+A toolkit for working with AsciiDoc and DITA.
 
-## Quick start
+## Package Structure
 
-The AsciiDoc DITA Toolkit is a command-line interface (CLI) that supports DITA-based publishing workflows. Each plugin in the toolkit performs a specific check or transformation on AsciiDoc content.
+The code is now organized as a Python package for PyPI distribution:
 
-### Step 1: Clone the repository
-
-If you are a user:
-
-```sh
-git clone https://github.com/rolfedh/asciidoc-dita-toolkit.git
-````
-
-If you are a contributor, first fork the repository to your own GitHub account, then clone it:
-
-```sh
-git clone https://github.com/<your-org>/asciidoc-dita-toolkit.git
+```
+asciidoc-dita-toolkit/
+    asciidoc_dita_toolkit/
+        __init__.py
+        asciidoc_toolkit.py
+        file_utils.py
+        plugins/
+            __init__.py
+            ContentType.py
+            EntityReference.py
+    ...
 ```
 
-### Step 2: Change to your documentation directory
+## Installation (after PyPI release)
 
 ```sh
-cd /path/to/your/docs
+python3 -m pip install asciidoc-dita-toolkit
 ```
 
-### Step 3: List available plugins
+## Usage
 
-```sh
-python3 ~/asciidoc-dita-toolkit/asciidoc_toolkit.py --list-plugins
+Import modules in your Python code:
+
+```python
+from asciidoc_dita_toolkit import asciidoc_toolkit, file_utils
+from asciidoc_dita_toolkit.plugins import ContentType, EntityReference
 ```
 
-> **Note**: For plugin-specific details, see the [available rules](https://github.com/jhradilek/asciidoctor-dita-vale?tab=readme-ov-file#available-rules) in the `asciidoctor-dita-vale` repository.
+## Development & Packaging
 
-> **Note**: Plugins added to the `plugins/` directory are automatically available as subcommands.
+To build and publish to PyPI:
 
-### Step 4: Run a plugin
+1. Ensure you have `build` and `twine` installed:
+   ```sh
+   python3 -m pip install --upgrade build twine
+   ```
+2. Build the package:
+   ```sh
+   python3 -m build
+   ```
+3. Upload to PyPI:
+   ```sh
+   python3 -m twine upload dist/*
+   ```
 
-```sh
-python3 ~/asciidoc-dita-toolkit/asciidoc_toolkit.py <plugin> [options]
-```
+See `pyproject.toml` for project metadata and dependencies.
 
-* `<plugin>` is the name of the plugin to run (for example, `EntityReference`)
-* `[options]` include:
+---
 
-  * `-f` to target a specific file
-  * `-r` to recursively process a directory
-  * `-h` to display help for the plugin
-
-#### Examples
-
-To fix unsupported HTML character entity references in a file:
-
-```sh
-python3 ~/asciidoc-dita-toolkit/asciidoc_toolkit.py EntityReference -f path/to/file.adoc
-```
-
-To process all `.adoc` files recursively in the current directory:
-
-```sh
-python3 ~/asciidoc-dita-toolkit/asciidoc_toolkit.py EntityReference -r
-```
-
-## Toolkit components
-
-* **`asciidoc_toolkit.py`**
-  Entry point for the CLI. Automatically discovers and runs plugins from the `plugins/` directory.
-
-* **`plugins/`**
-  Contains individual plugin scripts. Each plugin performs a specific transformation or validation on `.adoc` files.
-
-* **`file_utils.py`**
-  Shared utility functions for file discovery, I/O with preserved line endings, and argument parsing.
-
-* **`tests/`**
-  Automated tests and fixtures that validate plugin behavior and prevent regressions.
-
-* **`requirements.txt`**
-  Lists Python dependencies for development and use.
-
-* **`README.md`**
-  Provides setup instructions, usage examples, and contribution guidelines.
-
-## Related resources
-
-* **[`asciidoctor-dita-vale`](https://github.com/jhradilek/asciidoctor-dita-vale)**
-  A collection of Vale style rules and test fixtures for validating AsciiDoc content.
-
-## Contributing
-
-Want to contribute? Contributions are welcome and the project is designed for ease of onboarding.
-
-* Add new functionality as plugins in the `plugins/` directory.
-* Place shared logic in `file_utils.py` or `asciidoc_testkit.py`.
-* Include tests for new plugins in the `tests/` directory.
-
-For setup and contribution details, see the [contributor guide](docs/CONTRIBUTING.md).
-
-### Why contribute?
-
-* The project uses modern Python and robust testing practices.
-* You’ll help improve publishing workflows in the AsciiDoc and DITA communities.
-* Contributions are actively reviewed and maintained.
-
-## Running Tests
-
-To run all tests:
-
-```sh
-~/asciidoc-dita-toolkit main$ python3 -m unittest discover -s tests
-```
-
-This command finds and runs all test files in the `tests/` directory that match the pattern `test_*.py`.
+For more details, see the source files and documentation in the `docs/` directory.
