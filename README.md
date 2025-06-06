@@ -1,25 +1,16 @@
-# asciidoc-dita-toolkit
+# AsciiDoc DITA Toolkit
 
-A toolkit for working with AsciiDoc and DITA.
+Scripts to review and fix AsciiDoc content for DITA-based publishing workflows, based on rules from the [asciidoctor-dita-vale](https://github.com/jhradilek/asciidoctor-dita-vale) project.
 
-## Package Structure
+## What is this?
 
-The code is now organized as a Python package for PyPI distribution:
+The AsciiDoc DITA Toolkit is a command-line tool for technical writers and editors. It helps you:
+- Find and fix common issues in `.adoc` files before publishing.
+- Apply automated checks and transformations using a plugin system.
 
-```
-asciidoc-dita-toolkit/
-    asciidoc_dita_toolkit/
-        __init__.py
-        asciidoc_toolkit.py
-        file_utils.py
-        plugins/
-            __init__.py
-            ContentType.py
-            EntityReference.py
-    ...
-```
+## Installation (Recommended: PyPI)
 
-## Installation (after PyPI release)
+Install the toolkit using pip:
 
 ```sh
 python3 -m pip install asciidoc-dita-toolkit
@@ -27,32 +18,42 @@ python3 -m pip install asciidoc-dita-toolkit
 
 ## Usage
 
-Import modules in your Python code:
+### List available plugins
 
-```python
-from asciidoc_dita_toolkit import asciidoc_toolkit, file_utils
-from asciidoc_dita_toolkit.plugins import ContentType, EntityReference
+```sh
+python3 -m asciidoc_dita_toolkit.asciidoc_toolkit --list-plugins
 ```
 
-## Development & Packaging
+### Run a plugin
 
-To build and publish to PyPI:
+```sh
+python3 -m asciidoc_dita_toolkit.asciidoc_toolkit <plugin> [options]
+```
+- `<plugin>`: Name of the plugin to run (e.g., `EntityReference`)
+- `[options]`: Plugin-specific options (e.g., `-f` for a file, `-r` for recursive)
 
-1. Ensure you have `build` and `twine` installed:
-   ```sh
-   python3 -m pip install --upgrade build twine
-   ```
-2. Build the package:
-   ```sh
-   python3 -m build
-   ```
-3. Upload to PyPI:
-   ```sh
-   python3 -m twine upload dist/*
-   ```
+#### Examples
 
-See `pyproject.toml` for project metadata and dependencies.
+Fix unsupported HTML character entity references in a file:
+```sh
+python3 -m asciidoc_dita_toolkit.asciidoc_toolkit EntityReference -f path/to/file.adoc
+```
 
----
+Process all `.adoc` files recursively in the current directory:
+```sh
+python3 -m asciidoc_dita_toolkit.asciidoc_toolkit EntityReference -r
+```
 
-For more details, see the source files and documentation in the `docs/` directory.
+> **Tip:** For plugin-specific details, see the [available rules](https://github.com/jhradilek/asciidoctor-dita-vale?tab=readme-ov-file#available-rules) in the `asciidoctor-dita-vale` repository.
+
+## Troubleshooting
+- Make sure you are using Python 3.7 or newer.
+- If you need to use a local clone (for development or custom plugins), see the [contributor guide](docs/CONTRIBUTING.md).
+
+## Related resources
+
+- **[`asciidoctor-dita-vale`](https://github.com/jhradilek/asciidoctor-dita-vale)**: Vale style rules and test fixtures for validating AsciiDoc content.
+
+## Contributing
+
+Want to add new plugins or help improve the toolkit? See [CONTRIBUTING.md](docs/CONTRIBUTING.md).
