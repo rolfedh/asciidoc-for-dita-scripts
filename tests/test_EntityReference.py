@@ -14,10 +14,8 @@ import os
 import sys
 import difflib
 import unittest
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../asciidoc-dita-toolkit/plugins')))
 
-from EntityReference import replace_entities
+from asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference import replace_entities
 from asciidoc_testkit import get_fixture_pairs, run_linewise_test
 
 FIXTURE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../asciidoctor-dita-vale/fixtures/EntityReference'))
