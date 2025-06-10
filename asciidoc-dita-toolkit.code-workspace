@@ -11,5 +11,11 @@
 			"path": "../doc-utils"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"github.copilot.enable": {
+			"markdown": true,
+			"asciidoc": true
+		},
+		"github.copilot.nextEditSuggestions.enabled": true
+	}
 }
