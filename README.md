@@ -1,59 +1,131 @@
 # AsciiDoc DITA Toolkit
 
-Scripts to review and fix AsciiDoc content for DITA-based publishing workflows, based on rules from the [asciidoctor-dita-vale](https://github.com/jhradilek/asciidoctor-dita-vale) project.
+A unified command-line toolkit for reviewing and fixing AsciiDoc content in DITA-based publishing workflows. Built with a flexible plugin system based on rules from the [asciidoctor-dita-vale](https://github.com/jhradilek/asciidoctor-dita-vale) project.
 
 ## What is this?
 
-The AsciiDoc DITA Toolkit is a command-line tool for technical writers and editors. It helps you:
-- Find and fix common issues in `.adoc` files before publishing.
-- Apply automated checks and transformations using a plugin system.
+The AsciiDoc DITA Toolkit is a streamlined CLI tool for technical writers and editors. It helps you:
+- Find and fix common issues in `.adoc` files before publishing
+- Apply automated checks and transformations using a modular plugin system
+- Run plugins through a single, unified interface
 
-## Installation (Recommended: PyPI)
+## Installation
 
-Install the toolkit using pip:
+### Option 1: PyPI (Recommended)
 
 ```sh
-python3 -m pip install asciidoc-dita-toolkit
+pip install asciidoc-dita-toolkit
+```
+
+### Option 2: Development Installation
+
+```sh
+git clone https://github.com/yourusername/asciidoc-dita-toolkit.git
+cd asciidoc-dita-toolkit
+pip install -e .
 ```
 
 ## Usage
 
-### List available plugins
+### Unified CLI Interface
+
+After installation, use the main `asciidoc-dita` command:
 
 ```sh
-python3 -m asciidoc_dita_toolkit.asciidoc_toolkit --list-plugins
+# List all available plugins
+asciidoc-dita --list-plugins
+
+# Run a specific plugin
+asciidoc-dita <plugin-name> [options]
+
+# Get help for a specific plugin
+asciidoc-dita <plugin-name> --help
 ```
 
-### Run a plugin
+### Examples
 
+**Fix HTML entity references in a specific file:**
 ```sh
-python3 -m asciidoc_dita_toolkit.asciidoc_toolkit <plugin> [options]
+asciidoc-dita EntityReference -f path/to/file.adoc
 ```
-- `<plugin>`: Name of the plugin to run (e.g., `EntityReference`)
-- `[options]`: Plugin-specific options (e.g., `-f` for a file, `-r` for recursive)
 
-#### Examples
-
-Fix unsupported HTML character entity references in a file:
+**Process all .adoc files recursively:**
 ```sh
-python3 -m asciidoc_dita_toolkit.asciidoc_toolkit EntityReference -f path/to/file.adoc
+asciidoc-dita EntityReference -r
 ```
 
-Process all `.adoc` files recursively in the current directory:
+**Add content type labels based on filename:**
 ```sh
-python3 -m asciidoc_dita_toolkit.asciidoc_toolkit EntityReference -r
+asciidoc-dita ContentType -d /path/to/docs
 ```
 
-> **Tip:** For plugin-specific details, see the [available rules](https://github.com/jhradilek/asciidoctor-dita-vale?tab=readme-ov-file#available-rules) in the `asciidoctor-dita-vale` repository.
+## Available Plugins
+
+The toolkit currently includes these plugins:
+
+| Plugin | Description | Command |
+|--------|-------------|---------|
+| **EntityReference** | Replace unsupported HTML character entity references with AsciiDoc attribute references | `asciidoc-dita EntityReference` |
+| **ContentType** | Add `:_mod-docs-content-type:` labels based on filename patterns | `asciidoc-dita ContentType` |
+
+Use `asciidoc-dita --list-plugins` to see all available plugins with descriptions.
+
+## Implementation Summary
+
+The `asciidoc-dita-toolkit` provides a clean, unified CLI interface following modern best practices:
+
+### ✅ Current Architecture
+
+1. **Single CLI Entry Point** - `asciidoc-dita` command with plugin subcommands
+2. **Plugin Auto-Discovery** - Automatic registration of plugins as subcommands  
+3. **Standardized Plugin Interface** - All plugins implement `main()` and `register_subcommand()`
+4. **Comprehensive Testing** - CLI-based tests using subprocess calls
+5. **Error Handling** - Proper exit codes and error messages
+6. **Clean Documentation** - Focused on the unified CLI interface
+
+### 📁 Project Structure
+
+```
+asciidoc-dita-toolkit/
+├── asciidoc_dita_toolkit/asciidoc_dita/
+│   ├── cli.py              # Main unified CLI interface
+│   ├── file_utils.py       # Shared utilities
+│   └── plugins/            # Auto-discovered plugins
+│       ├── EntityReference.py
+│       └── ContentType.py
+├── tests/test_cli.py       # CLI-based tests
+├── docs/CONTRIBUTING.md    # Plugin development guide
+└── pyproject.toml         # Single CLI entry point and packaging
+```
+
+### 🚀 CLI Usage
+
+| Command | Purpose |
+|---------|---------|
+| `asciidoc-dita --list-plugins` | List available plugins |
+| `asciidoc-dita EntityReference [options]` | Run EntityReference plugin |
+| `asciidoc-dita ContentType [options]` | Run ContentType plugin |
+
+### ✨ Key Features
+
+- **Simplified Interface**: Single entry point with intuitive plugin subcommands
+- **Plugin System**: Easy to add new plugins - just drop them in `plugins/` directory
+- **Library Usage**: Plugins can still be imported and used programmatically
+- **Standards Compliant**: Follows Python packaging best practices
+- **Well Tested**: Comprehensive test suite with complete CLI coverage
+
+This streamlined implementation makes it easy to run, extend, and maintain plugins through a clean, unified interface.
 
 ## Troubleshooting
-- Make sure you are using Python 3.7 or newer.
-- If you need to use a local clone (for development or custom plugins), see the [contributor guide](docs/CONTRIBUTING.md).
+
+- **Python Version**: Requires Python 3.7 or newer
+- **Plugin Errors**: Use `asciidoc-dita --list-plugins` to check for plugin loading issues
+- **File Permissions**: Ensure you have read/write access to target files and directories
 
 ## Related resources
 
 - **[`asciidoctor-dita-vale`](https://github.com/jhradilek/asciidoctor-dita-vale)**: Vale style rules and test fixtures for validating AsciiDoc content.
 
-## Contributing
+## Contributors welcome!
 
-Want to add new plugins or help improve the toolkit? See [CONTRIBUTING.md](docs/CONTRIBUTING.md).
+Want to add new plugins or help improve the toolkit? See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for development setup, plugin creation guidelines, and contribution workflow.

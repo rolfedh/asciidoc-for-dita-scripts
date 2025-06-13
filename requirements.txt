@@ -1,4 +1,9 @@
-# Add your project dependencies below, one per line.
-# Example:
-# requests
-# numpy
+# Runtime dependencies for asciidoc-dita-toolkit
+# 
+# This toolkit is designed to be lightweight with minimal dependencies.
+# All functionality is implemented using Python standard library modules.
+#
+# For development dependencies, see requirements-dev.txt or install with:
+# pip install -e ".[dev]"
+
+# Currently no runtime dependencies - toolkit uses only Python standard library
