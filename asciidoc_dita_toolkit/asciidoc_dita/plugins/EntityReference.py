@@ -9,7 +9,7 @@ See:
 """
 
 __description__ = "Replace unsupported HTML character entity references in .adoc files with AsciiDoc attribute references."
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 import os
 import re

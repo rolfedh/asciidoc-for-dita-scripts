@@ -5,7 +5,7 @@ This plugin adds a :_mod-docs-content-type: label in .adoc files where those are
 """
 
 __description__ = "Add a :_mod-docs-content-type: label in .adoc files where those are missing, based on filename."
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 import os
 import re

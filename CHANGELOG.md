@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2025-06-13
+
+### Fixed
+- Module import errors in CLI interface and plugin loading
+- GitHub Actions CI workflow - added pytest installation via dev dependencies
+- Package discovery configuration in pyproject.toml for proper editable installs
+- PYTHONPATH configuration in test suite for subprocess execution
+- isort configuration to use correct package name for import sorting
+
+### Changed
+- Refactored test suite to use BaseCliTestCase for shared functionality
+- Improved import formatting and code style consistency
+- Updated CI workflow to install full development dependencies
+
 ## [1.0.0] - 2025-06-13
 
 ### Added
