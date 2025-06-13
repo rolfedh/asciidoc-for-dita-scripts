@@ -10,11 +10,13 @@ This module provides reusable functions for:
 
 Intended for use by all scripts in this repository to avoid code duplication and ensure consistent file handling.
 """
+
 import os
 import re
 
 # Regex to split lines and preserve their original line endings
-line_splitter = re.compile(rb'(.*?)(\r\n|\r|\n|$)')
+line_splitter = re.compile(rb"(.*?)(\r\n|\r|\n|$)")
+
 
 def find_adoc_files(root, recursive):
     """
@@ -25,42 +27,45 @@ def find_adoc_files(root, recursive):
     if recursive:
         for dirpath, dirnames, filenames in os.walk(root):
             for filename in filenames:
-                if filename.endswith('.adoc'):
+                if filename.endswith(".adoc"):
                     fullpath = os.path.join(dirpath, filename)
                     if not os.path.islink(fullpath):
                         adoc_files.append(fullpath)
     else:
         for filename in os.listdir(root):
-            if filename.endswith('.adoc'):
+            if filename.endswith(".adoc"):
                 fullpath = os.path.join(root, filename)
                 if not os.path.islink(fullpath):
                     adoc_files.append(fullpath)
     return adoc_files
+
 
 def read_text_preserve_endings(filepath):
     """
     Reads a file as bytes, splits into lines preserving original line endings, and decodes as UTF-8.
     Returns a list of (text, ending) tuples, where 'text' is the line content and 'ending' is the original line ending.
     """
-    with open(filepath, 'rb') as f:
+    with open(filepath, "rb") as f:
         content = f.read()
     lines = []
     for match in line_splitter.finditer(content):
-        text = match.group(1).decode('utf-8')
-        ending = match.group(2).decode('utf-8') if match.group(2) else ''
+        text = match.group(1).decode("utf-8")
+        ending = match.group(2).decode("utf-8") if match.group(2) else ""
         lines.append((text, ending))
         if not ending:
             break
     return lines
+
 
 def write_text_preserve_endings(filepath, lines):
     """
     Writes a list of (text, ending) tuples to a file, preserving original line endings.
     Each tuple should be (text, ending), where 'ending' is the original line ending (e.g., '\n', '\r\n', or '').
     """
-    with open(filepath, 'w', encoding='utf-8', newline='') as f:
+    with open(filepath, "w", encoding="utf-8", newline="") as f:
         for text, ending in lines:
             f.write(text + ending)
+
 
 def common_arg_parser(description):
     """
@@ -69,10 +74,19 @@ def common_arg_parser(description):
     -f / --file: Scan only the specified .adoc file
     """
     import argparse
+
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('-r', '--recursive', action='store_true', help='Search subdirectories recursively')
-    parser.add_argument('-f', '--file', type=str, help='Scan only the specified .adoc file')
+    parser.add_argument(
+        "-r",
+        "--recursive",
+        action="store_true",
+        help="Search subdirectories recursively",
+    )
+    parser.add_argument(
+        "-f", "--file", type=str, help="Scan only the specified .adoc file"
+    )
     return parser
+
 
 def process_adoc_files(args, process_file_func):
     """
@@ -80,37 +94,50 @@ def process_adoc_files(args, process_file_func):
     - If --file is given and valid, process only that file.
     - Otherwise, find all .adoc files (recursively if requested) and process each.
     - process_file_func should be a function that takes a file path.
-    
+
     Returns:
         int: Number of files processed
     """
     import sys
+
     files_processed = 0
-    
-    if hasattr(args, 'file') and args.file:
+
+    if hasattr(args, "file") and args.file:
         if not os.path.exists(args.file):
             print(f"Error: File '{args.file}' does not exist", file=sys.stderr)
             return 0
-        if not args.file.endswith('.adoc'):
-            print(f"Error: File '{args.file}' is not an AsciiDoc file (.adoc)", file=sys.stderr)
+        if not args.file.endswith(".adoc"):
+            print(
+                f"Error: File '{args.file}' is not an AsciiDoc file (.adoc)",
+                file=sys.stderr,
+            )
             return 0
         if not is_valid_adoc_file(args.file):
-            print(f"Error: {args.file} is not a valid .adoc file or is a symlink.", file=sys.stderr)
+            print(
+                f"Error: {args.file} is not a valid .adoc file or is a symlink.",
+                file=sys.stderr,
+            )
             return 0
-        
+
         process_file_func(args.file)
         files_processed = 1
     else:
-        adoc_files = find_adoc_files('.', getattr(args, 'recursive', False))
+        adoc_files = find_adoc_files(".", getattr(args, "recursive", False))
         for filepath in adoc_files:
             process_file_func(filepath)
             files_processed += 1
-    
+
     return files_processed
+
 
 def is_valid_adoc_file(filepath):
     """
     Returns True if the given path is a regular .adoc file (not a symlink), else False.
     """
     import os
-    return os.path.isfile(filepath) and filepath.endswith('.adoc') and not os.path.islink(filepath)
+
+    return (
+        os.path.isfile(filepath)
+        and filepath.endswith(".adoc")
+        and not os.path.islink(filepath)
+    )

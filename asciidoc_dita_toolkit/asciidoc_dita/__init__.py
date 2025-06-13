@@ -1,7 +1,7 @@
 """
 AsciiDoc DITA Toolkit
 
-A unified command-line toolkit for reviewing and fixing AsciiDoc content 
+A unified command-line toolkit for reviewing and fixing AsciiDoc content
 in DITA-based publishing workflows.
 """
 
