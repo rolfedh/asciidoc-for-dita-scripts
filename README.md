@@ -116,29 +116,16 @@ asciidoc-dita-toolkit/
 
 This streamlined implementation makes it easy to run, extend, and maintain plugins through a clean, unified interface.
 
-## Plugin Development
-
-Want to create your own plugins? Each plugin needs:
-
-1. A `main(args)` function that accepts parsed command-line arguments
-2. A `register_subcommand(subparsers)` function for CLI integration
-3. A `run_cli()` function for standalone execution
-4. Standard error handling and validation
-
-See existing plugins in `asciidoc_dita/plugins/` for examples.
-
 ## Troubleshooting
 
 - **Python Version**: Requires Python 3.7 or newer
 - **Plugin Errors**: Use `asciidoc-dita --list-plugins` to check for plugin loading issues
 - **File Permissions**: Ensure you have read/write access to target files and directories
 
-For development setup and advanced usage, see [CONTRIBUTING.md](docs/CONTRIBUTING.md).
-
 ## Related resources
 
 - **[`asciidoctor-dita-vale`](https://github.com/jhradilek/asciidoctor-dita-vale)**: Vale style rules and test fixtures for validating AsciiDoc content.
 
-## Contributing
+## Contributors welcome!
 
-Want to add new plugins or help improve the toolkit? See [CONTRIBUTING.md](docs/CONTRIBUTING.md).
+Want to add new plugins or help improve the toolkit? See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for development setup, plugin creation guidelines, and contribution workflow.
