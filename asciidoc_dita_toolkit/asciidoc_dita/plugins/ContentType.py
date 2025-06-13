@@ -155,8 +155,8 @@ def tree_walker(directory):
             elif file.startswith("ref_") or file.startswith("ref-"):
                 label = "REFERENCE"
 
+            files_examined += 1
             if label:
-                files_examined += 1
                 was_modified = editor(filepath, label)
                 if was_modified:
                     files_modified += 1
