@@ -80,17 +80,33 @@ def process_adoc_files(args, process_file_func):
     - If --file is given and valid, process only that file.
     - Otherwise, find all .adoc files (recursively if requested) and process each.
     - process_file_func should be a function that takes a file path.
+    
+    Returns:
+        int: Number of files processed
     """
-    from file_utils import find_adoc_files, is_valid_adoc_file
-    if args.file:
-        if is_valid_adoc_file(args.file):
-            process_file_func(args.file)
-        else:
-            print(f"Error: {args.file} is not a valid .adoc file or is a symlink.")
+    import sys
+    files_processed = 0
+    
+    if hasattr(args, 'file') and args.file:
+        if not os.path.exists(args.file):
+            print(f"Error: File '{args.file}' does not exist", file=sys.stderr)
+            return 0
+        if not args.file.endswith('.adoc'):
+            print(f"Error: File '{args.file}' is not an AsciiDoc file (.adoc)", file=sys.stderr)
+            return 0
+        if not is_valid_adoc_file(args.file):
+            print(f"Error: {args.file} is not a valid .adoc file or is a symlink.", file=sys.stderr)
+            return 0
+        
+        process_file_func(args.file)
+        files_processed = 1
     else:
-        adoc_files = find_adoc_files('.', args.recursive)
+        adoc_files = find_adoc_files('.', getattr(args, 'recursive', False))
         for filepath in adoc_files:
             process_file_func(filepath)
+            files_processed += 1
+    
+    return files_processed
 
 def is_valid_adoc_file(filepath):
     """

@@ -20,7 +20,11 @@ dependencies = [
 Homepage = "https://github.com/yourusername/asciidoc-dita-toolkit"
 
 [project.scripts]
+asciidoc-dita = "asciidoc_dita.cli:main"
 asciidoc-dita-toolkit = "asciidoc_dita.toolkit:main"
+# Individual plugin entry points
+asciidoc-dita-entity-reference = "asciidoc_dita.plugins.EntityReference:run_cli"
+asciidoc-dita-content-type = "asciidoc_dita.plugins.ContentType:run_cli"
 
 [tool.setuptools.packages.find]
 where = ["asciidoc_dita_toolkit"]

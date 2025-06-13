@@ -1,0 +1,4 @@
+= Test
+
+This has an {mdash} entity.
+Also has {copy} and {trade} entities.

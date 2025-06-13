@@ -1,0 +1,4 @@
+= Test Document
+
+This document has {mdash} and {copy} entities.
+

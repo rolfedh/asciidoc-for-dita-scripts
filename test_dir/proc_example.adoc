@@ -1,0 +1,4 @@
+:_mod-docs-content-type: PROCEDURE
+= Procedure Example
+
+Some content.

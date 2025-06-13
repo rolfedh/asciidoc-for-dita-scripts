@@ -8,8 +8,12 @@ See:
 - https://github.com/jhradilek/asciidoctor-dita-vale/tree/main/fixtures/EntityReference
 """
 __description__ = "Replace unsupported HTML character entity references in .adoc files with AsciiDoc attribute references."
+__version__ = "1.0.0"
+
 from ..file_utils import read_text_preserve_endings, write_text_preserve_endings, process_adoc_files, common_arg_parser
 import re
+import sys
+import os
 
 # Supported XML entities in DITA 1.3
 supported = {"amp", "lt", "gt", "apos", "quot"}
@@ -72,13 +76,62 @@ def process_file(filepath):
     print(f"Processed {filepath} (preserved per-line endings)")
 
 def main(args):
-    process_adoc_files(args, process_file)
+    """
+    Main entry point for the EntityReference plugin.
+    
+    Args:
+        args: Parsed command line arguments containing file/directory options
+        
+    Returns:
+        int: Exit code (0 for success, non-zero for failure)
+    """
+    try:
+        # Process files using the file_utils helper
+        files_processed = process_adoc_files(args, process_file)
+        
+        if files_processed == 0:
+            print("No AsciiDoc files found to process", file=sys.stderr)
+            return 1
+            
+        return 0
+        
+    except KeyboardInterrupt:
+        print("\nOperation cancelled by user", file=sys.stderr)
+        return 130
+    except Exception as e:
+        print(f"Error processing files: {e}", file=sys.stderr)
+        return 1
+
+
+def run_cli():
+    """
+    Standalone CLI runner for this plugin.
+    Can be used when running the plugin directly.
+    """
+    import argparse
+    parser = argparse.ArgumentParser(
+        description=__description__,
+        prog="EntityReference"
+    )
+    parser.add_argument('-r', '--recursive', action='store_true', help='Search subdirectories recursively')
+    parser.add_argument('-f', '--file', type=str, help='Scan only the specified .adoc file')
+    parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
+    
+    args = parser.parse_args()
+    sys.exit(main(args))
+
 
 def register_subcommand(subparsers):
+    """Register this plugin as a subcommand in the main CLI."""
     parser = subparsers.add_parser(
         "EntityReference",
         help="Replace unsupported HTML character entity references in .adoc files with AsciiDoc attribute references."
     )
     parser.add_argument('-r', '--recursive', action='store_true', help='Search subdirectories recursively')
     parser.add_argument('-f', '--file', type=str, help='Scan only the specified .adoc file')
+    parser.add_argument('--version', action='version', version=f'EntityReference {__version__}')
     parser.set_defaults(func=main)
+
+
+if __name__ == "__main__":
+    run_cli()
