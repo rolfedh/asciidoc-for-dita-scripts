@@ -38,7 +38,7 @@ def print_plugin_list():
     print("=" * 50)
     for modname in plugins:
         try:
-            module = importlib.import_module(f"asciidoc_dita.plugins.{modname}")
+            module = importlib.import_module(f"asciidoc_dita_toolkit.asciidoc_dita.plugins.{modname}")
             description = getattr(module, "__doc__", "No description available").strip()
             # Take only the first line of docstring for brief description
             brief_desc = (
@@ -83,7 +83,7 @@ For plugin-specific help:
     plugins = discover_plugins()
     for modname in plugins:
         try:
-            module = importlib.import_module(f"asciidoc_dita.plugins.{modname}")
+            module = importlib.import_module(f"asciidoc_dita_toolkit.asciidoc_dita.plugins.{modname}")
             if hasattr(module, "register_subcommand"):
                 module.register_subcommand(subparsers)
         except Exception as e:

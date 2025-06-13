@@ -23,13 +23,24 @@ class TestCLIInterface(unittest.TestCase):
 
     def run_cli(self, args, cwd=None, input_data=None):
         """Helper to run CLI commands and capture output."""
-        cmd = [sys.executable, "-m", "asciidoc_dita.cli"] + args
+        cmd = [sys.executable, "-m", "asciidoc_dita_toolkit.asciidoc_dita.cli"] + args
+        
+        # Set up environment to include project root in PYTHONPATH
+        env = os.environ.copy()
+        project_root = Path(__file__).parent.parent
+        current_pythonpath = env.get('PYTHONPATH', '')
+        if current_pythonpath:
+            env['PYTHONPATH'] = f"{project_root}:{current_pythonpath}"
+        else:
+            env['PYTHONPATH'] = str(project_root)
+        
         result = subprocess.run(
             cmd,
             cwd=cwd or self.test_dir,
             capture_output=True,
             text=True,
             input=input_data,
+            env=env,
         )
         return result
 
@@ -83,9 +94,19 @@ Also has &copy; and &trade; entities.
 
     def run_cli(self, args, cwd=None):
         """Helper to run CLI commands."""
-        cmd = [sys.executable, "-m", "asciidoc_dita.cli"] + args
+        cmd = [sys.executable, "-m", "asciidoc_dita_toolkit.asciidoc_dita.cli"] + args
+        
+        # Set up environment to include project root in PYTHONPATH
+        env = os.environ.copy()
+        project_root = Path(__file__).parent.parent
+        current_pythonpath = env.get('PYTHONPATH', '')
+        if current_pythonpath:
+            env['PYTHONPATH'] = f"{project_root}:{current_pythonpath}"
+        else:
+            env['PYTHONPATH'] = str(project_root)
+        
         result = subprocess.run(
-            cmd, cwd=cwd or self.test_dir, capture_output=True, text=True
+            cmd, cwd=cwd or self.test_dir, capture_output=True, text=True, env=env
         )
         return result
 
@@ -141,9 +162,19 @@ class TestContentTypePlugin(unittest.TestCase):
 
     def run_cli(self, args, cwd=None):
         """Helper to run CLI commands."""
-        cmd = [sys.executable, "-m", "asciidoc_dita.cli"] + args
+        cmd = [sys.executable, "-m", "asciidoc_dita_toolkit.asciidoc_dita.cli"] + args
+        
+        # Set up environment to include project root in PYTHONPATH
+        env = os.environ.copy()
+        project_root = Path(__file__).parent.parent
+        current_pythonpath = env.get('PYTHONPATH', '')
+        if current_pythonpath:
+            env['PYTHONPATH'] = f"{project_root}:{current_pythonpath}"
+        else:
+            env['PYTHONPATH'] = str(project_root)
+        
         result = subprocess.run(
-            cmd, cwd=cwd or self.test_dir, capture_output=True, text=True
+            cmd, cwd=cwd or self.test_dir, capture_output=True, text=True, env=env
         )
         return result
 
@@ -187,8 +218,8 @@ class TestStandalonePluginCommands(unittest.TestCase):
     def test_plugin_import_compatibility(self):
         """Test that plugins can still be imported directly for library usage."""
         try:
-            from asciidoc_dita.plugins.ContentType import main as content_main
-            from asciidoc_dita.plugins.EntityReference import main as entity_main
+            from asciidoc_dita_toolkit.asciidoc_dita.plugins.ContentType import main as content_main
+            from asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference import main as entity_main
 
             # If we get here without import errors, the plugins are still importable
             self.assertTrue(callable(entity_main))

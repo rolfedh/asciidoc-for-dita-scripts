@@ -52,10 +52,11 @@ Issues = "https://github.com/rdlugyhe/asciidoc-dita-toolkit/issues"
 Documentation = "https://github.com/rdlugyhe/asciidoc-dita-toolkit#readme"
 
 [project.scripts]
-asciidoc-dita = "asciidoc_dita.cli:main"
+asciidoc-dita = "asciidoc_dita_toolkit.asciidoc_dita.cli:main"
 
 [tool.setuptools.packages.find]
-where = ["asciidoc_dita_toolkit"]
+# Find packages from the project root
+# This will find asciidoc_dita_toolkit and asciidoc_dita_toolkit.asciidoc_dita
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
