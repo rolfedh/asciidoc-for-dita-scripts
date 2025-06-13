@@ -85,18 +85,32 @@ The toolkit provides a single, clean entry point:
    *What this means*: Install it so you can make changes and see them immediately
    
    ```sh
+   # For basic installation:
    pip install -e .
+   
+   # For development with all tools (recommended):
+   pip install -e ".[dev]"
    ```
 
 4. **Test that everything works**
    ```sh
    asciidoc-dita --list-plugins
    asciidoc-dita --help
+   
+   # Optional: Run a quick demo
+   make demo
    ```
 
 ### For Experienced Developers
 
-The same steps apply, but you can skip the explanatory text above.
+The same steps apply, but you can also use the Makefile for common tasks:
+
+```sh
+make install-dev    # Install with development dependencies
+make test          # Run tests
+make lint          # Run code quality checks
+make help          # See all available commands
+```
 
 ## Creating New Plugins
 
@@ -302,14 +316,20 @@ if __name__ == '__main__':
 
 ### Running All Tests
 
+- **Using pytest (recommended)**:
+  ```sh
+  python -m pytest tests/ -v
+  ```
+
+- **Using the Makefile**:
+  ```sh
+  make test           # Run all tests
+  make test-coverage  # Run tests with coverage report
+  ```
+
 - **Run your specific test**:
   ```sh
   python -m pytest tests/test_your_plugin.py -v
-  ```
-
-- **Run all tests**:
-  ```sh
-  python -m pytest tests/ -v
   ```
 
 ## Getting Help
@@ -317,8 +337,9 @@ if __name__ == '__main__':
 ### Common Questions
 
 **Q: I'm getting import errors when I run my plugin**
-- Make sure you've run `pip install -e .` in the project directory
+- Make sure you've run `pip install -e .` or `make install-dev` in the project directory
 - Check that your plugin file is in the right location: `asciidoc_dita/plugins/`
+- If using development tools, ensure you installed with `pip install -e ".[dev]"`
 
 **Q: My plugin isn't showing up in `--list-plugins`**
 - Check that your plugin file ends with `.py`
@@ -340,6 +361,15 @@ if __name__ == '__main__':
 - **GitHub Discussions**: For general questions about plugin development
 - **Look at existing plugins**: They're your best documentation
 
+### Development Tools
+
+The project includes several tools to help with development:
+
+- **Makefile**: Common development tasks (`make help` to see all options)
+- **Pre-commit hooks**: Automatic code formatting and quality checks
+- **pytest**: Comprehensive testing with coverage reports
+- **Code formatters**: Black, isort, and flake8 for consistent code style
+
 ## Contributing Your Plugin
 
 When your plugin is working:
@@ -347,7 +377,8 @@ When your plugin is working:
 1. **Test it thoroughly** - Make sure it works on different types of files
 2. **Write a simple test** - Even a basic test is better than no test
 3. **Update documentation** - Add a line about your plugin to the README.md
-4. **Open a pull request** - Share your plugin with the community!
+4. **Run quality checks** - Use `make lint` to ensure code style consistency
+5. **Open a pull request** - Share your plugin with the community!
 
 ### Pull Request Process
 
@@ -374,6 +405,22 @@ When your plugin is working:
 6. **Celebrate!** - Your plugin will help other technical writers
 
 ## Advanced Topics
+
+### Development Workflow with Makefile
+
+The project includes a Makefile with common development tasks:
+
+```sh
+make help           # Show all available commands
+make install        # Basic installation 
+make install-dev    # Install with development dependencies
+make test           # Run all tests
+make test-coverage  # Run tests with coverage report
+make lint           # Check code quality
+make format         # Format code with black and isort
+make clean          # Clean build artifacts
+make build          # Build distribution packages
+```
 
 ### Working with File Content
 
@@ -450,6 +497,8 @@ def register_subcommand(subparsers):
 - [ ] Includes docstring explaining what it does
 - [ ] Tested manually on sample files
 - [ ] Follows the naming pattern of existing plugins
+- [ ] Code formatted with `make format` or `black`
+- [ ] Passes `make lint` quality checks
 
 ### Common File Patterns
 ```python

@@ -1,0 +1,17 @@
+# Development dependencies for asciidoc-dita-toolkit
+
+# Testing
+pytest>=6.0.0
+pytest-cov>=2.0.0
+
+# Code quality
+black>=22.0.0
+isort>=5.0.0
+flake8>=4.0.0
+
+# Build and packaging
+build>=0.8.0
+twine>=4.0.0
+
+# Documentation
+sphinx>=4.0.0
