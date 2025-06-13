@@ -96,7 +96,7 @@ extend-exclude = '''
 profile = "black"
 multi_line_output = 3
 line_length = 88
-known_first_party = ["asciidoc_dita"]
+known_first_party = ["asciidoc_dita_toolkit"]
 
 [tool.coverage.run]
 source = ["asciidoc_dita_toolkit"]

@@ -179,8 +179,12 @@ class TestStandalonePluginCommands(BaseCliTestCase):
     def test_plugin_import_compatibility(self):
         """Test that plugins can still be imported directly for library usage."""
         try:
-            from asciidoc_dita_toolkit.asciidoc_dita.plugins.ContentType import main as content_main
-            from asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference import main as entity_main
+            from asciidoc_dita_toolkit.asciidoc_dita.plugins.ContentType import (
+                main as content_main,
+            )
+            from asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference import (
+                main as entity_main,
+            )
 
             # If we get here without import errors, the plugins are still importable
             self.assertTrue(callable(entity_main))
