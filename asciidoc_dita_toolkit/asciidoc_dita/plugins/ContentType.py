@@ -57,6 +57,9 @@ def editor(filepath, label):
                 # Adds content back
                 for line in lines:
                     f.write(line)
+                
+                # Truncate the file to remove any trailing content from the original file
+                f.truncate()
                 return True
 
         # Handle errors gracefully
