@@ -13,8 +13,8 @@ import unittest
 from pathlib import Path
 
 
-class TestCLIInterface(unittest.TestCase):
-    """Test the main CLI interface functionality."""
+class BaseCliTestCase(unittest.TestCase):
+    """Base test case class with shared CLI testing functionality."""
 
     def setUp(self):
         """Set up test environment."""
@@ -43,6 +43,10 @@ class TestCLIInterface(unittest.TestCase):
             env=env,
         )
         return result
+
+
+class TestCLIInterface(BaseCliTestCase):
+    """Test the main CLI interface functionality."""
 
     def test_cli_help(self):
         """Test that CLI shows help when no arguments provided."""
@@ -74,13 +78,12 @@ class TestCLIInterface(unittest.TestCase):
         self.assertIn("--file", result.stdout)
 
 
-class TestEntityReferencePlugin(unittest.TestCase):
+class TestEntityReferencePlugin(BaseCliTestCase):
     """Test EntityReference plugin through CLI."""
 
     def setUp(self):
         """Set up test environment with sample files."""
-        self.test_dir = tempfile.mkdtemp()
-        self.addCleanup(shutil.rmtree, self.test_dir)
+        super().setUp()  # Call parent setUp to create test_dir
 
         # Create test file with entity references
         self.test_file = Path(self.test_dir) / "test.adoc"
@@ -91,24 +94,6 @@ This has an &mdash; entity reference.
 Also has &copy; and &trade; entities.
 """
         )
-
-    def run_cli(self, args, cwd=None):
-        """Helper to run CLI commands."""
-        cmd = [sys.executable, "-m", "asciidoc_dita_toolkit.asciidoc_dita.cli"] + args
-        
-        # Set up environment to include project root in PYTHONPATH
-        env = os.environ.copy()
-        project_root = Path(__file__).parent.parent
-        current_pythonpath = env.get('PYTHONPATH', '')
-        if current_pythonpath:
-            env['PYTHONPATH'] = f"{project_root}:{current_pythonpath}"
-        else:
-            env['PYTHONPATH'] = str(project_root)
-        
-        result = subprocess.run(
-            cmd, cwd=cwd or self.test_dir, capture_output=True, text=True, env=env
-        )
-        return result
 
     def test_entity_reference_file_processing(self):
         """Test EntityReference plugin on a specific file."""
@@ -140,13 +125,12 @@ Also has &copy; and &trade; entities.
         self.assertIn("not an AsciiDoc file", result.stderr)
 
 
-class TestContentTypePlugin(unittest.TestCase):
+class TestContentTypePlugin(BaseCliTestCase):
     """Test ContentType plugin through CLI."""
 
     def setUp(self):
         """Set up test environment with sample files."""
-        self.test_dir = tempfile.mkdtemp()
-        self.addCleanup(shutil.rmtree, self.test_dir)
+        super().setUp()  # Call parent setUp to create test_dir
 
         # Create test files with different naming patterns
         files = {
@@ -159,24 +143,6 @@ class TestContentTypePlugin(unittest.TestCase):
 
         for filename, content in files.items():
             (Path(self.test_dir) / filename).write_text(content)
-
-    def run_cli(self, args, cwd=None):
-        """Helper to run CLI commands."""
-        cmd = [sys.executable, "-m", "asciidoc_dita_toolkit.asciidoc_dita.cli"] + args
-        
-        # Set up environment to include project root in PYTHONPATH
-        env = os.environ.copy()
-        project_root = Path(__file__).parent.parent
-        current_pythonpath = env.get('PYTHONPATH', '')
-        if current_pythonpath:
-            env['PYTHONPATH'] = f"{project_root}:{current_pythonpath}"
-        else:
-            env['PYTHONPATH'] = str(project_root)
-        
-        result = subprocess.run(
-            cmd, cwd=cwd or self.test_dir, capture_output=True, text=True, env=env
-        )
-        return result
 
     def test_content_type_directory_processing(self):
         """Test ContentType plugin on a directory."""
@@ -207,13 +173,8 @@ class TestContentTypePlugin(unittest.TestCase):
         self.assertIn("does not exist", result.stderr)
 
 
-class TestStandalonePluginCommands(unittest.TestCase):
+class TestStandalonePluginCommands(BaseCliTestCase):
     """Test legacy standalone plugin functionality."""
-
-    def setUp(self):
-        """Set up test environment."""
-        self.test_dir = tempfile.mkdtemp()
-        self.addCleanup(shutil.rmtree, self.test_dir)
 
     def test_plugin_import_compatibility(self):
         """Test that plugins can still be imported directly for library usage."""
