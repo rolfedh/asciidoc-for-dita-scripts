@@ -12,6 +12,20 @@ import os
 import sys
 from pathlib import Path
 
+from . import __version__
+
+try:
+    from importlib.metadata import metadata
+    _package_metadata = metadata("asciidoc-dita-toolkit")
+    _description = _package_metadata["Summary"]
+except ImportError:
+    try:
+        from importlib_metadata import metadata
+        _package_metadata = metadata("asciidoc-dita-toolkit")
+        _description = _package_metadata["Summary"]
+    except ImportError:
+        _description = "AsciiDoc DITA Toolkit - A unified CLI for AsciiDoc DITA processing"
+
 
 def discover_plugins():
     """Discover all available plugins in the plugins directory."""
@@ -55,7 +69,7 @@ def create_parser():
     """Create and configure the main argument parser with subcommands."""
     parser = argparse.ArgumentParser(
         prog="asciidoc-dita",
-        description="AsciiDoc DITA Toolkit - A unified CLI for AsciiDoc DITA processing",
+        description=_description,
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -68,7 +82,7 @@ For plugin-specific help:
 """,
     )
 
-    parser.add_argument("--version", action="version", version="%(prog)s 1.0.1")
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     parser.add_argument(
         "--list-plugins",
         action="store_true",

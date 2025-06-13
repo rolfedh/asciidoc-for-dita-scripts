@@ -52,7 +52,7 @@ class TestCLIInterface(BaseCliTestCase):
         """Test that CLI shows help when no arguments provided."""
         result = self.run_cli([])
         self.assertEqual(result.returncode, 0)
-        self.assertIn("AsciiDoc DITA Toolkit", result.stdout)
+        self.assertIn("unified CLI toolkit", result.stdout)
         self.assertIn("usage:", result.stdout)
 
     def test_cli_version(self):

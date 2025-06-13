@@ -6,4 +6,5 @@ for DITA publishing workflows. Plugins are automatically discovered
 by the main CLI interface.
 """
 
-__version__ = "1.0.1"
+# Import version from parent package
+from .. import __version__
