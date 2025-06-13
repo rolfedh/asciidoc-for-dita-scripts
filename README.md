@@ -4,10 +4,10 @@ A unified command-line toolkit for reviewing and fixing AsciiDoc content in DITA
 
 ## What is this?
 
-The AsciiDoc DITA Toolkit is a wrapper-based CLI tool for technical writers and editors. It helps you:
+The AsciiDoc DITA Toolkit is a streamlined CLI tool for technical writers and editors. It helps you:
 - Find and fix common issues in `.adoc` files before publishing
 - Apply automated checks and transformations using a modular plugin system
-- Run individual plugins as standalone tools or through a unified interface
+- Run plugins through a single, unified interface
 
 ## Installation
 
@@ -40,19 +40,6 @@ asciidoc-dita <plugin-name> [options]
 
 # Get help for a specific plugin
 asciidoc-dita <plugin-name> --help
-
-# Alternative syntax for running plugins
-asciidoc-dita run-plugin <plugin-name> [options]
-```
-
-### Individual Plugin Commands
-
-Each plugin is also available as a standalone command:
-
-```sh
-# Run individual plugin commands directly
-asciidoc-dita-entity-reference [options]
-asciidoc-dita-content-type [options]
 ```
 
 ### Examples
@@ -72,12 +59,6 @@ asciidoc-dita EntityReference -r
 asciidoc-dita ContentType -d /path/to/docs
 ```
 
-**Use the legacy toolkit interface:**
-```sh
-asciidoc-dita-toolkit --list-plugins
-asciidoc-dita-toolkit EntityReference -f file.adoc
-```
-
 ## Available Plugins
 
 The toolkit currently includes these plugins:
@@ -91,18 +72,16 @@ Use `asciidoc-dita --list-plugins` to see all available plugins with description
 
 ## Implementation Summary
 
-The `asciidoc-dita-toolkit` has been successfully transformed into a wrapper-based CLI system with standalone scripts, following jhradilek's recommendations:
+The `asciidoc-dita-toolkit` provides a clean, unified CLI interface following modern best practices:
 
-### ✅ Completed Implementation
+### ✅ Current Architecture
 
-1. **Unified CLI Interface** - `asciidoc-dita` command with subcommands
-2. **Individual Plugin Commands** - `asciidoc-dita-*` commands for each plugin  
-3. **Plugin Auto-Discovery** - Automatic registration of plugins as subcommands
-4. **CLI Entry Points** - Proper packaging with multiple entry points in `pyproject.toml`
-5. **Standardized Plugin Interface** - All plugins implement `main()`, `run_cli()`, and `register_subcommand()`
-6. **Comprehensive Testing** - CLI-based tests using subprocess calls
-7. **Error Handling** - Proper exit codes and error messages
-8. **Documentation** - Updated README and CONTRIBUTING guides
+1. **Single CLI Entry Point** - `asciidoc-dita` command with plugin subcommands
+2. **Plugin Auto-Discovery** - Automatic registration of plugins as subcommands  
+3. **Standardized Plugin Interface** - All plugins implement `main()` and `register_subcommand()`
+4. **Comprehensive Testing** - CLI-based tests using subprocess calls
+5. **Error Handling** - Proper exit codes and error messages
+6. **Clean Documentation** - Focused on the unified CLI interface
 
 ### 📁 Project Structure
 
@@ -110,34 +89,32 @@ The `asciidoc-dita-toolkit` has been successfully transformed into a wrapper-bas
 asciidoc-dita-toolkit/
 ├── asciidoc_dita_toolkit/asciidoc_dita/
 │   ├── cli.py              # Main unified CLI interface
-│   ├── toolkit.py          # Legacy CLI (maintained for compatibility) 
 │   ├── file_utils.py       # Shared utilities
 │   └── plugins/            # Auto-discovered plugins
 │       ├── EntityReference.py
 │       └── ContentType.py
 ├── tests/test_cli.py       # CLI-based tests
 ├── docs/CONTRIBUTING.md    # Plugin development guide
-└── pyproject.toml         # CLI entry points and packaging
+└── pyproject.toml         # Single CLI entry point and packaging
 ```
 
-### 🚀 CLI Entry Points
+### 🚀 CLI Usage
 
-| Command | Purpose | Entry Point |
-|---------|---------|-------------|
-| `asciidoc-dita` | Main unified CLI | `asciidoc_dita.cli:main` |
-| `asciidoc-dita-toolkit` | Legacy CLI | `asciidoc_dita.toolkit:main` |
-| `asciidoc-dita-entity-reference` | EntityReference plugin | `asciidoc_dita.plugins.EntityReference:run_cli` |
-| `asciidoc-dita-content-type` | ContentType plugin | `asciidoc_dita.plugins.ContentType:run_cli` |
+| Command | Purpose |
+|---------|---------|
+| `asciidoc-dita --list-plugins` | List available plugins |
+| `asciidoc-dita EntityReference [options]` | Run EntityReference plugin |
+| `asciidoc-dita ContentType [options]` | Run ContentType plugin |
 
 ### ✨ Key Features
 
+- **Simplified Interface**: Single entry point with intuitive plugin subcommands
 - **Plugin System**: Easy to add new plugins - just drop them in `plugins/` directory
-- **Multiple Interfaces**: Use unified CLI, individual commands, or import as a library
-- **Backward Compatible**: Legacy CLI still works for existing users
+- **Library Usage**: Plugins can still be imported and used programmatically
 - **Standards Compliant**: Follows Python packaging best practices
-- **Well Tested**: Comprehensive test suite with 100% CLI test coverage
+- **Well Tested**: Comprehensive test suite with complete CLI coverage
 
-This implementation successfully makes it easy to run, extend, and maintain individual plugins while providing a unified, user-friendly interface.
+This streamlined implementation makes it easy to run, extend, and maintain plugins through a clean, unified interface.
 
 ## Plugin Development
 

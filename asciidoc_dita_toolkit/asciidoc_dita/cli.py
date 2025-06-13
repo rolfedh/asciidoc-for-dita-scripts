@@ -7,8 +7,43 @@ to the appropriate functions in the toolkit.
 """
 import argparse
 import sys
-from .toolkit import main as toolkit_main, discover_plugins, print_plugin_list
 import importlib
+import os
+from pathlib import Path
+
+
+def discover_plugins():
+    """Discover all available plugins in the plugins directory."""
+    plugins = []
+    plugins_dir = Path(__file__).parent / "plugins"
+    
+    if plugins_dir.exists():
+        for file_path in plugins_dir.glob("*.py"):
+            if file_path.name != "__init__.py":
+                plugins.append(file_path.stem)
+    
+    return sorted(plugins)
+
+
+def print_plugin_list():
+    """Print a list of all available plugins with their descriptions."""
+    plugins = discover_plugins()
+    
+    if not plugins:
+        print("No plugins found.")
+        return
+    
+    print("Available plugins:")
+    print("=" * 50)
+    for modname in plugins:
+        try:
+            module = importlib.import_module(f"asciidoc_dita.plugins.{modname}")
+            description = getattr(module, '__doc__', 'No description available').strip()
+            # Take only the first line of docstring for brief description
+            brief_desc = description.split('\n')[0] if description else 'No description available'
+            print(f"  {modname:<20} - {brief_desc}")
+        except Exception as e:
+            print(f"  {modname:<20} - Error loading plugin: {e}")
 
 
 def create_parser():
@@ -21,8 +56,7 @@ def create_parser():
 Examples:
   asciidoc-dita --list-plugins          # List all available plugins
   asciidoc-dita EntityReference -r      # Run EntityReference plugin recursively
-  asciidoc-dita ContentType -f file.adoc # Run ContentType plugin on specific file
-  asciidoc-dita run-plugin EntityReference -r # Alternative syntax
+  asciidoc-dita ContentType -d /path    # Run ContentType plugin on directory
 
 For plugin-specific help:
   asciidoc-dita <plugin-name> --help
@@ -32,7 +66,7 @@ For plugin-specific help:
     parser.add_argument(
         '--version', 
         action='version', 
-        version='%(prog)s 0.1.1'
+        version='%(prog)s 1.0.0'
     )
     parser.add_argument(
         '--list-plugins', 
@@ -42,25 +76,9 @@ For plugin-specific help:
     
     subparsers = parser.add_subparsers(
         dest="command", 
-        help='Available commands',
-        metavar='<command>'
+        help='Available plugins',
+        metavar='<plugin>'
     )
-    
-    # Add a generic run-plugin subcommand
-    run_plugin_parser = subparsers.add_parser(
-        'run-plugin',
-        help='Run a specific plugin by name'
-    )
-    run_plugin_parser.add_argument(
-        'plugin_name',
-        help='Name of the plugin to run'
-    )
-    run_plugin_parser.add_argument(
-        'plugin_args',
-        nargs=argparse.REMAINDER,
-        help='Arguments to pass to the plugin'
-    )
-    run_plugin_parser.set_defaults(func=run_plugin_command)
     
     # Discover and register all plugins as subcommands
     plugins = discover_plugins()
@@ -73,36 +91,6 @@ For plugin-specific help:
             print(f"Warning: Error loading plugin '{modname}': {e}", file=sys.stderr)
     
     return parser
-
-
-def run_plugin_command(args):
-    """Handle the run-plugin subcommand."""
-    plugin_name = args.plugin_name
-    plugin_args = args.plugin_args
-    
-    try:
-        module = importlib.import_module(f"asciidoc_dita.plugins.{plugin_name}")
-        if hasattr(module, 'main'):
-            # Parse plugin-specific arguments
-            plugin_parser = argparse.ArgumentParser(prog=f"asciidoc-dita run-plugin {plugin_name}")
-            if hasattr(module, 'register_subcommand'):
-                # Create a temporary subparser to get the plugin's arguments
-                temp_subparsers = plugin_parser.add_subparsers()
-                module.register_subcommand(temp_subparsers)
-                
-            plugin_parsed_args = plugin_parser.parse_args(plugin_args)
-            exit_code = module.main(plugin_parsed_args)
-            sys.exit(exit_code or 0)
-        else:
-            print(f"Error: Plugin '{plugin_name}' does not have a main function", file=sys.stderr)
-            sys.exit(1)
-    except ImportError:
-        print(f"Error: Plugin '{plugin_name}' not found", file=sys.stderr)
-        print("Use --list-plugins to see available plugins", file=sys.stderr)
-        sys.exit(1)
-    except Exception as e:
-        print(f"Error running plugin '{plugin_name}': {e}", file=sys.stderr)
-        sys.exit(1)
 
 
 def main():

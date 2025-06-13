@@ -42,7 +42,7 @@ class TestCLIInterface(unittest.TestCase):
         """Test CLI version display."""
         result = self.run_cli(["--version"])
         self.assertEqual(result.returncode, 0)
-        self.assertIn("0.1.1", result.stdout)
+        self.assertIn("1.0.0", result.stdout)
     
     def test_list_plugins(self):
         """Test plugin listing functionality."""
@@ -59,13 +59,6 @@ class TestCLIInterface(unittest.TestCase):
         self.assertIn("EntityReference", result.stdout)
         self.assertIn("--recursive", result.stdout)
         self.assertIn("--file", result.stdout)
-    
-    def test_run_plugin_subcommand(self):
-        """Test the run-plugin subcommand."""
-        result = self.run_cli(["run-plugin", "--help"])
-        self.assertEqual(result.returncode, 0)
-        self.assertIn("run-plugin", result.stdout)
-        self.assertIn("plugin_name", result.stdout)
 
 
 class TestEntityReferencePlugin(unittest.TestCase):
@@ -186,32 +179,23 @@ class TestContentTypePlugin(unittest.TestCase):
 
 
 class TestStandalonePluginCommands(unittest.TestCase):
-    """Test individual plugin commands."""
+    """Test legacy standalone plugin functionality."""
     
     def setUp(self):
         """Set up test environment."""
         self.test_dir = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, self.test_dir)
     
-    def test_standalone_entity_reference_help(self):
-        """Test standalone EntityReference command help."""
-        result = subprocess.run(
-            [sys.executable, "-c", "from asciidoc_dita.plugins.EntityReference import run_cli; run_cli()", "--help"],
-            capture_output=True,
-            text=True
-        )
-        # Note: This will exit with code 0 for help, but we're testing that it doesn't crash
-        self.assertIn("EntityReference", result.stdout or result.stderr)
-    
-    def test_standalone_content_type_help(self):
-        """Test standalone ContentType command help."""
-        result = subprocess.run(
-            [sys.executable, "-c", "from asciidoc_dita.plugins.ContentType import run_cli; run_cli()", "--help"],
-            capture_output=True,
-            text=True
-        )
-        # Note: This will exit with code 0 for help, but we're testing that it doesn't crash
-        self.assertIn("ContentType", result.stdout or result.stderr)
+    def test_plugin_import_compatibility(self):
+        """Test that plugins can still be imported directly for library usage."""
+        try:
+            from asciidoc_dita.plugins.EntityReference import main as entity_main
+            from asciidoc_dita.plugins.ContentType import main as content_main
+            # If we get here without import errors, the plugins are still importable
+            self.assertTrue(callable(entity_main))
+            self.assertTrue(callable(content_main))
+        except ImportError as e:
+            self.fail(f"Plugin import failed: {e}")
 
 
 if __name__ == "__main__":

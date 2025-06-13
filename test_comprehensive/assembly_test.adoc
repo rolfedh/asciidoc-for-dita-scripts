@@ -1,4 +1,0 @@
-:_mod-docs-content-type: ASSEMBLY
-= Assembly Example
-
-Some content.

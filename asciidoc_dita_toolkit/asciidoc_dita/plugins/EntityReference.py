@@ -103,24 +103,6 @@ def main(args):
         return 1
 
 
-def run_cli():
-    """
-    Standalone CLI runner for this plugin.
-    Can be used when running the plugin directly.
-    """
-    import argparse
-    parser = argparse.ArgumentParser(
-        description=__description__,
-        prog="EntityReference"
-    )
-    parser.add_argument('-r', '--recursive', action='store_true', help='Search subdirectories recursively')
-    parser.add_argument('-f', '--file', type=str, help='Scan only the specified .adoc file')
-    parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
-    
-    args = parser.parse_args()
-    sys.exit(main(args))
-
-
 def register_subcommand(subparsers):
     """Register this plugin as a subcommand in the main CLI."""
     parser = subparsers.add_parser(
@@ -131,7 +113,3 @@ def register_subcommand(subparsers):
     parser.add_argument('-f', '--file', type=str, help='Scan only the specified .adoc file')
     parser.add_argument('--version', action='version', version=f'EntityReference {__version__}')
     parser.set_defaults(func=main)
-
-
-if __name__ == "__main__":
-    run_cli()

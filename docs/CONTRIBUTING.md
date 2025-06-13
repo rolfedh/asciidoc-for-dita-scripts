@@ -1,14 +1,13 @@
 # Contributing to AsciiDoc DITA Toolkit
 
-Thank you for your interest in contributing! This guide is for developers and maintainers working with the wrapper-based CLI system.
+Thank you for your interest in contributing! This guide is for developers and maintainers working with the streamlined CLI system.
 
 ## Project Structure
 
-The toolkit uses a wrapper-based architecture with standalone scripts:
+The toolkit uses a clean, unified architecture:
 
 - **`asciidoc_dita_toolkit/asciidoc_dita/`**: Main Python package
-  - `cli.py`: Unified CLI interface with subcommands
-  - `toolkit.py`: Legacy CLI entry point (maintained for compatibility)
+  - `cli.py`: Unified CLI interface with plugin subcommands
   - `file_utils.py`: Shared file and argument utilities
   - `plugins/`: Plugin directory with auto-discovery
     - `EntityReference.py`: HTML entity reference fixer
@@ -16,18 +15,15 @@ The toolkit uses a wrapper-based architecture with standalone scripts:
     - `__init__.py`: Plugin initialization
 - **`tests/`**: Automated tests and test fixtures
 - **`docs/`**: Project documentation
-- **`pyproject.toml`**: Packaging, metadata, and CLI entry points
+- **`pyproject.toml`**: Packaging, metadata, and CLI entry point
 
-## CLI Entry Points
+## CLI Entry Point
 
-The toolkit provides multiple entry points:
+The toolkit provides a single, clean entry point:
 
 | Command | Description | Target |
 |---------|-------------|--------|
 | `asciidoc-dita` | Main unified CLI | `asciidoc_dita.cli:main` |
-| `asciidoc-dita-toolkit` | Legacy CLI | `asciidoc_dita.toolkit:main` |
-| `asciidoc-dita-entity-reference` | EntityReference plugin | `asciidoc_dita.plugins.EntityReference:run_cli` |
-| `asciidoc-dita-content-type` | ContentType plugin | `asciidoc_dita.plugins.ContentType:run_cli` |
 
 ## Getting Started
 
@@ -57,7 +53,7 @@ The toolkit provides multiple entry points:
 
 ## Creating New Plugins
 
-Each plugin must implement three key functions for CLI compatibility:
+Each plugin must implement two key functions for CLI compatibility:
 
 ### 1. Plugin Structure
 
@@ -72,7 +68,6 @@ __description__ = "Brief description for CLI help"
 __version__ = "1.0.0"
 
 import sys
-import argparse
 
 def main(args):
     """
@@ -91,18 +86,6 @@ def main(args):
         print(f"Error: {e}", file=sys.stderr)
         return 1
 
-def run_cli():
-    """Standalone CLI runner for this plugin."""
-    parser = argparse.ArgumentParser(
-        description=__description__,
-        prog="MyPlugin"
-    )
-    # Add your arguments here
-    parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
-    
-    args = parser.parse_args()
-    sys.exit(main(args))
-
 def register_subcommand(subparsers):
     """Register this plugin as a subcommand in the main CLI."""
     parser = subparsers.add_parser(
@@ -112,24 +95,16 @@ def register_subcommand(subparsers):
     # Add your arguments here
     parser.add_argument('--version', action='version', version=f'MyPlugin {__version__}')
     parser.set_defaults(func=main)
-
-if __name__ == "__main__":
-    run_cli()
 ```
 
-### 2. Adding CLI Entry Points
+### 2. Plugin Auto-Discovery
 
-To make your plugin available as a standalone command, add it to `pyproject.toml`:
+Plugins are automatically discovered by the main CLI. Just place your plugin file in `asciidoc_dita/plugins/` and it will be available as a subcommand:
 
-```toml
-[project.scripts]
-# Add this line for your plugin
-asciidoc-dita-my-plugin = "asciidoc_dita.plugins.MyPlugin:run_cli"
+```sh
+asciidoc-dita --list-plugins  # Your plugin will appear here
+asciidoc-dita MyPlugin --help # Your plugin is available as a subcommand
 ```
-
-### 3. Plugin Auto-Discovery
-
-Plugins are automatically discovered by the main CLI. Just place your plugin file in `asciidoc_dita/plugins/` and it will be available as a subcommand.
 
 ## Writing and Running Tests
 - Add or update test files in `tests/` (prefix with `test_`, e.g., `test_MyPlugin.py`).

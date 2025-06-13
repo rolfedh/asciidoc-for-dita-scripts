@@ -126,23 +126,6 @@ def tree_walker(directory):
     return files_processed
 
 
-def run_cli():
-    """
-    Standalone CLI runner for this plugin.
-    Can be used when running the plugin directly.
-    """
-    import argparse
-    parser = argparse.ArgumentParser(
-        description=__description__,
-        prog="ContentType"
-    )
-    parser.add_argument('-d', '--directory', type=str, default='.', help='Location in filesystem to modify asciidoc files.')
-    parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
-    
-    args = parser.parse_args()
-    sys.exit(main(args))
-
-
 def register_subcommand(subparsers):
     """Register this plugin as a subcommand in the main CLI."""
     parser = subparsers.add_parser(
@@ -152,7 +135,3 @@ def register_subcommand(subparsers):
     parser.add_argument('-d', '--directory', type=str, default='.', help='Location in filesystem to modify asciidoc files.')
     parser.add_argument('--version', action='version', version=f'ContentType {__version__}')
     parser.set_defaults(func=main)
-
-
-if __name__ == "__main__":
-    run_cli()
