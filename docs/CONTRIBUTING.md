@@ -55,6 +55,32 @@ Thank you for your interest in contributing! This guide is for developers and ma
 - Request review from maintainers.
 - Address feedback, ensure CI passes, and merge when approved.
 
+## Publishing to PyPI
+
+This project uses GitHub Actions to automate publishing to PyPI when you push a new version tag (e.g., `v0.1.3`).
+
+**To publish a new release:**
+1. Ensure your changes are committed and the version is updated in `pyproject.toml`.
+2. Tag the release and push the tag:
+   ```sh
+   git tag v0.1.3
+   git push origin v0.1.3
+   ```
+3. The GitHub Actions workflow will build and upload the package to PyPI using the `PYPI_API_TOKEN` secret.
+
+**Manual publishing (alternative):**
+1. Build the package:
+   ```sh
+   python3 -m pip install --upgrade build twine
+   python3 -m build
+   ```
+2. Upload to PyPI:
+   ```sh
+   python3 -m twine upload dist/*
+   ```
+
+See the main README for more details.
+
 ## Toolkit Components Overview
 
 * **`asciidoc_toolkit.py`**: CLI entry point, discovers and runs plugins.
