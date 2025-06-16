@@ -81,7 +81,7 @@ def process_adoc_files(args, process_file_func):
     - Otherwise, find all .adoc files (recursively if requested) and process each.
     - process_file_func should be a function that takes a file path.
     """
-    from file_utils import find_adoc_files, is_valid_adoc_file
+    from .file_utils import find_adoc_files, is_valid_adoc_file
     if args.file:
         if is_valid_adoc_file(args.file):
             process_file_func(args.file)
