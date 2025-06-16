@@ -55,18 +55,31 @@ Thank you for your interest in contributing! This guide is for developers and ma
 - Request review from maintainers.
 - Address feedback, ensure CI passes, and merge when approved.
 
-## Publishing to PyPI
+...
+## Publishing a New Release to PyPI
 
-This project uses GitHub Actions to automate publishing to PyPI when you push a new version tag (e.g., `v0.1.3`).
+To have the GitHub Actions workflow build and upload the package to PyPI using the `PYPI_API_TOKEN` secret:
 
-**To publish a new release:**
-1. Ensure your changes are committed and the version is updated in `pyproject.toml`.
-2. Tag the release and push the tag:
+1. **Update the version** in `pyproject.toml`.
+2. **Commit and push** your changes:
    ```sh
-   git tag v0.1.3
-   git push origin v0.1.3
+   git add pyproject.toml
+   git commit -m "Bump version to <new-version>"
+   git push
    ```
-3. The GitHub Actions workflow will build and upload the package to PyPI using the `PYPI_API_TOKEN` secret.
+3. **Tag the release and push the tag:**
+   ```sh
+   git tag v<new-version>  # Example: v0.1.3
+   git push origin v<new-version>
+   ```
+4. GitHub Actions will build and upload the package to PyPI automatically.
+
+## Troubleshooting if the tagging gets ahead of the version:
+   ```
+   git tag -d v0.1.3
+   git tag v0.1.3
+   git push --force origin v0.1.3
+   ```
 
 **Manual publishing (alternative):**
 1. Build the package:

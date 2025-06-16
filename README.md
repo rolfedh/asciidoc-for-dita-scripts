@@ -16,6 +16,14 @@ Install the toolkit using pip:
 python3 -m pip install asciidoc-dita-toolkit
 ```
 
+### Upgrading
+
+To upgrade to the latest version:
+
+```sh
+python3 -m pip install --upgrade asciidoc-dita-toolkit
+```
+
 ## Usage
 
 ### List available plugins
