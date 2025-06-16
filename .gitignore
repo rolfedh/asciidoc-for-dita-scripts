@@ -172,3 +172,37 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Project-specific ignores
+# Test fixture downloads
+tests/fixtures/
+
+# Temporary files
+*.tmp
+*.temp
+temp_*
+.temp/
+
+# Editor and IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS-specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Build artifacts
+*.whl
+*.tar.gz
+
+# Local development
+.local/
+local_settings.py
