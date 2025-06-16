@@ -21,13 +21,13 @@ python3 -m pip install asciidoc-dita-toolkit
 ### List available plugins
 
 ```sh
-python3 -m asciidoc_dita_toolkit.asciidoc_toolkit --list-plugins
+python3 -m asciidoc_dita_toolkit.asciidoc_dita.toolkit --list-plugins
 ```
 
 ### Run a plugin
 
 ```sh
-python3 -m asciidoc_dita_toolkit.asciidoc_toolkit <plugin> [options]
+python3 -m asciidoc_dita_toolkit.asciidoc_dita.toolkit <plugin> [options]
 ```
 - `<plugin>`: Name of the plugin to run (e.g., `EntityReference`)
 - `[options]`: Plugin-specific options (e.g., `-f` for a file, `-r` for recursive)
@@ -36,15 +36,18 @@ python3 -m asciidoc_dita_toolkit.asciidoc_toolkit <plugin> [options]
 
 Fix unsupported HTML character entity references in a file:
 ```sh
-python3 -m asciidoc_dita_toolkit.asciidoc_toolkit EntityReference -f path/to/file.adoc
+python3 -m asciidoc_dita_toolkit.asciidoc_dita.toolkit EntityReference -f path/to/file.adoc
 ```
 
 Process all `.adoc` files recursively in the current directory:
 ```sh
-python3 -m asciidoc_dita_toolkit.asciidoc_toolkit EntityReference -r
+python3 -m asciidoc_dita_toolkit.asciidoc_dita.toolkit EntityReference -r
 ```
 
-> **Tip:** For plugin-specific details, see the [available rules](https://github.com/jhradilek/asciidoctor-dita-vale?tab=readme-ov-file#available-rules) in the `asciidoctor-dita-vale` repository.
+> **Tip:** If you installed via pip, you can also use the CLI script:
+> ```sh
+> asciidoc-dita-toolkit --list-plugins
+> ```
 
 ## Troubleshooting
 - Make sure you are using Python 3.7 or newer.
