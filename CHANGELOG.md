@@ -8,7 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.3] - 2025-06-16
 
 ### Changed
-- Incremented version for new release.
+- Incremented version for new release (see pyproject.toml).
+- Fixed all documentation and CLI usage instructions to use the correct module path: `asciidoc_dita_toolkit.asciidoc_dita.toolkit`.
+- Updated all plugin and utility imports to use relative imports for package compatibility.
 
 ## [0.1.2] - 2025-06-16
 
