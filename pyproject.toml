@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "asciidoc-dita-toolkit"
-version = "0.1.4"
+version = "0.1.5"
 description = "A toolkit for working with AsciiDoc and DITA."
 readme = "README.md"
 requires-python = ">=3.7"
@@ -20,7 +20,7 @@ dependencies = [
 Homepage = "https://github.com/yourusername/asciidoc-dita-toolkit"
 
 [project.scripts]
-asciidoc-dita-toolkit = "asciidoc_dita_toolkit.asciidoc_dita.toolkit:main"
+asciidoc-dita-toolkit = "asciidoc_dita.toolkit:main"
 
 [tool.setuptools.packages.find]
 where = ["asciidoc_dita_toolkit"]

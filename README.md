@@ -2,6 +2,11 @@
 
 Scripts to review and fix AsciiDoc content for DITA-based publishing workflows, based on rules from the [asciidoctor-dita-vale](https://github.com/jhradilek/asciidoctor-dita-vale) project.
 
+## Resources
+
+- [PyPI: asciidoc-dita-toolkit](https://pypi.org/project/asciidoc-dita-toolkit/)
+- [GitHub repository](https://github.com/rolfedh/asciidoc-dita-toolkit)
+
 ## What is this?
 
 The AsciiDoc DITA Toolkit is a command-line tool for technical writers and editors. It helps you:
