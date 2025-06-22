@@ -175,7 +175,7 @@ cython_debug/
 
 # Project-specific ignores
 # Test fixture downloads
-tests/fixtures/
+# tests/fixtures/
 
 # Temporary files
 *.tmp

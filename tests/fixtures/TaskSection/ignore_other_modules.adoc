@@ -1,0 +1,16 @@
+// Identify the document as a concept module:
+:_mod-docs-content-type: CONCEPT
+
+= Topic title
+
+A paragraph.
+
+== First section
+
+A paragraph.
+
+== Second section
+
+A paragraph.
+
+=== Third section

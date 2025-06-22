@@ -1,0 +1,14 @@
+// Identify the document as a concept module:
+:_mod-docs-content-type: CONCEPT
+
+= Topic title
+
+A paragraph.
+
+.Procedure
+
+. A step.
+
+.Procedure
+
+. An unsupported step.

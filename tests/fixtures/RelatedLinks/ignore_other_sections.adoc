@@ -1,0 +1,18 @@
+// Valid content in other sections:
+= Topic title
+
+A paragraph.
+
+.Prerequisites
+
+* First item.
+* Second item.
+
+.Procedure
+
+. First step.
+. Second step.
+
+.Additional resources
+
+* https://example.com

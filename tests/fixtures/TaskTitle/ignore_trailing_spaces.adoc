@@ -1,0 +1,16 @@
+// Identify the document as a procedure module:
+:_mod-docs-content-type: PROCEDURE
+
+= Topic title
+
+A paragraph.
+
+// A supported block title with trailing spaces:
+.Prerequisite    
+
+A paragraph.
+
+// A supported block title with trailing tabs:
+.Procedure				
+
+A paragraph.

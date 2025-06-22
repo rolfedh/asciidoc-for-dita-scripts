@@ -1,0 +1,7 @@
+// A thematic break:
+
+A paragraph.
+
+***
+
+A paragraph.

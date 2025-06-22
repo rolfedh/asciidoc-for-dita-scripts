@@ -1,0 +1,12 @@
+// Multiple examples in a procedure module:
+:_mod-docs-content-type: PROCEDURE
+
+[example]
+A supported example.
+
+====
+An unsupported example.
+====
+
+[example]
+An unsupported example.

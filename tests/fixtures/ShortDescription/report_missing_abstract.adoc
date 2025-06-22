@@ -1,0 +1,4 @@
+// A topic without the [role="_abstract"] attribute list definition:
+= Topic title
+
+A paragraph.

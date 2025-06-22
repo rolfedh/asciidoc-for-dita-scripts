@@ -1,0 +1,7 @@
+// Invalid lines in additional resources:
+.Additional resources
+
+An invalid line.
+
+* An invalid line.
+* An invalid line with a valid link:https://example.com[link].

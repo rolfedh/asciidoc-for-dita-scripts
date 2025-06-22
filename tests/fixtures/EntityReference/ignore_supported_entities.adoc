@@ -1,0 +1,7 @@
+// XML defines five standard entity references:
+
+* &amp;
+* &lt;
+* &gt;
+* &apos;
+* &quot;

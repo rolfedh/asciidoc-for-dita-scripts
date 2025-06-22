@@ -1,0 +1,5 @@
+// Conditional directives in line comments:
+
+//ifdef::beginner-content[]
+//A paragraph.
+//endif::[]
