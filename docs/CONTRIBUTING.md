@@ -31,6 +31,18 @@ Thank you for your interest in contributing! This guide is for developers and ma
    python3 -m pip install -e .
    ```
 
+## Branch Protection Rules
+
+We've enabled branch protections on the `main` branch to help maintain a clean and stable codebase:
+
+- **Pull requests are now required**: All changes must come through a PR—no direct commits to `main`.
+- **PRs require approval**: At least one review and no outstanding change requests are needed before merging.
+- **Status checks must pass**: Any required checks (like CI tests) must succeed before a PR can be merged.
+- **Linear history enforced**: We'll be using rebase or squash merges to avoid merge commits in `main`.
+- **No bypassing**: These rules apply to everyone, including admins.
+
+If you have any questions or run into issues with these protections, please reach out to the maintainers.
+
 ## Adding Plugins
 - Add new plugins to `asciidoc_dita_toolkit/plugins/` (e.g., `MyPlugin.py`).
 - Each plugin must have a `register_subcommand` function and a clear `__description__`.
@@ -108,4 +120,3 @@ See the main README for more details.
 - Modern Python and robust testing practices
 - Improve publishing workflows for AsciiDoc and DITA
 - Active review and maintenance
-
