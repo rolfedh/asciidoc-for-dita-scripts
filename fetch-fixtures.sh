@@ -7,6 +7,10 @@ git clone --depth 1 --filter=blob:none --sparse https://github.com/jhradilek/asc
 cd temp-vale
 git sparse-checkout set fixtures
 cd ..
+if [ -d "tests/fixtures" ]; then
+    echo "Directory tests/fixtures already exists. Removing it..."
+    rm -rf tests/fixtures
+fi
 mv temp-vale/fixtures tests/
 rm -rf temp-vale
 
