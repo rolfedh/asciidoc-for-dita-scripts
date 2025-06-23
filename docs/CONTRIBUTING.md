@@ -30,7 +30,7 @@ Thank you for your interest in contributing! This guide is for developers and ma
    python3 -m pip install -r requirements.txt
    ```
 
-3. **Install in editable mode for development**
+3. **Install your local code in editable mode for development. This way, changes you make to the code are immediately reflected without reinstalling.**
 
    ```sh
    python3 -m pip install -e .
