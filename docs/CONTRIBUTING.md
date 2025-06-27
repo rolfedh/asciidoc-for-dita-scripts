@@ -132,3 +132,48 @@ See the main README for more details.
 - Modern Python and robust testing practices
 - Improve publishing workflows for AsciiDoc and DITA
 - Active review and maintenance
+
+## Pre-commit Hooks for Code Quality
+
+This project uses [pre-commit](https://pre-commit.com/) to automate code formatting, linting, and basic checks before every commit. This ensures code quality and consistency across all contributors.
+
+### Setup Instructions
+
+1. **Install pre-commit (one-time setup):**
+
+   ```sh
+   python3 -m pip install pre-commit
+   ```
+
+2. **Install the hooks into your local Git config (one-time per clone):**
+
+   ```sh
+   pre-commit install
+   ```
+
+   This will automatically run the configured checks every time you commit.
+
+3. **(Optional) Run all hooks on all files:**
+
+   ```sh
+   pre-commit run --all-files
+   ```
+
+### What gets checked automatically?
+
+- **Black**: Formats Python code to a consistent style ([psf/black](https://github.com/psf/black))
+- **isort**: Sorts and organizes Python imports ([PyCQA/isort](https://github.com/PyCQA/isort))
+- **Ruff**: Fast Python linter for code quality and style ([charliermarsh/ruff](https://github.com/charliermarsh/ruff))
+- **markdownlint**: Lints and enforces style in Markdown files ([igorshubovych/markdownlint-cli](https://github.com/igorshubovych/markdownlint-cli))
+- **Trailing whitespace**: Removes trailing whitespace from all files
+- **End-of-file fixer**: Ensures files end with a single newline
+- **YAML syntax check**: Validates YAML file syntax
+- **TOML syntax check**: Validates TOML file syntax
+- **Large file check**: Prevents accidentally committing large files
+- **Merge conflict check**: Prevents committing unresolved merge conflict markers
+- **Debug statement check**: Prevents committing Python debug statements (e.g., `pdb.set_trace()`)
+- **Docstring placement check**: Ensures Python docstrings are placed before code
+
+If any check fails, the commit will be blocked until the issue is fixed. Black and isort will auto-format your code; just re-stage the changes and commit again.
+
+See `.pre-commit-config.yaml` for details.
