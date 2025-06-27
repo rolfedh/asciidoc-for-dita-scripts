@@ -1,0 +1,35 @@
+// Multiple examples in code blocks:
+== Section title
+
+[literal,subs="+quotes"]
+....
+[example]
+An unsupported example.
+....
+
+[literal,subs="+quotes"]
+....
+====
+An unsupported example.
+====
+....
+
+[source,asciidoc]
+----
+[example]
+An unsupported example.
+----
+
+[source,asciidoc]
+----
+====
+An unsupported example.
+====
+----
+
+----
+===============================================
+Playbook: test_playbook
+Description: This playbook serves as a test.
+-----------------------------------------------
+----

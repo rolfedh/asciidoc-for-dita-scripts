@@ -1,0 +1,25 @@
+// Titles assigned to admonition blocks:
+//.An admonition title
+//[NOTE]
+//====
+//A note.
+//====
+
+// Titles assigned to paragraph admonitions:
+//.An admonition title
+//NOTE: A note.
+
+// Titles assigned to admonition blocks:
+////
+.An admonition title
+[NOTE]
+====
+A note.
+====
+////
+
+// Titles assigned to paragraph admonitions:
+////
+.An admonition title
+NOTE: A note.
+////

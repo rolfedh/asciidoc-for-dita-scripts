@@ -1,0 +1,4 @@
+// Invalid lines in additional resources:
+.Additional resources
+
+//* Invalid line.

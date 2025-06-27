@@ -1,0 +1,3 @@
+// DITA does not support HTML character entity references:
+
+A &ldquo;character entity reference&rdquo; can appear multiple times on one line and can be _&lsaquo;mixed with other markup&rsaquo;_.

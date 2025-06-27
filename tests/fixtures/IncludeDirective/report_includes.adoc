@@ -1,0 +1,7 @@
+// Valid include directive variations:
+
+include::file.adoc[]
+include::../relative/path/to/sample-file.adoc[]
+include::file.adoc[leveloffset=+1]
+include::file.adoc[tag=!*]
+include::file.adoc[leveloffset=+2,tag=!pre-5.9]

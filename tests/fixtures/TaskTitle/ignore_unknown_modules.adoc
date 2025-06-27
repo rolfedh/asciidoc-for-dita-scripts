@@ -1,0 +1,8 @@
+// A module without a clear content type definition:
+= Topic title
+
+A paragraph.
+
+.Unsupported title
+
+A paragraph.

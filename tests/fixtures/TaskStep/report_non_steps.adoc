@@ -1,0 +1,12 @@
+// Invalid lines in a procedure:
+:_mod-docs-content-type: PROCEDURE
+
+.Procedure
+
+An invalid line.
+
+. A valid step.
+
+An invalid line.
+
+. A valid step.

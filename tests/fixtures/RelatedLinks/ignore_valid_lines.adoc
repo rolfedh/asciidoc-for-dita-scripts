@@ -1,0 +1,20 @@
+// Valid links and cross references:
+.Additional resources
+
+* link:/absolute/path/to/file.ext[]
+* link:/absolute/path/to/file.ext[link text]
+* link:/absolute/path/to/file.ext#anchor[]
+* link:https://example.com[]
+* link:https://example.com[link text]
+* https://example.com
+* https://example.com/page.html
+* https://example.com/page.html#anchor
+* https://example.com[link text]
+* https://example.com/page.html[link text]
+* https://example.com/page.html#anchor[link text]
+* xref:reference-link[link text]
+* xref:reference-link#anchor[link text]
+* xref:file-name.ext[link text]
+* xref:file-name.ext#anchor[link text]
+* <<anchor>>
+* <<anchor,link text>>

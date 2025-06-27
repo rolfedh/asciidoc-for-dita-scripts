@@ -22,18 +22,24 @@ Thank you for your interest in contributing! This guide is for developers and ma
    cd asciidoc-dita-toolkit
    ```
 
-2. **(Optional) Set up a virtual environment**
+2. **(Recommended) Set up a virtual environment**
 
    ```sh
    python3 -m venv .venv
-   . .venv/bin/activate
+   source .venv/bin/activate
    python3 -m pip install -r requirements.txt
    ```
 
-3. **Install in editable mode for development**
+3. **Install your local code in editable mode for development. This way, changes you make to the code are immediately reflected without reinstalling.**
 
    ```sh
    python3 -m pip install -e .
+   ```
+
+4. **(If needed) Install development dependencies**
+
+   ```sh
+   python3 -m pip install -r requirements-dev.txt
    ```
 
 ## Adding Plugins
@@ -89,7 +95,7 @@ To have the GitHub Actions workflow build and upload the package to PyPI using t
 
 ## Troubleshooting if the tagging gets ahead of the version
 
-   ```
+   ```sh
    git tag -d v0.1.3
    git tag v0.1.3
    git push --force origin v0.1.3

@@ -1,0 +1,5 @@
+// Tag directives in line comments:
+
+// tag::verbose[]
+A paragraph.
+// end::verbose[]

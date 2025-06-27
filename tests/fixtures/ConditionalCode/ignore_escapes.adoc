@@ -1,0 +1,5 @@
+// Escaped conditional directives:
+
+\ifdef::beginner-content[]
+A paragraph.
+\endif::[]
