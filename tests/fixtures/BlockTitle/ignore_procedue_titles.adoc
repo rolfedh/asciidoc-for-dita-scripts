@@ -1,0 +1,54 @@
+// Identify the document as a procedure module:
+:_mod-docs-content-type: PROCEDURE
+
+= Topic title
+
+A paragraph.
+
+.Prerequisite
+
+A paragraph.
+
+.Prerequisites
+
+A paragraph.
+
+.Procedure
+
+A paragraph.
+
+.Verification
+
+A paragraph.
+
+.Result
+
+A paragraph.
+
+.Results
+
+A paragraph.
+
+.Troubleshooting
+
+A paragraph.
+
+.Troubleshooting step
+
+A paragraph.
+
+.Troubleshooting steps
+
+A paragraph.
+
+.Next step
+
+A paragraph.
+
+.Next steps
+
+A paragraph.
+
+.Additional resources
+
+A paragraph.

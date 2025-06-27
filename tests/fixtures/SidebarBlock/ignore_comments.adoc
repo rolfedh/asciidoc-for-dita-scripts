@@ -1,0 +1,8 @@
+// An explicit sidebar block:
+//[sidebar]
+//A paragraph.
+
+// A delimited sidebar block:
+//****
+//A paragraph.
+//****

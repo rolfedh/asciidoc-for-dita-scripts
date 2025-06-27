@@ -1,0 +1,11 @@
+// Identify the document as a procedure module:
+:_mod-docs-content-type: PROCEDURE
+
+= Topic title
+
+A paragraph.
+
+.Procedure
+
+. First step.
+. Second step.

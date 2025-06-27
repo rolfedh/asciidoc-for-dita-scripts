@@ -1,0 +1,10 @@
+// Valid counters:
+
+* Node {counter:node}
+* Node {counter:node}
+* Node {counter:node}
+
+{counter2:node}
+
+* Option {counter:opt:A}
+* Option {counter:opt:A}

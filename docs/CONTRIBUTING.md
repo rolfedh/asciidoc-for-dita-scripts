@@ -16,17 +16,22 @@ Thank you for your interest in contributing! This guide is for developers and ma
 ## Getting Started
 
 1. **Fork and clone the repository**
+
    ```sh
    git clone https://github.com/<your-org>/asciidoc-dita-toolkit.git
    cd asciidoc-dita-toolkit
    ```
-2. **(Optional) Set up a virtual environment**
+
+2. **(Recommended) Set up a virtual environment**
+
    ```sh
    python3 -m venv .venv
-   . .venv/bin/activate
+   source .venv/bin/activate
    python3 -m pip install -r requirements.txt
    ```
-3. **Install in editable mode for development**
+
+3. **Install your local code in editable mode for development. This way, changes you make to the code are immediately reflected without reinstalling.**
+
    ```sh
    python3 -m pip install -e .
    ```
@@ -36,70 +41,89 @@ Thank you for your interest in contributing! This guide is for developers and ma
 We've enabled branch protections on the `main` branch to help maintain a clean and stable codebase:
 
 - **Pull requests are now required**: All changes must come through a PR—no direct commits to `main`.
-- **PRs require approval**: At least one review and no outstanding change requests are needed before merging.
+- **PRs do not require approval**: No reviews are required before merging. However, there should be no outstanding change requests.
 - **Status checks must pass**: Any required checks (like CI tests) must succeed before a PR can be merged.
 - **Linear history enforced**: We'll be using rebase or squash merges to avoid merge commits in `main`.
 - **No bypassing**: These rules apply to everyone, including admins.
 
 If you have any questions or run into issues with these protections, please reach out to the maintainers.
 
+4. **(If needed) Install development dependencies**
+
+   ```sh
+   python3 -m pip install -r requirements-dev.txt
+   ```
+
 ## Adding Plugins
+
 - Add new plugins to `asciidoc_dita_toolkit/plugins/` (e.g., `MyPlugin.py`).
 - Each plugin must have a `register_subcommand` function and a clear `__description__`.
 - Follow the structure and docstring conventions used in `EntityReference.py`.
 - Plugins are automatically discovered as CLI subcommands.
 
 ## Writing and Running Tests
+
 - Add or update test files in `tests/` (prefix with `test_`, e.g., `test_MyPlugin.py`).
 - Use `unittest` and the shared testkit (`asciidoc_testkit.py`).
 - Place test fixtures in `tests/fixtures/<PluginName>/`.
 - Run all tests:
+
   ```sh
   python3 -m unittest discover -s tests
   ```
 
 ## CI Integration
+
 - Ensure `.github/workflows/ci.yml` runs all tests and downloads fixtures if needed.
 - All pull requests must pass CI before merging.
 
 ## Review and Merge
+
 - Open a pull request for your changes.
 - Request review from maintainers.
 - Address feedback, ensure CI passes, and merge when approved.
 
-...
 ## Publishing a New Release to PyPI
 
 To have the GitHub Actions workflow build and upload the package to PyPI using the `PYPI_API_TOKEN` secret:
 
 1. **Update the version** in `pyproject.toml`.
 2. **Commit and push** your changes:
+
    ```sh
    git add pyproject.toml
    git commit -m "Bump version to <new-version>"
    git push
    ```
+
 3. **Tag the release and push the tag:**
+
    ```sh
    git tag v<new-version>  # Example: v0.1.3
    git push origin v<new-version>
    ```
+
 4. GitHub Actions will build and upload the package to PyPI automatically.
 
-## Troubleshooting if the tagging gets ahead of the version:
-   ```
+## Troubleshooting if the tagging gets ahead of the version
+
+   ```sh
    git tag -d v0.1.3
    git tag v0.1.3
    git push --force origin v0.1.3
    ```
 
 **Manual publishing (alternative):**
+
 1. Build the package:
+
    ```sh
    python3 -m pip install --upgrade build twine
    python3 -m build
    ```
+
 2. Upload to PyPI:
+
    ```sh
    python3 -m twine upload dist/*
    ```
@@ -108,15 +132,60 @@ See the main README for more details.
 
 ## Toolkit Components Overview
 
-* **`asciidoc_toolkit.py`**: CLI entry point, discovers and runs plugins.
-* **`plugins/`**: Individual plugin scripts for transformations/validations.
-* **`file_utils.py`**: Shared file/argument utilities.
-* **`tests/`**: Automated tests and fixtures.
-* **`requirements.txt`**: Python dependencies for development.
-* **`README.md`**: End-user setup, usage, and project overview.
+- **`asciidoc_toolkit.py`**: CLI entry point, discovers and runs plugins.
+- **`plugins/`**: Individual plugin scripts for transformations/validations.
+- **`file_utils.py`**: Shared file/argument utilities.
+- **`tests/`**: Automated tests and fixtures.
+- **`requirements.txt`**: Python dependencies for development.
+- **`README.md`**: End-user setup, usage, and project overview.
 
 ## Why contribute?
 
 - Modern Python and robust testing practices
 - Improve publishing workflows for AsciiDoc and DITA
 - Active review and maintenance
+
+## Pre-commit Hooks for Code Quality
+
+This project uses [pre-commit](https://pre-commit.com/) to automate code formatting, linting, and basic checks before every commit. This ensures code quality and consistency across all contributors.
+
+### Setup Instructions
+
+1. **Install pre-commit (one-time setup):**
+
+   ```sh
+   python3 -m pip install pre-commit
+   ```
+
+2. **Install the hooks into your local Git config (one-time per clone):**
+
+   ```sh
+   pre-commit install
+   ```
+
+   This will automatically run the configured checks every time you commit.
+
+3. **(Optional) Run all hooks on all files:**
+
+   ```sh
+   pre-commit run --all-files
+   ```
+
+### What gets checked automatically?
+
+- **Black**: Formats Python code to a consistent style ([psf/black](https://github.com/psf/black))
+- **isort**: Sorts and organizes Python imports ([PyCQA/isort](https://github.com/PyCQA/isort))
+- **Ruff**: Fast Python linter for code quality and style ([charliermarsh/ruff](https://github.com/charliermarsh/ruff))
+- **markdownlint**: Lints and enforces style in Markdown files ([igorshubovych/markdownlint-cli](https://github.com/igorshubovych/markdownlint-cli))
+- **Trailing whitespace**: Removes trailing whitespace from all files
+- **End-of-file fixer**: Ensures files end with a single newline
+- **YAML syntax check**: Validates YAML file syntax
+- **TOML syntax check**: Validates TOML file syntax
+- **Large file check**: Prevents accidentally committing large files
+- **Merge conflict check**: Prevents committing unresolved merge conflict markers
+- **Debug statement check**: Prevents committing Python debug statements (e.g., `pdb.set_trace()`)
+- **Docstring placement check**: Ensures Python docstrings are placed before code
+
+If any check fails, the commit will be blocked until the issue is fixed. Black and isort will auto-format your code; just re-stage the changes and commit again.
+
+See `.pre-commit-config.yaml` for details.

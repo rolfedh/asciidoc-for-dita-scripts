@@ -65,11 +65,13 @@ def write_text_preserve_endings(filepath, lines):
 def common_arg_parser(description):
     """
     Returns an argparse.ArgumentParser with standard options for all scripts:
+    -d / --directory: Root directory to search (default: current directory)
     -r / --recursive: Search subdirectories recursively
     -f / --file: Scan only the specified .adoc file
     """
     import argparse
     parser = argparse.ArgumentParser(description=description)
+    parser.add_argument('-d', '--directory', type=str, default='.', help='Root directory to search (default: current directory)')
     parser.add_argument('-r', '--recursive', action='store_true', help='Search subdirectories recursively')
     parser.add_argument('-f', '--file', type=str, help='Scan only the specified .adoc file')
     return parser
@@ -78,7 +80,7 @@ def process_adoc_files(args, process_file_func):
     """
     Batch processing pattern for .adoc files:
     - If --file is given and valid, process only that file.
-    - Otherwise, find all .adoc files (recursively if requested) and process each.
+    - Otherwise, find all .adoc files (recursively if requested) in the specified directory and process each.
     - process_file_func should be a function that takes a file path.
     """
     from .file_utils import find_adoc_files, is_valid_adoc_file
@@ -88,7 +90,7 @@ def process_adoc_files(args, process_file_func):
         else:
             print(f"Error: {args.file} is not a valid .adoc file or is a symlink.")
     else:
-        adoc_files = find_adoc_files('.', args.recursive)
+        adoc_files = find_adoc_files(getattr(args, 'directory', '.'), getattr(args, 'recursive', False))
         for filepath in adoc_files:
             process_file_func(filepath)
 

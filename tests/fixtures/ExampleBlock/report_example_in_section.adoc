@@ -1,0 +1,9 @@
+// Unsupported examples in sections:
+== Section title
+
+[example]
+An unsupported example.
+
+====
+An unsupported example.
+====

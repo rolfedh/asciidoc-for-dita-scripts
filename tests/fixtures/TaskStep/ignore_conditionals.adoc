@@ -1,0 +1,16 @@
+// Conditional statements in a procedure:
+:_mod-docs-content-type: PROCEDURE
+
+.Procedure
+
+ifdef::beginner-content[]
+. A valid step.
+endif::beginner-content[]
+
+ifndef::beginner-content[]
+. A valid step.
+endif::beginner-content[]
+
+ifeval::["{version-number}" == "1.0.0"]
+. A valid step.
+endif::[]

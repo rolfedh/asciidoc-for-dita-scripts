@@ -1,0 +1,6 @@
+// A single example in a procedure module:
+:_mod-docs-content-type: PROCEDURE
+
+====
+A supported example.
+====

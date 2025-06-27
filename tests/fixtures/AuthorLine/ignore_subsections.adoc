@@ -1,0 +1,3 @@
+// A level 1 section without an empty line.
+== Topic title
+A paragraph.

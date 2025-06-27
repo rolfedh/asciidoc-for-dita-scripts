@@ -1,0 +1,11 @@
+// A basic discrete heading:
+//[discrete]
+//== A discreate heading
+//
+//A paragraph.
+
+// A discrete heading with additional parameters:
+//[discrete,id="boo"]
+//== A discreate heading
+//
+//A paragraph.

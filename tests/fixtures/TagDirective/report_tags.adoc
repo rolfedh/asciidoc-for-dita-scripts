@@ -1,0 +1,13 @@
+// Valid tag directive variations:
+
+tag::verbose[]
+A paragraph.
+end::verbose[]
+
+[source,ruby]
+----
+# tag::verbose[]
+# A comment:
+# end::verbose[]
+puts "A string"
+----
