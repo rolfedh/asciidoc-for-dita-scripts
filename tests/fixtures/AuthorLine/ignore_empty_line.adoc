@@ -1,0 +1,4 @@
+// A document without an author line:
+= Topic title
+
+A paragraph.

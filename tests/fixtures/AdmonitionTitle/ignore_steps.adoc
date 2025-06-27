@@ -1,0 +1,9 @@
+// An admonition with steps:
+. First step.
+. Second step.
+
+[NOTE]
+====
+. First step.
+. Second step.
+====

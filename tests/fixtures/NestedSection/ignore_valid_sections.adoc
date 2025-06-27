@@ -1,0 +1,5 @@
+// A level 0 section:
+= A valid section
+
+// A level 1 section:
+== A valid section

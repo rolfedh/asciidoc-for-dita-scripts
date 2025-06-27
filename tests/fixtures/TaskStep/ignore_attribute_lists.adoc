@@ -1,0 +1,11 @@
+// Valid content in other sections:
+:_mod-docs-content-type: PROCEDURE
+
+.Procedure
+
+. A valid step.
+
+[role="_additional-resources"]
+.Additional resources
+
+A paragraph.

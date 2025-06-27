@@ -1,0 +1,21 @@
+// Unsupported examples in list items:
+* A list item.
++
+.An example title
+====
+An unsupported example.
+====
+
+- A list item.
++
+
+[example]
+An unsupported example.
+
+. A list item.
++
+A paragraph.
++
+====
+An unsupported example.
+====

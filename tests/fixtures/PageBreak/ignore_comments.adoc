@@ -1,0 +1,7 @@
+// A page break in an inline comment:
+//
+//A page.
+//
+//<<<
+//
+//A page.
