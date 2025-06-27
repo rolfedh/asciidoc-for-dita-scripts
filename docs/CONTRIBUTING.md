@@ -36,6 +36,18 @@ Thank you for your interest in contributing! This guide is for developers and ma
    python3 -m pip install -e .
    ```
 
+## Branch Protection Rules
+
+We've enabled branch protections on the `main` branch to help maintain a clean and stable codebase:
+
+- **Pull requests are now required**: All changes must come through a PR—no direct commits to `main`.
+- **PRs do not require approval**: No reviews are required before merging. However, there should be no outstanding change requests.
+- **Status checks must pass**: Any required checks (like CI tests) must succeed before a PR can be merged.
+- **Linear history enforced**: We'll be using rebase or squash merges to avoid merge commits in `main`.
+- **No bypassing**: These rules apply to everyone, including admins.
+
+If you have any questions or run into issues with these protections, please reach out to the maintainers.
+
 4. **(If needed) Install development dependencies**
 
    ```sh
