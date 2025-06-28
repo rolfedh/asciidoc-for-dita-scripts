@@ -20,7 +20,7 @@ dependencies = [
 Homepage = "https://github.com/yourusername/asciidoc-dita-toolkit"
 
 [project.scripts]
-asciidoc-dita-toolkit = "asciidoc_dita.toolkit:main"
+asciidoc-dita-toolkit = "asciidoc_dita_toolkit.asciidoc_dita.toolkit:main"
 
 [tool.setuptools.packages.find]
 where = ["asciidoc_dita_toolkit"]

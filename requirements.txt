@@ -1,4 +1,4 @@
-# Add your project dependencies below, one per line.
-# Example:
-# requests
-# numpy
+# Runtime dependencies for asciidoc-dita-toolkit
+# This package is designed to have zero runtime dependencies for lightweight installation
+
+# No runtime dependencies are currently required
