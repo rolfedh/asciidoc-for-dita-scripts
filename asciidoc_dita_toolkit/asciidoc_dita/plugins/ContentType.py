@@ -8,6 +8,7 @@ __description__ = "Add a :_mod-docs-content-type: label in .adoc files where tho
 
 import os
 import re
+from ..file_utils import process_adoc_files, common_arg_parser
 
 class highlighter(object):
     def __init__(self, text):
@@ -48,56 +49,29 @@ def editor(filepath, label):
     except Exception as e:
         print(highlighter(f"Error: {e}").warn())
 
-def tree_walker(directory):
+def label_file(filepath):
+    file = os.path.basename(filepath)
+    label = None
 
-    for root, dirs, files in os.walk(directory):
-        for file in files:
-            if file.startswith(".") or not file.endswith(".adoc"):
-                continue
-            filepath = os.path.join(root, file)
-            label = None
-
-            if file.startswith("assembly_") or file.startswith("assembly-"):
-                label = "ASSEMBLY"
-
-            elif file.startswith("con_") or file.startswith("con-"):
-                label = "CONCEPT"
-
-            elif file.startswith("proc_") or file.startswith("proc-"):
-                label = "PROCEDURE"
-
-            elif file.startswith("ref_")  or file.startswith("ref-"):
-                label = "REFERENCE"
-
-            if label:
-                editor(filepath, label)
-            else:
-                pass
+    if file.startswith("assembly_") or file.startswith("assembly-"):
+        label = "ASSEMBLY"
+    elif file.startswith("con_") or file.startswith("con-"):
+        label = "CONCEPT"
+    elif file.startswith("proc_") or file.startswith("proc-"):
+        label = "PROCEDURE"
+    elif file.startswith("ref_")  or file.startswith("ref-"):
+        label = "REFERENCE"
+    elif file.startswith("snip_") or file.startswith("snip-"):
+        label = "SNIPPET"
+    if label:
+        editor(filepath, label)
 
 def main(args):
-    from ..file_utils import process_adoc_files
-    def label_file(filepath):
-        file = os.path.basename(filepath)
-        label = None
-        if file.startswith("assembly_") or file.startswith("assembly-"):
-            label = "ASSEMBLY"
-        elif file.startswith("con_") or file.startswith("con-"):
-            label = "CONCEPT"
-        elif file.startswith("proc_") or file.startswith("proc-"):
-            label = "PROCEDURE"
-        elif file.startswith("ref_")  or file.startswith("ref-"):
-            label = "REFERENCE"
-        if label:
-            editor(filepath, label)
     process_adoc_files(args, label_file)
 
 def register_subcommand(subparsers):
-    parser = subparsers.add_parser(
-        "ContentType",
-        help="Add a :_mod-docs-content-type: label in .adoc files where those are missing, based on filename."
-    )
+    parser = subparsers.add_parser("ContentType", help=__description__)
+
     # Use unified argument parser options
-    parser.add_argument('-d', '--directory', type=str, default='.', help='Root directory to search (default: current directory)')
-    parser.add_argument('-r', '--recursive', action='store_true', help='Search subdirectories recursively')
-    parser.add_argument('-f', '--file', type=str, help='Scan only the specified .adoc file')
+    common_arg_parser(parser)
     parser.set_defaults(func=main)

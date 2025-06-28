@@ -75,12 +75,8 @@ def main(args):
     process_adoc_files(args, process_file)
 
 def register_subcommand(subparsers):
-    parser = subparsers.add_parser(
-        "EntityReference",
-        help="Replace unsupported HTML character entity references in .adoc files with AsciiDoc attribute references."
-    )
+    parser = subparsers.add_parser("EntityReference", help=__description__)
+
     # Use unified argument parser options
-    parser.add_argument('-d', '--directory', type=str, default='.', help='Root directory to search (default: current directory)')
-    parser.add_argument('-r', '--recursive', action='store_true', help='Search subdirectories recursively')
-    parser.add_argument('-f', '--file', type=str, help='Scan only the specified .adoc file')
+    common_arg_parser(parser)
     parser.set_defaults(func=main)

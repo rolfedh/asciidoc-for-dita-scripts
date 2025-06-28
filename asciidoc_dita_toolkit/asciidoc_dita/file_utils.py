@@ -12,6 +12,7 @@ Intended for use by all scripts in this repository to avoid code duplication and
 """
 import os
 import re
+import argparse
 
 # Regex to split lines and preserve their original line endings
 line_splitter = re.compile(rb'(.*?)(\r\n|\r|\n|$)')
@@ -62,19 +63,17 @@ def write_text_preserve_endings(filepath, lines):
         for text, ending in lines:
             f.write(text + ending)
 
-def common_arg_parser(description):
+def common_arg_parser(parser):
     """
-    Returns an argparse.ArgumentParser with standard options for all scripts:
+    Adds starndard options to the supplied parser:
     -d / --directory: Root directory to search (default: current directory)
     -r / --recursive: Search subdirectories recursively
     -f / --file: Scan only the specified .adoc file
     """
-    import argparse
-    parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('-d', '--directory', type=str, default='.', help='Root directory to search (default: current directory)')
+    sources = parser.add_mutually_exclusive_group()
+    sources.add_argument('-d', '--directory', type=str, default='.', help='Root directory to search (default: current directory)')
+    sources.add_argument('-f', '--file', type=str, help='Scan only the specified .adoc file')
     parser.add_argument('-r', '--recursive', action='store_true', help='Search subdirectories recursively')
-    parser.add_argument('-f', '--file', type=str, help='Scan only the specified .adoc file')
-    return parser
 
 def process_adoc_files(args, process_file_func):
     """
@@ -83,7 +82,6 @@ def process_adoc_files(args, process_file_func):
     - Otherwise, find all .adoc files (recursively if requested) in the specified directory and process each.
     - process_file_func should be a function that takes a file path.
     """
-    from .file_utils import find_adoc_files, is_valid_adoc_file
     if args.file:
         if is_valid_adoc_file(args.file):
             process_file_func(args.file)
@@ -98,5 +96,4 @@ def is_valid_adoc_file(filepath):
     """
     Returns True if the given path is a regular .adoc file (not a symlink), else False.
     """
-    import os
     return os.path.isfile(filepath) and filepath.endswith('.adoc') and not os.path.islink(filepath)
