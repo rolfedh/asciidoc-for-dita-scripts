@@ -1,4 +1,4 @@
-## Title
+# Title
 
 Unify file search behavior across plugins: default to current directory, add `-r` for recursion, support `-d` for root directory
 

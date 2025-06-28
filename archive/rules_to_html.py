@@ -1,10 +1,9 @@
+#!/usr/bin/env python3
 import re
 import os
 import sys
 import html
-
-README_PATH = "/home/rdlugyhe/asciidoctor-dita-vale/README.md"
-HTML_PATH = os.path.join(os.path.dirname(__file__), "rules.html")
+import argparse
 
 # Helper to slugify rule names for persistent ids
 def slugify(text):
@@ -54,13 +53,37 @@ def generate_html(tables):
     return "\n".join(html_parts)
 
 def main():
-    with open(README_PATH, encoding="utf-8") as f:
-        md_text = f.read()
+    parser = argparse.ArgumentParser(
+        description="Generate an HTML report of Vale rules from a Markdown file."
+    )
+    parser.add_argument(
+        "input_file", help="Path to the input Markdown file (e.g., README.md)."
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        help="Path to the output HTML file. Defaults to replacing the input file's extension with .html.",
+    )
+    args = parser.parse_args()
+
+    input_path = args.input_file
+    output_path = args.output
+    if not output_path:
+        output_path = os.path.splitext(input_path)[0] + ".html"
+
+    try:
+        with open(input_path, "r", encoding="utf-8") as f:
+            md_text = f.read()
+    except FileNotFoundError:
+        print(f"Error: Input file not found at {input_path}", file=sys.stderr)
+        sys.exit(1)
+
     tables = extract_tables(md_text)
     html_text = generate_html(tables)
-    with open(HTML_PATH, "w", encoding="utf-8") as f:
+    with open(output_path, "w", encoding="utf-8") as f:
         f.write(html_text)
-    print(f"HTML file generated at {HTML_PATH}")
+    print(f"HTML file generated at {output_path}")
+
 
 if __name__ == "__main__":
     main()
