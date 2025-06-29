@@ -43,4 +43,5 @@ Documentation = "https://github.com/rolfedh/asciidoc-dita-toolkit/blob/main/READ
 asciidoc-dita-toolkit = "asciidoc_dita_toolkit.asciidoc_dita.toolkit:main"
 
 [tool.setuptools.packages.find]
-where = ["asciidoc_dita_toolkit"]
+where = ["."]
+include = ["asciidoc_dita_toolkit*"]
