@@ -1,3 +1,5 @@
+# GitHub Issue Template
+
 ## Title
 
 [Feature] Unify file search behavior across plugins: standardize CLI options and directory handling
