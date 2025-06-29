@@ -42,6 +42,61 @@ Thank you for your interest in contributing! This guide is for developers and ma
    python3 -m pip install -r requirements-dev.txt
    ```
 
+## Development Commands
+
+The project includes a comprehensive Makefile for common development tasks:
+
+### Testing
+
+```sh
+# Run all tests
+make test
+
+# Run tests with coverage reporting
+make test-coverage
+```
+
+### Code Quality
+
+```sh
+# Check code formatting and style
+make lint
+
+# Auto-format code with black
+make format
+
+# Check if code is properly formatted (without changing)
+make format-check
+
+# Run comprehensive quality checks
+make check
+```
+
+### Building and Publishing
+
+```sh
+# Build distribution packages
+make build
+
+# Publish to PyPI (requires PYPI_API_TOKEN)
+make publish
+
+# Clean build artifacts
+make clean
+```
+
+### Installation
+
+```sh
+# Install package in development mode
+make install
+
+# Install with all development dependencies
+make install-dev
+```
+
+Run `make help` to see all available commands.
+
 ## Branch Protection Rules
 
 We've enabled branch protections on the `main` branch to help maintain a clean and stable codebase:

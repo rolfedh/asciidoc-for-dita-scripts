@@ -97,35 +97,6 @@ asciidoc-dita-toolkit EntityReference -d /path/to/docs -r
 | `EntityReference` | Replace unsupported HTML character entity references with AsciiDoc attribute references | `asciidoc-dita-toolkit EntityReference -f file.adoc` |
 | `ContentType` | Add `:_mod-docs-content-type:` labels where missing, based on filename | `asciidoc-dita-toolkit ContentType -r` |
 
-> **Tip:** For plugin-specific details, see the [available rules](https://github.com/jhradilek/asciidoctor-dita-vale?tab=readme-ov-file#available-rules) in the `asciidoctor-dita-vale` repository.
-
-## 🛠️ Development
-
-### Testing
-
-Run the comprehensive test suite:
-
-```sh
-make test
-```
-
-### Code Quality
-
-Check code formatting and linting:
-
-```sh
-make lint
-make format
-```
-
-### Building
-
-Build the package for distribution:
-
-```sh
-make build
-```
-
 For detailed development instructions, see [CONTRIBUTING.md](docs/CONTRIBUTING.md).
 
 ## 🔍 Troubleshooting
