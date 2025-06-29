@@ -1,4 +1,4 @@
-.PHONY: help test lint format clean install install-dev build publish
+.PHONY: help test lint format clean install install-dev build publish changelog
 
 # Default target
 help:
@@ -13,6 +13,8 @@ help:
 	@echo "  build      - Build distribution packages"
 	@echo "  publish    - Publish to PyPI (requires PYPI_API_TOKEN)"
 	@echo "  check      - Run comprehensive quality checks"
+	@echo "  changelog  - Generate changelog entry for latest version"
+	@echo "  changelog-version - Generate changelog for specific version (VERSION=x.y.z)"
 
 # Test targets
 test:
@@ -80,3 +82,13 @@ test-cli: install
 # Development workflow target
 dev: install-dev format lint test
 	@echo "Development setup complete!"
+
+# Changelog targets
+changelog:
+	@echo "Generating changelog entry..."
+	./scripts/generate-changelog.sh
+
+changelog-version:
+	@if [ -z "$(VERSION)" ]; then echo "Usage: make changelog-version VERSION=0.1.7"; exit 1; fi
+	@echo "Generating changelog for version $(VERSION)..."
+	./scripts/generate-changelog.sh $(VERSION)

@@ -1,0 +1,145 @@
+name: Update Changelog
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to generate changelog for'
+        required: true
+        default: 'latest'
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  update-changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get release information
+        id: release_info
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            echo "version=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
+            echo "release_date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+          else
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+            echo "release_date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate changelog entry
+        id: changelog
+        run: |
+          VERSION="${{ steps.release_info.outputs.version }}"
+          RELEASE_DATE="${{ steps.release_info.outputs.release_date }}"
+          
+          # Remove 'v' prefix if present
+          VERSION_CLEAN=${VERSION#v}
+          
+          # Get PRs merged since last release
+          LAST_TAG=$(git describe --tags --abbrev=0 ${VERSION}^2 2>/dev/null || echo "")
+          
+          if [ -z "$LAST_TAG" ]; then
+            # First release, get all commits
+            COMMITS=$(git log --oneline --grep="Merge pull request" --since="1 month ago" --reverse)
+          else
+            # Get commits since last tag
+            COMMITS=$(git log --oneline --grep="Merge pull request" ${LAST_TAG}..${VERSION} --reverse)
+          fi
+          
+          # Extract high-level changes from PR titles
+          CHANGES=""
+          while IFS= read -r line; do
+            if [[ $line =~ "Merge pull request #"([0-9]+)" from" ]]; then
+              PR_NUM=${BASH_REMATCH[1]}
+              # Get PR title from GitHub API
+              PR_TITLE=$(gh pr view $PR_NUM --json title --jq '.title' 2>/dev/null || echo "")
+              if [ ! -z "$PR_TITLE" ]; then
+                # Simplify PR title to user-facing change
+                SIMPLIFIED=$(echo "$PR_TITLE" | sed -E 's/^(feat|fix|refactor|docs|test|chore|style)(\([^)]*\))?:\s*//i' | sed 's/^./\U&/')
+                CHANGES="${CHANGES}- ${SIMPLIFIED}\n"
+              fi
+            fi
+          done <<< "$COMMITS"
+          
+          # Fallback to commit messages if no PRs found
+          if [ -z "$CHANGES" ]; then
+            if [ -z "$LAST_TAG" ]; then
+              COMMITS=$(git log --oneline --since="1 week ago" --reverse)
+            else
+              COMMITS=$(git log --oneline ${LAST_TAG}..${VERSION} --reverse)
+            fi
+            
+            while IFS= read -r line; do
+              if [[ $line =~ ^[a-f0-9]+\ (.+)$ ]]; then
+                COMMIT_MSG=${BASH_REMATCH[1]}
+                # Filter out merge commits and format
+                if [[ ! $COMMIT_MSG =~ ^Merge ]]; then
+                  SIMPLIFIED=$(echo "$COMMIT_MSG" | sed -E 's/^(feat|fix|refactor|docs|test|chore|style)(\([^)]*\))?:\s*//i' | sed 's/^./\U&/')
+                  CHANGES="${CHANGES}- ${SIMPLIFIED}\n"
+                fi
+              fi
+            done <<< "$COMMITS"
+          fi
+          
+          # Create changelog entry
+          ENTRY="## [${VERSION_CLEAN}] - ${RELEASE_DATE}\n\n${CHANGES}"
+          
+          # Save to file for next step
+          echo -e "$ENTRY" > changelog_entry.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update CHANGELOG.md
+        run: |
+          VERSION_CLEAN=${{ steps.release_info.outputs.version }}
+          VERSION_CLEAN=${VERSION_CLEAN#v}
+          
+          # Check if this version already exists in changelog
+          if grep -q "## \[${VERSION_CLEAN}\]" CHANGELOG.md; then
+            echo "Version ${VERSION_CLEAN} already exists in CHANGELOG.md"
+            exit 0
+          fi
+          
+          # Create temporary file with new content
+          {
+            # Keep header until [Unreleased] section
+            sed '/## \[Unreleased\]/q' CHANGELOG.md
+            echo ""
+            # Add new changelog entry
+            cat changelog_entry.txt
+            echo ""
+            # Add rest of changelog, skipping the [Unreleased] section header
+            sed -n '/## \[Unreleased\]/,$p' CHANGELOG.md | tail -n +2
+          } > CHANGELOG_new.md
+          
+          # Replace original file
+          mv CHANGELOG_new.md CHANGELOG.md
+
+      - name: Commit and push changes
+        run: |
+          VERSION_CLEAN=${{ steps.release_info.outputs.version }}
+          VERSION_CLEAN=${VERSION_CLEAN#v}
+          
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          if git diff --quiet CHANGELOG.md; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          
+          git add CHANGELOG.md
+          git commit -m "docs: update changelog for version ${VERSION_CLEAN}"
+          git push
+
+      - name: Clean up
+        run: rm -f changelog_entry.txt
