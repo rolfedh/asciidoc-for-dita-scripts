@@ -2,9 +2,9 @@
 Test suite for the EntityReference plugin.
 
 This script tests the entity replacement logic using fixtures from
-asciidoctor-dita-vale/fixtures/EntityReference/.
+tests/fixtures/EntityReference/.
 
-For each .adoc file, it expects a corresponding .expected file with the same basename.
+For each .adoc file, it expects a corresponding .expected file in the same directory.
 
 To run: python3 tests/test_EntityReference.py
 
