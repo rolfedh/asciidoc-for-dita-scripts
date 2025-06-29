@@ -4,22 +4,25 @@ A toolkit for working with AsciiDoc and DITA.
 
 ## Package Structure
 
-The code is now organized as a Python package for PyPI distribution:
+The package is organized as a Python package for PyPI distribution with the following structure:
 
-```
+```plaintext
 asciidoc-dita-toolkit/
     asciidoc_dita_toolkit/
         __init__.py
-        asciidoc_toolkit.py
-        file_utils.py
-        plugins/
+        asciidoc_dita/
             __init__.py
-            ContentType.py
-            EntityReference.py
-    ...
+            toolkit.py          # Main CLI entry point
+            file_utils.py       # Shared file utilities
+            plugins/
+                __init__.py
+                ContentType.py      # Content type labeling plugin
+                EntityReference.py  # HTML entity conversion plugin
 ```
 
-## Installation (after PyPI release)
+## Installation
+
+Install from PyPI:
 
 ```sh
 python3 -m pip install asciidoc-dita-toolkit
@@ -27,32 +30,67 @@ python3 -m pip install asciidoc-dita-toolkit
 
 ## Usage
 
-Import modules in your Python code:
+### Command Line Interface
 
-```python
-from asciidoc_dita_toolkit import asciidoc_toolkit, file_utils
-from asciidoc_dita_toolkit.plugins import ContentType, EntityReference
+The package provides a unified CLI command:
+
+```sh
+asciidoc-dita-toolkit --help
 ```
 
-## Development & Packaging
+### List Available Plugins
 
-To build and publish to PyPI:
+```sh
+asciidoc-dita-toolkit --list-plugins
+```
 
-1. Ensure you have `build` and `twine` installed:
-   ```sh
-   python3 -m pip install --upgrade build twine
-   ```
-2. Build the package:
-   ```sh
-   python3 -m build
-   ```
-3. Upload to PyPI:
-   ```sh
-   python3 -m twine upload dist/*
-   ```
+### Run Plugins
 
-See `pyproject.toml` for project metadata and dependencies.
+```sh
+# Fix HTML entity references in a specific file
+asciidoc-dita-toolkit EntityReference -f path/to/file.adoc
+
+# Add content type labels recursively
+asciidoc-dita-toolkit ContentType -r
+
+# Process all .adoc files in current directory
+asciidoc-dita-toolkit EntityReference -r
+```
+
+### Plugin Options
+
+Both plugins support common options:
+
+- `-f FILE` or `--file FILE`: Process a specific file
+- `-r` or `--recursive`: Process all .adoc files recursively
+- `-d DIR` or `--directory DIR`: Specify root directory (default: current directory)
+
+## Development
+
+### Testing
+
+Run the test suite:
+
+```sh
+make test
+```
+
+### Building and Publishing
+
+Build the package:
+
+```sh
+make build
+```
+
+Publish to PyPI:
+
+```sh
+make publish
+```
+
+See the [Makefile](../Makefile) for all available development targets and the [CONTRIBUTING.md](CONTRIBUTING.md) guide for detailed development instructions.
 
 ---
 
-For more details, see the source files and documentation in the `docs/` directory.
+For more details, see the [README.md](../README.md) and other documentation in the repository.
