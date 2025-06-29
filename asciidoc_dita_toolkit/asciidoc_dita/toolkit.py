@@ -30,6 +30,7 @@ def discover_plugins():
             
     return plugins
 
+
 def print_plugin_list():
     """Print a list of all available plugins with their descriptions."""
     print("Available plugins:")
@@ -43,6 +44,7 @@ def print_plugin_list():
             print(f"  {modname:20} {desc}")
         except Exception as e:
             print(f"  {modname:20} (error loading plugin: {e})")
+
 
 def main():
     """Main entry point for the AsciiDoc DITA toolkit."""
@@ -83,6 +85,7 @@ def main():
             sys.exit(1)
     else:
         parser.print_help()
+
 
 if __name__ == "__main__":
     main()
