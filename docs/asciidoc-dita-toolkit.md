@@ -65,32 +65,6 @@ Both plugins support common options:
 - `-r` or `--recursive`: Process all .adoc files recursively
 - `-d DIR` or `--directory DIR`: Specify root directory (default: current directory)
 
-## Development
-
-### Testing
-
-Run the test suite:
-
-```sh
-make test
-```
-
-### Building and Publishing
-
-Build the package:
-
-```sh
-make build
-```
-
-Publish to PyPI:
-
-```sh
-make publish
-```
-
-See the [Makefile](../Makefile) for all available development targets and the [CONTRIBUTING.md](CONTRIBUTING.md) guide for detailed development instructions.
-
 ---
 
-For more details, see the [README.md](../README.md) and other documentation in the repository.
+For detailed development instructions, see the [CONTRIBUTING.md](CONTRIBUTING.md) guide and [README.md](../README.md) for user documentation.
