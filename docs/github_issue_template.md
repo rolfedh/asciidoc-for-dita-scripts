@@ -1,52 +1,31 @@
-# GitHub Issue Template
-
 ## Title
 
-[Feature] Unify file search behavior across plugins: standardize CLI options and directory handling
+Unify file search behavior across plugins: default to current directory, add `-r` for recursion, support `-d` for root directory
 
 ## Description
 
-**Status: COMPLETED** ✅
+Currently, the `EntityReference` and `ContentType` plugins handle file scope and directory traversal inconsistently. One plugin defaults to searching only the current directory unless `-r` is specified, while the other always searches recursively. This inconsistency can confuse users and complicate documentation.
 
-This issue has been addressed as part of the comprehensive refactoring completed in PRs #1-5. Both `EntityReference` and `ContentType` plugins now implement consistent file handling and command-line interface patterns.
+### Best Practice to Implement
 
-### Implemented Solution
+- By default, plugins should process only `.adoc` files in the current directory (non-recursive).
+- Add a `-r` or `--recursive` option to enable recursive search into subdirectories.
+- Add a `-d DIR` or `--directory DIR` option to specify the root directory for the search (default: current directory).
+- All plugins should use this consistent behavior and argument pattern.
 
-- **Consistent CLI Options**: Both plugins now support:
-  - `-f FILE` or `--file FILE`: Process a specific file
-  - `-r` or `--recursive`: Enable recursive search into subdirectories  
-  - `-d DIR` or `--directory DIR`: Specify the root directory for search (default: current directory)
+### Tasks
 
-- **Unified Behavior**:
-  - By default, plugins process only `.adoc` files in the current directory (non-recursive)
-  - Recursive search and custom root directory are supported via CLI options
-  - Consistent help messages and documentation across all plugins
+- [ ] Refactor or expand the shared `file_utils.py` module to implement this logic.
+- [ ] Update both `EntityReference` and `ContentType` plugins to use the shared logic for file discovery and argument parsing.
+- [ ] Ensure help messages and documentation reflect the new, unified behavior.
+- [ ] Add or update tests to verify correct file selection in all scenarios.
 
-- **Shared Implementation**:
-  - Common file discovery logic is implemented in `file_utils.py`
-  - Both plugins use the same argument parsing patterns
-  - Comprehensive test coverage ensures consistent behavior
+### Acceptance Criteria
 
-### Verification
+- Both plugins accept `-r` and `-d` options and behave identically regarding file scope.
+- By default, only the current directory is processed.
+- Recursive search and custom root directory are supported via CLI options.
+- Documentation and help output are clear and consistent.
 
-Run the following commands to verify the consistent behavior:
-
-```sh
-# Check help for both plugins
-asciidoc-dita-toolkit EntityReference --help
-asciidoc-dita-toolkit ContentType --help
-
-# Test consistent option support
-asciidoc-dita-toolkit EntityReference -r
-asciidoc-dita-toolkit ContentType -r
-```
-
-### Documentation
-
-All documentation has been updated to reflect the unified CLI interface:
-
-- [README.md](../README.md)
-- [docs/asciidoc-dita-toolkit.md](asciidoc-dita-toolkit.md)
-- [docs/CONTRIBUTING.md](CONTRIBUTING.md)
-
-**Assignee:** Code with Copilot Agent Mode - COMPLETED
+**Assignee:**
+Code with Copilot Agent Mode
