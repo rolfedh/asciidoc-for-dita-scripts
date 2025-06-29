@@ -1,4 +1,7 @@
-# Add your project dependencies below, one per line.
-# Example:
-# requests
-# numpy
+# Runtime dependencies for asciidoc-dita-toolkit
+# 
+# This project currently has no external runtime dependencies.
+# It only uses Python standard library modules (os, re, argparse, etc.)
+# 
+# This is intentional to keep the toolkit lightweight and avoid
+# dependency conflicts in user environments.

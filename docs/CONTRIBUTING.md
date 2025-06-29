@@ -36,6 +36,12 @@ Thank you for your interest in contributing! This guide is for developers and ma
    python3 -m pip install -e .
    ```
 
+4. **(If needed) Install development dependencies**
+
+   ```sh
+   python3 -m pip install -r requirements-dev.txt
+   ```
+
 ## Branch Protection Rules
 
 We've enabled branch protections on the `main` branch to help maintain a clean and stable codebase:
@@ -48,12 +54,6 @@ We've enabled branch protections on the `main` branch to help maintain a clean a
 
 If you have any questions or run into issues with these protections, please reach out to the maintainers.
 
-4. **(If needed) Install development dependencies**
-
-   ```sh
-   python3 -m pip install -r requirements-dev.txt
-   ```
-
 ## Adding Plugins
 
 - Add new plugins to `asciidoc_dita_toolkit/plugins/` (e.g., `MyPlugin.py`).
@@ -61,16 +61,79 @@ If you have any questions or run into issues with these protections, please reac
 - Follow the structure and docstring conventions used in `EntityReference.py`.
 - Plugins are automatically discovered as CLI subcommands.
 
-## Writing and Running Tests
+## Testing Guide
 
-- Add or update test files in `tests/` (prefix with `test_`, e.g., `test_MyPlugin.py`).
-- Use `unittest` and the shared testkit (`asciidoc_testkit.py`).
-- Place test fixtures in `tests/fixtures/<PluginName>/`.
-- Run all tests:
+### Test Structure
 
-  ```sh
-  python3 -m unittest discover -s tests
-  ```
+Our comprehensive test suite ensures code quality and functionality:
+
+- **`tests/test_cli.py`**: CLI interface and plugin discovery tests (13 tests)
+- **`tests/test_EntityReference.py`**: Plugin-specific functionality tests (7 tests)
+- **`tests/asciidoc_testkit.py`**: Shared testing utilities and fixtures
+- **`tests/fixtures/`**: Test data organized by plugin name
+
+### Running Tests
+
+**Run all tests (recommended):**
+
+```sh
+python3 -m unittest discover -s tests -v
+```
+
+**Run specific test modules:**
+
+```sh
+python3 -m unittest tests.test_cli -v
+python3 -m unittest tests.test_EntityReference -v
+```
+
+**Run individual test cases:**
+
+```sh
+python3 -m unittest tests.test_cli.TestCLI.test_discover_plugins -v
+```
+
+### Test Coverage
+
+Our test suite covers:
+
+- ✅ CLI argument parsing and validation
+- ✅ Plugin discovery and loading
+- ✅ Error handling for broken plugins
+- ✅ Help message functionality
+- ✅ Entity replacement and content type detection
+- ✅ File processing with proper mocking
+- ✅ Graceful handling of missing test fixtures
+
+### Writing New Tests
+
+**For CLI changes:**
+
+- Add tests to `tests/test_cli.py`
+- Use proper mocking to avoid side effects
+- Test both success and error cases
+
+**For plugin changes:**
+
+- Create/update `tests/test_<PluginName>.py`
+- Add fixtures to `tests/fixtures/<PluginName>/`
+- Test core functionality and edge cases
+
+**Testing Best Practices:**
+
+- Use `unittest.mock.patch` for external dependencies
+- Create temporary files for file processing tests
+- Test both valid inputs and error conditions
+- Use descriptive test method names and docstrings
+- Use context managers (`with patch()`) for complex mocking
+
+### Continuous Integration
+
+All PRs must pass the test suite:
+
+- Tests run automatically on GitHub Actions
+- 20/20 tests must pass for PR approval
+- Missing test fixtures show warnings but don't fail tests
 
 ## CI Integration
 
