@@ -1,0 +1,14 @@
+// Page break variations:
+
+A page.
+
+<<<
+
+A page.
+
+<<<<<<
+
+A page.
+
+[%always]
+<<<

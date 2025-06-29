@@ -1,0 +1,12 @@
+// Do not identify the document as a procedure module:
+= Topic title
+
+A paragraph.
+
+.Procedure
+
+. A step.
+
+.Procedure
+
+. An unsupported step.

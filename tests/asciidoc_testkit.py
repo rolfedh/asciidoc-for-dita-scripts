@@ -25,6 +25,26 @@ def get_fixture_pairs(fixture_dir, input_ext='.adoc', expected_ext='.expected', 
             elif warn_missing:
                 print(f"Warning: Missing {fname[:-len(input_ext)] + expected_ext} file.")
 
+def get_same_dir_fixture_pairs(fixture_dir, input_ext='.adoc', expected_ext='.expected', warn_missing=True):
+    """
+    Yield (input_path, expected_path) pairs for input_ext files with expected_ext files in the same directory.
+    This is for the new pattern where .expected files are alongside .adoc files in tests/fixtures/.
+    If warn_missing is True, print a warning for each input file missing an expected file.
+    """
+    if not os.path.isdir(fixture_dir):
+        print(f"Warning: Fixture directory does not exist: {fixture_dir}")
+        return
+    for fname in os.listdir(fixture_dir):
+        if fname.endswith(input_ext):
+            base = fname[: -len(input_ext)]
+            expected = base + expected_ext
+            expected_path = os.path.join(fixture_dir, expected)
+            input_path = os.path.join(fixture_dir, fname)
+            if os.path.exists(expected_path):
+                yield input_path, expected_path
+            elif warn_missing:
+                print(f"Warning: Missing {fname[:-len(input_ext)] + expected_ext} file.")
+
 def run_linewise_test(input_path, expected_path, transform_func):
     """
     Run a linewise test: apply transform_func to each line of input_path and compare to expected_path.

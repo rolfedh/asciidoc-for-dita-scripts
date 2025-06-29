@@ -1,0 +1,5 @@
+// XML supports numeric character references:
+
+* &#8230; (horizontal ellipsis)
+* &#183; (middle dot)
+* ...

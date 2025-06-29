@@ -125,8 +125,8 @@ Our comprehensive test suite ensures code quality and functionality:
 
 - **`tests/test_cli.py`**: CLI interface and plugin discovery tests (13 tests)
 - **`tests/test_EntityReference.py`**: Plugin-specific functionality tests (7 tests)
-- **`tests/asciidoc_testkit.py`**: Shared testing utilities and fixtures
-- **`tests/fixtures/`**: Test data organized by plugin name
+- **`tests/asciidoc_testkit.py`**: Shared testing utilities and fixture discovery
+- **`tests/fixtures/`**: Test input files (`.adoc`) and expected outputs (`.expected`) organized by plugin name
 
 ### Running Tests
 
@@ -172,7 +172,9 @@ Our test suite covers:
 **For plugin changes:**
 
 - Create/update `tests/test_<PluginName>.py`
-- Add fixtures to `tests/fixtures/<PluginName>/`
+- Add fixtures to `tests/fixtures/<PluginName>/`:
+  - `.adoc` files for test input
+  - `.expected` files for expected output (in same directory)
 - Test core functionality and edge cases
 
 **Testing Best Practices:**
@@ -190,6 +192,19 @@ All PRs must pass the test suite:
 - Tests run automatically on GitHub Actions
 - 20/20 tests must pass for PR approval
 - Missing test fixtures show warnings but don't fail tests
+- Expected files (`.expected`) are stored alongside input files (`.adoc`) in fixture directories
+
+## Fixture Management
+
+The `fetch-fixtures.sh` script downloads test fixtures from the upstream repository while preserving any locally created `.expected` files:
+
+```sh
+./fetch-fixtures.sh
+```
+
+- Downloads latest `.adoc` test files from `asciidoctor-dita-vale`
+- Preserves existing `.expected` files during updates
+- Creates backup and restore process for safety
 
 ## CI Integration
 

@@ -1,0 +1,11 @@
+// DITA does not support HTML character entity references:
+
+////
+* &hellip;
+* &middot;
+* ...
+////
+
+
+// &hellip;
+// &middot;

@@ -1,0 +1,12 @@
+// Multiple examples in a concept module:
+:_mod-docs-content-type: CONCEPT
+
+[example]
+A supported example.
+
+====
+An unsupported example.
+====
+
+[example]
+An unsupported example.

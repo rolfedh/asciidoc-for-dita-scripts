@@ -1,0 +1,11 @@
+// Unsupported examples in comments:
+== Section title
+
+//[example]
+//An unsupported example.
+
+////
+====
+An unsupported example.
+====
+////

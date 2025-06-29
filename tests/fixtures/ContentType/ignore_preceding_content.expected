@@ -1,0 +1,5 @@
+// A topic with a valid content type definition:
+= Topic title
+:_mod-docs-content-type: PROCEDURE
+
+A paragraph.

@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Enhanced Testing System**: Modernized fixture-based testing infrastructure
+  - Updated testing system to locate `.expected` files alongside `.adoc` files in fixture directories
+  - Added `get_same_dir_fixture_pairs()` function for improved fixture discovery
+  - Enhanced `fetch-fixtures.sh` script to preserve `.expected` files during fixture updates
+  - Created comprehensive `.expected` files for all 113 test fixtures across all plugin directories
+  - Improved test reliability and maintainability
+
 - **PR #6**: Comprehensive documentation update
   - Updated all markdown files to reflect current project state
   - Improved package structure documentation

@@ -1,0 +1,17 @@
+// Valid conditional directive variations:
+
+ifdef::beginner-content[]
+A paragraph.
+endif::[]
+
+ifdef::beginner-content[A paragraph.]
+
+ifndef::beginner-content[]
+A paragraph.
+endif::[]
+
+ifndef::beginner-content[A paragraph.]
+
+ifeval::["{version-number}" == "1.0.0"]
+A paragraph.
+endif::[]

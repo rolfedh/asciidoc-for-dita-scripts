@@ -1,0 +1,27 @@
+// Thematic break variations:
+
+// NOTE: The Markdown-style thematic break that uses three consecutive
+// dashes is intentionally excluded as it is frequently used in YAML files:
+// ---
+
+A page.
+
+- - -
+
+A page.
+
+___
+
+A page.
+
+_ _ _
+
+A page.
+
+***
+
+A page.
+
+* * *
+
+A page.

@@ -2,9 +2,9 @@
 Test suite for the EntityReference plugin.
 
 This script tests the entity replacement logic using fixtures from
-asciidoctor-dita-vale/fixtures/EntityReference/.
+tests/fixtures/EntityReference/.
 
-For each .adoc file, it expects a corresponding .expected file with the same basename.
+For each .adoc file, it expects a corresponding .expected file in the same directory.
 
 To run: python3 tests/test_EntityReference.py
 
@@ -20,7 +20,7 @@ from io import StringIO
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference import replace_entities
-from tests.asciidoc_testkit import get_fixture_pairs, run_linewise_test
+from tests.asciidoc_testkit import run_linewise_test, get_same_dir_fixture_pairs
 
 FIXTURE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'fixtures', 'EntityReference'))
 
@@ -88,7 +88,7 @@ class TestEntityReference(unittest.TestCase):
         """Run tests based on fixture files if they exist."""
         if os.path.exists(FIXTURE_DIR):
             fixture_count = 0
-            for input_path, expected_path in get_fixture_pairs(FIXTURE_DIR):
+            for input_path, expected_path in get_same_dir_fixture_pairs(FIXTURE_DIR):
                 fixture_count += 1
                 with self.subTest(fixture=os.path.basename(input_path)):
                     success = run_linewise_test(input_path, expected_path, replace_entities)
@@ -111,7 +111,7 @@ def main():
         any_failed = False
         test_count = 0
         
-        for input_path, expected_path in get_fixture_pairs(FIXTURE_DIR):
+        for input_path, expected_path in get_same_dir_fixture_pairs(FIXTURE_DIR):
             test_count += 1
             if not run_linewise_test(input_path, expected_path, replace_entities):
                 any_failed = True

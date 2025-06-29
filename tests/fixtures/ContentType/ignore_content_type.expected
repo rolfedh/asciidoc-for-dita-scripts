@@ -1,0 +1,6 @@
+// A topic with a deprecated content type definition:
+:_content-type: PROCEDURE
+
+= Topic title
+
+A paragraph.
