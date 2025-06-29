@@ -1,10 +1,10 @@
 # asciidoc-dita-toolkit
 
-A toolkit for working with AsciiDoc and DITA.
+Technical documentation for the AsciiDoc DITA Toolkit package.
 
 ## Package Structure
 
-The package is organized as a Python package for PyPI distribution with the following structure:
+The package is organized as a Python package for PyPI distribution:
 
 ```plaintext
 asciidoc-dita-toolkit/
@@ -20,51 +20,30 @@ asciidoc-dita-toolkit/
                 EntityReference.py  # HTML entity conversion plugin
 ```
 
-## Installation
+## Available Plugins
 
-Install from PyPI:
+### EntityReference
 
-```sh
-python3 -m pip install asciidoc-dita-toolkit
-```
+Replaces unsupported HTML character entity references with AsciiDoc attribute references.
 
-## Usage
+**Common entities handled:**
 
-### Command Line Interface
+- `&hellip;` → `{hellip}`
+- `&mdash;` → `{mdash}`
+- `&ndash;` → `{ndash}`
+- `&copy;` → `{copy}`
 
-The package provides a unified CLI command:
+### ContentType
 
-```sh
-asciidoc-dita-toolkit --help
-```
+Adds `:_mod-docs-content-type:` labels to files where missing, based on filename patterns.
 
-### List Available Plugins
+**Content type detection:**
 
-```sh
-asciidoc-dita-toolkit --list-plugins
-```
-
-### Run Plugins
-
-```sh
-# Fix HTML entity references in a specific file
-asciidoc-dita-toolkit EntityReference -f path/to/file.adoc
-
-# Add content type labels recursively
-asciidoc-dita-toolkit ContentType -r
-
-# Process all .adoc files in current directory
-asciidoc-dita-toolkit EntityReference -r
-```
-
-### Plugin Options
-
-Both plugins support common options:
-
-- `-f FILE` or `--file FILE`: Process a specific file
-- `-r` or `--recursive`: Process all .adoc files recursively
-- `-d DIR` or `--directory DIR`: Specify root directory (default: current directory)
+- Files ending with `_assembly.adoc` → `assembly`
+- Files ending with `_module.adoc` → `concept`, `procedure`, or `reference`
+- Default → `concept`
 
 ---
 
-For detailed development instructions, see the [CONTRIBUTING.md](CONTRIBUTING.md) guide and [README.md](../README.md) for user documentation.
+For installation instructions and usage examples, see the main [README.md](../README.md).  
+For development setup and commands, see [CONTRIBUTING.md](CONTRIBUTING.md).

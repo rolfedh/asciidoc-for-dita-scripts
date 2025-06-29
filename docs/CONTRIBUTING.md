@@ -4,14 +4,15 @@ Thank you for your interest in contributing! This guide is for developers and ma
 
 ## Project Structure
 
-- **`asciidoc_dita_toolkit/`**: Main Python package (PyPI distribution)
-  - `asciidoc_toolkit.py`: CLI entry point (use as a module)
-  - `file_utils.py`: Shared file and argument utilities
-  - `plugins/`: Plugin scripts (each plugin is a subcommand)
-- **`tests/`**: Automated tests and test fixtures
-- **`docs/`**: Project documentation (including this file)
-- **`requirements.txt`**: Development dependencies
-- **`pyproject.toml`**: Packaging and metadata
+For the complete package structure, see [asciidoc-dita-toolkit.md](asciidoc-dita-toolkit.md).
+
+**Key directories for developers:**
+
+- **`asciidoc_dita_toolkit/asciidoc_dita/`**: Main source code
+- **`tests/`**: Automated tests and test fixtures  
+- **`docs/`**: Project documentation
+- **`requirements-dev.txt`**: Development dependencies
+- **`Makefile`**: Development automation commands
 
 ## Getting Started
 
