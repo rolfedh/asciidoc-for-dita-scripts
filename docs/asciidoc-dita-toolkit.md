@@ -1,58 +1,49 @@
 # asciidoc-dita-toolkit
 
-A toolkit for working with AsciiDoc and DITA.
+Technical documentation for the AsciiDoc DITA Toolkit package.
 
 ## Package Structure
 
-The code is now organized as a Python package for PyPI distribution:
+The package is organized as a Python package for PyPI distribution:
 
-```
+```plaintext
 asciidoc-dita-toolkit/
     asciidoc_dita_toolkit/
         __init__.py
-        asciidoc_toolkit.py
-        file_utils.py
-        plugins/
+        asciidoc_dita/
             __init__.py
-            ContentType.py
-            EntityReference.py
-    ...
+            toolkit.py          # Main CLI entry point
+            file_utils.py       # Shared file utilities
+            plugins/
+                __init__.py
+                ContentType.py      # Content type labeling plugin
+                EntityReference.py  # HTML entity conversion plugin
 ```
 
-## Installation (after PyPI release)
+## Available Plugins
 
-```sh
-python3 -m pip install asciidoc-dita-toolkit
-```
+### EntityReference
 
-## Usage
+Replaces unsupported HTML character entity references with AsciiDoc attribute references.
 
-Import modules in your Python code:
+**Common entities handled:**
 
-```python
-from asciidoc_dita_toolkit import asciidoc_toolkit, file_utils
-from asciidoc_dita_toolkit.plugins import ContentType, EntityReference
-```
+- `&hellip;` → `{hellip}`
+- `&mdash;` → `{mdash}`
+- `&ndash;` → `{ndash}`
+- `&copy;` → `{copy}`
 
-## Development & Packaging
+### ContentType
 
-To build and publish to PyPI:
+Adds `:_mod-docs-content-type:` labels to files where missing, based on filename patterns.
 
-1. Ensure you have `build` and `twine` installed:
-   ```sh
-   python3 -m pip install --upgrade build twine
-   ```
-2. Build the package:
-   ```sh
-   python3 -m build
-   ```
-3. Upload to PyPI:
-   ```sh
-   python3 -m twine upload dist/*
-   ```
+**Content type detection:**
 
-See `pyproject.toml` for project metadata and dependencies.
+- Files ending with `_assembly.adoc` → `assembly`
+- Files ending with `_module.adoc` → `concept`, `procedure`, or `reference`
+- Default → `concept`
 
 ---
 
-For more details, see the source files and documentation in the `docs/` directory.
+For installation instructions and usage examples, see the main [README.md](../README.md).  
+For development setup and commands, see [CONTRIBUTING.md](CONTRIBUTING.md).

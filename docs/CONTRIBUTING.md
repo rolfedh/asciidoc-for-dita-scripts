@@ -4,14 +4,15 @@ Thank you for your interest in contributing! This guide is for developers and ma
 
 ## Project Structure
 
-- **`asciidoc_dita_toolkit/`**: Main Python package (PyPI distribution)
-  - `asciidoc_toolkit.py`: CLI entry point (use as a module)
-  - `file_utils.py`: Shared file and argument utilities
-  - `plugins/`: Plugin scripts (each plugin is a subcommand)
-- **`tests/`**: Automated tests and test fixtures
-- **`docs/`**: Project documentation (including this file)
-- **`requirements.txt`**: Development dependencies
-- **`pyproject.toml`**: Packaging and metadata
+For the complete package structure, see [asciidoc-dita-toolkit.md](asciidoc-dita-toolkit.md).
+
+**Key directories for developers:**
+
+- **`asciidoc_dita_toolkit/asciidoc_dita/`**: Main source code
+- **`tests/`**: Automated tests and test fixtures  
+- **`docs/`**: Project documentation
+- **`requirements-dev.txt`**: Development dependencies
+- **`Makefile`**: Development automation commands
 
 ## Getting Started
 
@@ -41,6 +42,61 @@ Thank you for your interest in contributing! This guide is for developers and ma
    ```sh
    python3 -m pip install -r requirements-dev.txt
    ```
+
+## Development Commands
+
+The project includes a comprehensive Makefile for common development tasks:
+
+### Testing
+
+```sh
+# Run all tests
+make test
+
+# Run tests with coverage reporting
+make test-coverage
+```
+
+### Code Quality
+
+```sh
+# Check code formatting and style
+make lint
+
+# Auto-format code with black
+make format
+
+# Check if code is properly formatted (without changing)
+make format-check
+
+# Run comprehensive quality checks
+make check
+```
+
+### Building and Publishing
+
+```sh
+# Build distribution packages
+make build
+
+# Publish to PyPI (requires PYPI_API_TOKEN)
+make publish
+
+# Clean build artifacts
+make clean
+```
+
+### Installation
+
+```sh
+# Install package in development mode
+make install
+
+# Install with all development dependencies
+make install-dev
+```
+
+Run `make help` to see all available commands.
 
 ## Branch Protection Rules
 
