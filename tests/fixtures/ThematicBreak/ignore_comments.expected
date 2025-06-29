@@ -1,0 +1,27 @@
+// Thematic breaks in an inline comment:
+//
+//A page.
+//
+//---
+//
+//A page.
+//
+//- - -
+//
+//A page.
+//
+//___
+//
+//A page.
+//
+//_ _ _
+//
+//A page.
+//
+//***
+//
+//A page.
+//
+//* * *
+//
+//A page.

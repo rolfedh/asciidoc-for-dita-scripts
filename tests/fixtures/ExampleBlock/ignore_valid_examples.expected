@@ -1,0 +1,21 @@
+// Supported examples in the main body of the document:
+= Topic title
+
+A paragraph.
+
+.An example title
+====
+A valid example.
+====
+
+. A list item.
+. A list item.
++
+A paragraph.
+
+[example]
+A valid example.
+
+== Section title
+
+A paragraph.

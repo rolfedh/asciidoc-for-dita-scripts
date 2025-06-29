@@ -1,0 +1,27 @@
+// Block titles assigned to supported blocks:
+.A supported block title
+image::example.png[]
+
+.A supported block title
+[#example-image]
+image::example.png[Example image,200,200]
+
+.A supported block title
+|===
+|A table cell
+|===
+
+.A supported block title
+[cols="1"]
+|===
+|A table cell
+|===
+
+.A supported block title
+[example]
+An example.
+
+.A supported block title
+====
+An example.
+====

@@ -1,0 +1,7 @@
+// A first paragraph recognized as an author line:
+= Topic title
+// Line comments are ignored.
+////
+Block comments are ignored.
+////
+An author line.

@@ -1,0 +1,11 @@
+// Identify the document as a procedure module:
+:_module-type: PROCEDURE
+
+= Topic title
+
+A paragraph.
+
+// Sections are not supported in DITA tasks:
+== First unsupported section
+
+A paragraph.

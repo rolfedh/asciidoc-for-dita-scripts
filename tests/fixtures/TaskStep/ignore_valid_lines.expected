@@ -1,0 +1,40 @@
+// Valid lines in a procedure:
+:_mod-docs-content-type: PROCEDURE
+
+.Procedure
+
+. A valid step.
+A continued paragraph.
+
+. A valid step.
++
+A continued step.
+
+. A valid step.
++
+[source,asciidoc]
+----
+. A false step.
+
+A false paragraph.
+----
+
+. A valid step.
+
+.. A valid substep.
+
+. A valid step.
++
+
+A continued step.
+
+. A valid step.
+
++
+A continued step.
+
+. A valid step.
+
++
+
+A continued step.

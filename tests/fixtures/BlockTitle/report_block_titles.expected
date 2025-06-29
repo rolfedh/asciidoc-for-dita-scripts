@@ -1,0 +1,12 @@
+// Block titles assigned to unsupported blocks:
+.An unsupported block title
+A paragraph.
+
+.An unsupported block title
+. A list.
+
+.An unsupported block title
+[source,ruby]
+----
+A code block.
+----

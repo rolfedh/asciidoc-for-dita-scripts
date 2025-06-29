@@ -1,0 +1,18 @@
+////
+Identify the document as a procedure module:
+:_mod-docs-content-type: PROCEDURE
+
+= Topic title
+
+A paragraph.
+
+== First unsupported section
+
+A paragraph.
+
+== Second unsupported section
+
+A paragraph.
+
+=== Third unsupported section
+////

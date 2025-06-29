@@ -1,0 +1,11 @@
+// A table with a footer assigned using the options attribute:
+//[options="footer"]
+//|===
+//|Table header
+//
+//|First row
+//
+//|Second row
+//
+//|Table footer
+//|===

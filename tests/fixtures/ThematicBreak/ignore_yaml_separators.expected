@@ -1,0 +1,8 @@
+// Three dashes used as a document separator in YAML:
+[source,yaml]
+----
+# An example Vale rule.
+---
+extends: existence
+...
+---

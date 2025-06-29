@@ -1,0 +1,19 @@
+// Valid content in other sections:
+:_mod-docs-content-type: PROCEDURE
+
+= Topic title
+
+A paragraph.
+
+.Prerequisites
+
+A paragraph.
+
+.Procedure
+
+. First step.
+. Second step.
+
+.Additional resources
+
+A paragraph.

@@ -1,0 +1,13 @@
+// Inline STEM content with AsciiMath notation:
+:stem:
+
+stem:[sqrt(16) = 4]
+
+An example formula, stem:[sqrt(16) = 4], in the middle of a line.
+
+// Inline STEM content with LaTeX math notation:
+:stem: latexmath
+
+stem:[\alpha = \beta + \gamma]
+
+An example formula, stem:[\alpha = \beta + \gamma], in the middle of a line.
