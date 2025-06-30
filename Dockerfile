@@ -7,7 +7,7 @@ LABEL description="AsciiDoc DITA Toolkit - CLI tools for processing AsciiDoc fil
 LABEL version="0.1.6"
 
 # Create a non-root user for security
-RUN useradd --create-home --shell /bin/bash toolkit
+RUN useradd --create-home --shell /bin/bash --uid 1000 toolkit
 
 # Set working directory
 WORKDIR /app
