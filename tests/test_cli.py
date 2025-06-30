@@ -55,6 +55,7 @@ class TestCLI(unittest.TestCase):
         """Test handling of plugins missing register_subcommand function."""
         with patch('sys.argv', ['toolkit']), \
              patch('sys.stderr', new_callable=StringIO) as mock_stderr, \
+             patch('sys.stdout', new_callable=StringIO) as mock_stdout, \
              patch('asciidoc_dita_toolkit.asciidoc_dita.toolkit.discover_plugins') as mock_discover, \
              patch('importlib.import_module') as mock_import:
             
@@ -71,6 +72,7 @@ class TestCLI(unittest.TestCase):
         """Test handling of plugin import errors."""
         with patch('sys.argv', ['toolkit']), \
              patch('sys.stderr', new_callable=StringIO) as mock_stderr, \
+             patch('sys.stdout', new_callable=StringIO) as mock_stdout, \
              patch('asciidoc_dita_toolkit.asciidoc_dita.toolkit.discover_plugins') as mock_discover, \
              patch('importlib.import_module', side_effect=ImportError("Test import error")):
             
@@ -83,8 +85,10 @@ class TestCLI(unittest.TestCase):
     @patch('sys.argv', ['toolkit', 'EntityReference', '--help'])
     def test_plugin_help(self):
         """Test that plugin help works correctly."""
-        with self.assertRaises(SystemExit) as cm:
-            toolkit.main()
+
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            with self.assertRaises(SystemExit) as cm:
+                toolkit.main()
         # argparse exits with code 0 for --help
         self.assertEqual(cm.exception.code, 0)
 
