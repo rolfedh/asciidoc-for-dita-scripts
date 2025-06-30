@@ -275,7 +275,6 @@ To manually have the GitHub Actions workflow build and upload the package to PyP
    ```sh
    git checkout main
    git pull origin main
-
    git tag v<new-version>  # Example: v0.1.8
    git push origin v<new-version>
    ```
