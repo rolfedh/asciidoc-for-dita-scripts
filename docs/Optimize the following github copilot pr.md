@@ -41,7 +41,7 @@ A paragraph.
 ```
 - Deprecated `:_content-type:` is present. The plugin should ignore this and make no changes.
 
-Plugin, generate an interactive a suggestion for this: 
+PLUGIN, generate an interactive a suggestion for this: 
 ```
 A deprecated `:_content-type:` attribute is present. 
 SUGGESTION: Replace it with a `:_mod-docs-content-type:`? Y/n
@@ -66,7 +66,7 @@ A paragraph.
 
 ---
 
-Plugin, don't do anything for this one.
+PLUGIN, don't do anything for this one.
 
 ### ignore_module_type.expected
 ```plaintext
@@ -80,14 +80,16 @@ A paragraph.
 - Deprecated `:_module-type:` is present. The plugin should ignore this and make no changes.
 
 
-Plugin, generate an interactive a suggestion for this: 
+PLUGIN, generate an interactive a suggestion for this: 
 ```
 A deprecated `:_module-type:` attribute is present. 
 SUGGESTION: Replace it with a `:_mod-docs-content-type:`? Y/n
 ```
+
 If yes, ask:
 ```
 SUGGESTION: Do you want me to automatically replace all `:_module-type:` attributes with a `:_mod-docs-content-type:`? Y/n
+```
 
 ---
 
@@ -100,6 +102,17 @@ SUGGESTION: Do you want me to automatically replace all `:_module-type:` attribu
 A paragraph.
 ```
 - The content type is present after the title. The plugin should not change anything.
+
+PLUGIN, generate an interactive a suggestion for this: 
+```
+The expected `:_mod-docs-content-type:` attribute is below the ID and Title lines. 
+SUGGESTION: Move it above them? Y/n
+```
+
+If yes, ask:
+```
+SUGGESTION: Move all similar instances above the ID and title lines? Y/n
+```
 
 ---
 
@@ -114,6 +127,17 @@ A paragraph.
 ```
 - The content type is commented out. The plugin should report or fix this as needed.
 
+PLUGIN, generate an interactive a suggestion for this: 
+```
+The expected `:_mod-docs-content-type:` attribute is present but commented out. 
+SUGGESTION: Uncomment it? Y/n
+```
+
+If yes, ask:
+```
+SUGGESTION: Uncomment all similar instances? Y/n
+```
+
 ---
 
 ### report_missing_type.expected
@@ -124,6 +148,22 @@ A paragraph.
 A paragraph.
 ```
 - No content type is present. The plugin should add or report the missing type.
+
+PLUGIN, generate an interactive a suggestion for this: 
+```
+The expected `:_mod-docs-content-type:` attribute is missing. 
+SUGGESTION: Create it? Y/n
+```
+
+If yes, ask:
+```
+SUGGESTION: Use up/down arrow to select the content type: 
+ASSEMBLY
+CONCEPT
+PROCEDURE
+REFERENCE
+SNIPPET
+```
 
 ---
 
@@ -138,10 +178,15 @@ A paragraph.
 ```
 - The content type key is present but the value is missing. The plugin should report or fix this.
 
+```
+The value of the `:_mod-docs-content-type:` attribute is missing. 
+Use up/down arrow to select the content type: 
+
+ASSEMBLY
+CONCEPT
+PROCEDURE
+REFERENCE
+SNIPPET
+```
+
 ---
-
-**Summary:**  
-- `ignore_*` files: Plugin should NOT make changes.
-- `report_*` files: Plugin SHOULD detect, report, or fix issues with the content type definition.
-
-If you want to review the corresponding `.adoc` input files or need a deeper analysis, let me know!
