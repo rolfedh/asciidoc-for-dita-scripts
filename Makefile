@@ -15,6 +15,15 @@ help:
 	@echo "  check      - Run comprehensive quality checks"
 	@echo "  changelog  - Generate changelog entry for latest version"
 	@echo "  changelog-version - Generate changelog for specific version (VERSION=x.y.z)"
+	@echo ""
+	@echo "Container targets:"
+	@echo "  container-build     - Build development container"
+	@echo "  container-build-prod - Build production container"
+	@echo "  container-test      - Run tests in container"
+	@echo "  container-shell     - Start interactive container shell"
+	@echo "  container-push      - Push development container to registry"
+	@echo "  container-push-prod - Push production container to registry"
+	@echo "  container-clean     - Clean up container images"
 
 # Test targets
 test:
@@ -92,3 +101,32 @@ changelog-version:
 	@if [ -z "$(VERSION)" ]; then echo "Usage: make changelog-version VERSION=0.1.7"; exit 1; fi
 	@echo "Generating changelog for version $(VERSION)..."
 	./scripts/generate-changelog.sh $(VERSION)
+
+# Container targets
+container-build:
+	@echo "Building development container..."
+	./scripts/container.sh build
+
+container-build-prod:
+	@echo "Building production container..."
+	./scripts/container.sh build --prod
+
+container-test:
+	@echo "Running tests in container..."
+	./scripts/container.sh test
+
+container-shell:
+	@echo "Starting interactive container shell..."
+	./scripts/container.sh shell
+
+container-push:
+	@echo "Pushing development container to registry..."
+	./scripts/container.sh push
+
+container-push-prod:
+	@echo "Pushing production container to registry..."
+	./scripts/container.sh push --prod
+
+container-clean:
+	@echo "Cleaning up container images..."
+	./scripts/container.sh clean
