@@ -77,7 +77,13 @@ build_container() {
     log_info "Using Dockerfile: $dockerfile"
     
     cd "$PROJECT_ROOT"
-    docker build -f "$dockerfile" -t "$full_tag:latest" -t "$full_tag:$version" .
+    
+    if [[ "$prod_mode" == true ]]; then
+        # Use VERSION build arg for production builds
+        docker build -f "$dockerfile" --build-arg VERSION="$version" -t "$full_tag:latest" -t "$full_tag:$version" .
+    else
+        docker build -f "$dockerfile" -t "$full_tag:latest" -t "$full_tag:$version" .
+    fi
     
     log_info "Container built successfully!"
     log_info "Tags: $full_tag:latest, $full_tag:$version"
@@ -129,18 +135,33 @@ push_container() {
     local version=$(get_version)
     local full_tag="$REGISTRY/$IMAGE_NAME$tag_suffix"
     
-    log_info "Pushing container image: $full_tag"
-    
-    # Check if we're logged in to Docker Hub
-    if ! docker info | grep -q "Username:"; then
-        log_warn "Not logged in to Docker Hub. Please run: docker login"
+    # Check if images exist locally before pushing
+    if ! docker image inspect "$full_tag:latest" &> /dev/null; then
+        log_error "Image $full_tag:latest not found locally. Please run: $0 build${1:+ $1}"
         exit 1
     fi
     
-    docker push "$full_tag:latest"
-    docker push "$full_tag:$version"
+    if ! docker image inspect "$full_tag:$version" &> /dev/null; then
+        log_error "Image $full_tag:$version not found locally. Please run: $0 build${1:+ $1}"
+        exit 1
+    fi
     
+    log_info "Pushing container image: $full_tag"
+
+    if ! docker push "$full_tag:latest"; then
+        log_error "Failed to push $full_tag:latest. Are you logged in to Docker Hub? Please run: docker login"
+        exit 1
+    fi
+
+    if ! docker push "$full_tag:$version"; then
+        log_error "Failed to push $full_tag:$version. Are you logged in to Docker Hub? Please run: docker login"
+        exit 1
+    fi
+
     log_info "Container pushed successfully!"
+    log_info "Images available at:"
+    log_info "  - $full_tag:latest"
+    log_info "  - $full_tag:$version"
 }
 
 clean_containers() {

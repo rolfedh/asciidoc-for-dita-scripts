@@ -79,7 +79,7 @@ make check
 # Build distribution packages
 make build
 
-# Publish to PyPI (requires PYPI_API_TOKEN)
+# Publish to PyPI (MAINTAINERS ONLY - requires PYPI_API_TOKEN)
 make publish
 
 # Clean build artifacts
@@ -222,25 +222,67 @@ To manually update fixtures (rarely needed), you may run the archived script:
 
 ## Publishing a New Release to PyPI
 
-To have the GitHub Actions workflow build and upload the package to PyPI using the `PYPI_API_TOKEN` secret:
+> **Note:** Only project maintainers can publish new releases to PyPI. Contributors with forks can help with development but cannot create official releases.
 
-1. **Update the version** in `pyproject.toml`.
-2. **Commit and push** your changes:
+**Recommended Approach - Automated Release (Maintainers Only):**
+
+Use the new `make release` command for a complete automated workflow:
+
+```sh
+# Automated patch version bump and release
+make release
+
+# Or specify a custom version
+make release VERSION=0.2.0
+```
+
+This will handle version bumping, changelog generation, commits, tagging, and pushing automatically. GitHub Actions will then build and upload the package to PyPI using the `PYPI_API_TOKEN` secret.
+
+**Manual Approach (Maintainers Only):**
+
+To manually have the GitHub Actions workflow build and upload the package to PyPI:
+
+1. **Ensure your main branch is up to date:**
+
+   ```sh
+   git checkout main
+   git pull origin main
+   ```
+
+2. **Create a release preparation branch:**
+
+   ```sh
+   git checkout -b release/v<new-version>  # Example: release/v0.1.8
+   ```
+
+3. **Update the version** in `pyproject.toml`.
+
+4. **Commit your changes and push the branch:**
 
    ```sh
    git add pyproject.toml
    git commit -m "Bump version to <new-version>"
-   git push
+   git push origin release/v<new-version>
    ```
 
-3. **Tag the release and push the tag:**
+5. **Create and merge a Pull Request:**
+   - Open a PR from `release/v<new-version>` to `main`
+   - Title: "Release v\<new-version\>"
+   - Once CI passes, merge the PR (this will update main with the version bump)
+
+6. **Create and push the release tag from main:**
 
    ```sh
-   git tag v<new-version>  # Example: v0.1.3
+   git checkout main
+   git pull origin main
+   
+   git tag v<new-version>  # Example: v0.1.8
    git push origin v<new-version>
    ```
 
-4. GitHub Actions will build and upload the package to PyPI automatically.
+7. GitHub Actions will build and upload the package to PyPI automatically when the tag is pushed.
+
+**Important:** Due to branch protection rules on `main`, all changes (including version bumps) must go through a Pull Request. The tag must be created from the merged commit on `main` to ensure the PyPI release reflects the actual state of the main branch.
 
 ## Troubleshooting if the tagging gets ahead of the version
 
@@ -394,7 +436,28 @@ refactor: improve CLI error handling
 
 ### Release Workflow
 
-**Standard Release Process:**
+**Automated Release Process (Recommended):**
+
+Use the new Makefile `release` target for a fully automated release:
+
+```sh
+# Automated patch version bump (0.1.7 → 0.1.8)
+make release
+
+# Specify custom version
+make release VERSION=0.2.0
+```
+
+**The `make release` command will:**
+
+1. **Validate environment**: Check you're on main/master branch with clean working directory
+2. **Run quality checks**: Execute `make check` (format, lint, test)
+3. **Version management**: Auto-bump patch version or use your specified VERSION
+4. **Update files**: Modify `pyproject.toml` and generate changelog entry
+5. **Git operations**: Create release branch, commit changes, push branch
+6. **Next steps**: Display instructions for creating PR and completing release
+
+**Manual Release Process (Alternative):**
 
 1. **Development**: Create PRs with descriptive titles and proper labels
 2. **Pre-Release**: Ensure all tests pass and documentation is updated

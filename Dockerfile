@@ -1,10 +1,13 @@
 # Dockerfile
 FROM python:3.11-slim
 
+# Accept version as build argument
+ARG VERSION=latest
+
 # Set metadata
 LABEL maintainer="Rolfe Dlugy-Hegwer <rolfedh@users.noreply.github.com>"
 LABEL description="AsciiDoc DITA Toolkit - CLI tools for processing AsciiDoc files for DITA publishing workflows"
-LABEL version="0.1.6"
+LABEL version=$VERSION
 
 # Create a non-root user for security
 RUN useradd --create-home --shell /bin/bash --uid 1000 toolkit
