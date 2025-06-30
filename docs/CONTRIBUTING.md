@@ -323,3 +323,104 @@ This project uses [pre-commit](https://pre-commit.com/) to automate code formatt
 If any check fails, the commit will be blocked until the issue is fixed. Black and isort will auto-format your code; just re-stage the changes and commit again.
 
 See `.pre-commit-config.yaml` for details.
+
+## Changelog Management
+
+The project uses automated changelog generation based on GitHub releases and PR labels to reduce maintenance overhead while ensuring consistency.
+
+### Setup Requirements
+
+**GitHub Repository Labels**: Create these labels in your GitHub repository for automatic categorization:
+
+- `enhancement` - New features and improvements
+- `bug` - Bug fixes  
+- `documentation` - Documentation updates
+- `dependencies` - Dependency updates
+- `breaking` - Breaking changes
+- `internal` - Internal/maintenance changes (won't appear in changelog)
+
+**To create labels**: Go to GitHub repo → Issues → Labels → "New label" for each one above.
+
+### How the Automation Works
+
+**Automatic Generation** (when you create a release):
+
+1. Create a GitHub release (manually or via GitHub CLI)
+2. The workflow automatically runs via `.github/workflows/changelog.yml`
+3. It generates changelog entries from:
+   - Release notes and descriptions
+   - PR titles with their labels for categorization
+   - Semantic version information
+4. Commits the updated `CHANGELOG.md` back to main branch
+
+**Manual Generation** (for testing/development):
+
+```sh
+# Install GitHub CLI (one-time setup)
+# Ubuntu/Debian: sudo apt install gh
+# macOS: brew install gh
+# Authenticate: gh auth login
+
+# Generate changelog manually
+make changelog-generate
+# Or run script directly
+./scripts/generate-changelog.sh [version]
+```
+
+### PR Labeling Guidelines
+
+For better changelog generation, use descriptive PR titles and apply appropriate labels:
+
+**PR Title Format:**
+
+```text
+feat: add new plugin for XYZ conversion
+fix: resolve entity replacement edge case  
+docs: update installation instructions
+refactor: improve CLI error handling
+```
+
+**Label Usage:**
+
+- `enhancement`: New features, improvements, performance enhancements
+- `bug`: Bug fixes, error corrections, edge case handling
+- `documentation`: README updates, guide improvements, API docs
+- `dependencies`: Package updates, security patches
+- `breaking`: API changes, removed features, compatibility breaks
+- `internal`: Refactoring, code cleanup, test improvements (excluded from changelog)
+
+### Release Workflow
+
+**Standard Release Process:**
+
+1. **Development**: Create PRs with descriptive titles and proper labels
+2. **Pre-Release**: Ensure all tests pass and documentation is updated
+3. **Release**: Create GitHub release - changelog updates automatically
+4. **Verification**: Check generated changelog for accuracy
+
+**Example Release Creation:**
+
+```sh
+# Using GitHub CLI
+gh release create v0.1.7 \
+  --title "Release 0.1.7: Enhanced Plugin System" \
+  --notes "This release adds new plugin capabilities and fixes several bugs."
+
+# Using GitHub web interface
+# Go to Releases → "Create a new release" → Fill in tag, title, and notes
+```
+
+### Manual Changelog Commands
+
+Available Makefile commands for changelog management:
+
+```sh
+# Generate changelog entry for latest version
+make changelog-generate
+
+# Update changelog with current changes  
+make changelog-update
+
+# View all changelog-related commands
+make help | grep changelog
+```
