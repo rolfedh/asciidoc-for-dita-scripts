@@ -43,6 +43,7 @@ ENTITY_TO_ASCIIDOC = {
     "pound": "{pound}",    # £ (pound sign)
     "quot": "{quot}",      # " (quotation mark)
     "raquo": "{raquo}",    # » (right-pointing double angle quotation mark)
+    "rdquo": "{rdquo}",    # " (right double quotation mark)
     "reg": "{reg}",        # ® (registered sign)
     "rsquo": "{rsquo}",    # ’ (right single quotation mark)
     "rsaquo": "{rsaquo}",  # › (single right-pointing angle quotation mark)
@@ -80,13 +81,31 @@ def replace_entities(line):
 def process_file(filepath):
     """
     Process a single .adoc file, replacing entity references.
+    Skip entities within comments (single-line // and block comments ////).
     
     Args:
         filepath: Path to the file to process
     """
     try:
         lines = read_text_preserve_endings(filepath)
-        new_lines = [(replace_entities(text), ending) for text, ending in lines]
+        new_lines = []
+        in_block_comment = False
+        
+        for text, ending in lines:
+            stripped = text.strip()
+            
+            # Check for block comment delimiters
+            if stripped == "////":
+                in_block_comment = not in_block_comment
+                new_lines.append((text, ending))
+                continue
+            
+            # Skip processing if we're in a block comment or it's a single-line comment
+            if in_block_comment or stripped.startswith('//'):
+                new_lines.append((text, ending))
+            else:
+                new_lines.append((replace_entities(text), ending))
+        
         write_text_preserve_endings(filepath, new_lines)
         print(f"Processed {filepath} (preserved per-line endings)")
     except Exception as e:
