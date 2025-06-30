@@ -96,6 +96,7 @@ changelog-version:
 
 # Release automation target (MAINTAINERS ONLY)
 release: check
+	@set -e
 	@echo "Starting automated release process..."
 	@echo "⚠️  WARNING: This target is for project maintainers only!"
 	@echo "   Contributors should not use this target."
