@@ -15,6 +15,7 @@ WORKDIR /app
 # Copy requirements and install dependencies
 COPY requirements.txt requirements-dev.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements-dev.txt
 
 # Copy the source code
 COPY asciidoc_dita_toolkit/ ./asciidoc_dita_toolkit/
