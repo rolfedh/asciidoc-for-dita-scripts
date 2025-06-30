@@ -115,6 +115,7 @@ asciidoc-dita-toolkit EntityReference -d /path/to/docs -r
 Want to add new plugins or help improve the toolkit?
 
 - Read our [Contributing Guide](docs/CONTRIBUTING.md)
+- Follow the [Plugin Development Pattern](docs/PLUGIN_DEVELOPMENT_PATTERN.md) for new plugins
 - Check out [open issues](https://github.com/rolfedh/asciidoc-dita-toolkit/issues)
 - See our [Security Policy](SECURITY.md) for reporting vulnerabilities
 
