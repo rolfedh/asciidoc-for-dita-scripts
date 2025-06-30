@@ -15,7 +15,7 @@ help:
 	@echo "  check      - Run comprehensive quality checks"
 	@echo "  changelog  - Generate changelog entry for latest version"
 	@echo "  changelog-version - Generate changelog for specific version (VERSION=x.y.z)"
-	@echo "  release    - Automated release: bump patch version, commit, tag, push (MAINTAINERS ONLY)(VERSION=x.y.z to override)"
+	@echo "  release    - Automated release: bump patch version, commit, tag, push (MAINTAINERS ONLY) (VERSION=x.y.z to override)"
 
 # Test targets
 test:
