@@ -196,12 +196,15 @@ All PRs must pass the test suite:
 
 ## Fixture Management
 
-The `fetch-fixtures.sh` script downloads test fixtures from the upstream repository while preserving any locally created `.expected` files:
+> **Note:** Fixture updates are now automated via GitHub Actions using `.github/workflows/fetch-fixtures.yml`. The local `fetch-fixtures.sh` script is archived and no longer required for routine use.
+
+To manually update fixtures (rarely needed), you may run the archived script:
 
 ```sh
-./fetch-fixtures.sh
+./archive/fetch-fixtures.sh
 ```
 
+- **Recommended:** Rely on the automated workflow, which runs daily and creates a pull request if fixtures change.
 - Downloads latest `.adoc` test files from `asciidoctor-dita-vale`
 - Preserves existing `.expected` files during updates
 - Creates backup and restore process for safety
