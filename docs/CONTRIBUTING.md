@@ -275,7 +275,7 @@ To manually have the GitHub Actions workflow build and upload the package to PyP
    ```sh
    git checkout main
    git pull origin main
-   
+
    git tag v<new-version>  # Example: v0.1.8
    git push origin v<new-version>
    ```
@@ -464,7 +464,7 @@ make release VERSION=0.2.0
 3. **Release**: Create GitHub release - changelog updates automatically
 4. **Verification**: Check generated changelog for accuracy
 
-**Example Release Creation:**
+**Example Manual Release Creation:**
 
 ```sh
 # Using GitHub CLI
