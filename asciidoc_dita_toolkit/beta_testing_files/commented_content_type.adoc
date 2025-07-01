@@ -1,0 +1,17 @@
+//:_mod-docs-content-type: PROCEDURE
+= Installing the application
+
+This procedure walks you through installing the application.
+
+.Prerequisites
+* Download the installer package
+* Ensure you have sufficient disk space
+
+.Procedure
+1. Run the installer executable
+2. Follow the installation wizard
+3. Accept the license agreement
+4. Choose installation directory
+5. Complete the installation
+
+The application is now installed and ready to use.

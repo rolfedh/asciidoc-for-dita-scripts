@@ -11,6 +11,7 @@ Scripts to review and fix AsciiDoc content for DITA-based publishing workflows, 
 - [PyPI: asciidoc-dita-toolkit](https://pypi.org/project/asciidoc-dita-toolkit/)
 - [GitHub repository](https://github.com/rolfedh/asciidoc-dita-toolkit)
 - [Documentation](https://github.com/rolfedh/asciidoc-dita-toolkit/blob/main/docs/)
+- [Beta Testing Guide](https://github.com/rolfedh/asciidoc-dita-toolkit/blob/main/docs/BETA_TESTING.md)
 - [Contributing Guide](https://github.com/rolfedh/asciidoc-dita-toolkit/blob/main/docs/CONTRIBUTING.md)
 
 ## 📖 What is this?
@@ -168,6 +169,36 @@ asciidoc-dita-toolkit EntityReference -r
 | `ContentType` | Add `:_mod-docs-content-type:` labels where missing, based on filename | `asciidoc-dita-toolkit ContentType -r` |
 
 > **📋 Technical Details**: For plugin internals and supported entity mappings, see [docs/asciidoc-dita-toolkit.md](docs/asciidoc-dita-toolkit.md).
+
+### 🧪 Beta Testing and Examples
+
+The toolkit includes beta-testing files with real-world examples to help you understand plugin behavior:
+
+#### Quick Start with Test Files
+
+**Find and use test files:**
+```sh
+# PyPI installation
+find-beta-files
+
+# Container
+docker run --rm asciidoc-dita-toolkit:latest find-beta-files
+
+# Copy test files to work with
+BETA_DIR=$(find-beta-files)
+cp -r "$BETA_DIR"/* ./test-files/
+```
+
+**Try plugins on test data:**
+```sh
+# Test EntityReference plugin on sample files
+asciidoc-dita-toolkit EntityReference -f test-files/EntityReference/sample.adoc
+
+# Compare with expected output
+diff test-files/EntityReference/sample.adoc test-files/EntityReference/expected.adoc
+```
+
+> **📋 Comprehensive Guide**: For detailed instructions on accessing, using, and contributing test files, see [docs/BETA_TESTING.md](docs/BETA_TESTING.md).
 
 ## 🔍 Troubleshooting
 

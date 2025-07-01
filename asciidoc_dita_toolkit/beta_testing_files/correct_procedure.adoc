@@ -1,0 +1,17 @@
+:_mod-docs-content-type: PROCEDURE
+= Configuring user accounts
+
+This procedure explains how to configure user accounts.
+
+.Prerequisites
+* Administrative privileges required
+* Access to user management system
+
+.Procedure
+1. Open the user management interface
+2. Select "Add New User"
+3. Enter user details
+4. Assign appropriate permissions
+5. Save the user account
+
+The new user account is now configured and active.

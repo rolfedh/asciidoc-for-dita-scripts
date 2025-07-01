@@ -1,0 +1,17 @@
+:_mod-docs-content-type:
+= Understanding system concepts
+
+This concept explains how the system works.
+
+System architecture consists of several components that work together to provide functionality.
+
+== Key components
+
+The main components include:
+
+* Processing engine
+* Data storage layer  
+* User interface
+* Communication protocols
+
+Understanding these components helps you work effectively with the system.

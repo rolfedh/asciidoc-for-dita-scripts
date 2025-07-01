@@ -1,4 +1,4 @@
-# Beta Testing Guide - ContentType Plugin v0.1.7b1
+# Beta Testing Guide - ContentType Plugin v0.1.8b1
 
 🎉 **Welcome to the beta testing program for the new interactive ContentType plugin!**
 
@@ -53,11 +53,40 @@ docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit:beta \
 
 ```bash
 # Install the beta version
-pip install asciidoc-dita-toolkit==0.1.7b1
+pip install asciidoc-dita-toolkit==0.1.8b1
 
 # Verify installation
 asciidoc-dita-toolkit --version
 ```
+
+## 📁 Get Test Files
+
+We've prepared a comprehensive set of test files to make beta testing easier:
+
+### Option 1: Download Test Files (Easiest)
+```bash
+# Download just the test files
+curl -L https://github.com/rolfedh/asciidoc-dita-toolkit/archive/refs/heads/main.zip -o test-files.zip
+unzip test-files.zip
+cd asciidoc-dita-toolkit-main/beta-testing/
+
+# Now you have all test files ready to use!
+```
+
+### Option 2: Clone Repository
+```bash
+# Clone the entire repository
+git clone https://github.com/rolfedh/asciidoc-dita-toolkit.git
+cd asciidoc-dita-toolkit/beta-testing/
+
+# Test files are ready to use
+```
+
+### Option 3: Browse Test Files Online
+You can also browse and download individual test files from:
+**https://github.com/rolfedh/asciidoc-dita-toolkit/tree/main/beta-testing**
+
+The test directory includes files with various content type issues for comprehensive testing.
 
 ## 🧪 Testing Instructions
 
@@ -163,7 +192,7 @@ Please create a GitHub issue with your feedback: [GitHub Issues](https://github.
 
 ### Feedback Template
 ```markdown
-## Beta Testing Feedback - ContentType Plugin v0.1.7b1
+## Beta Testing Feedback - ContentType Plugin v0.1.8b1
 
 **Installation Method:** [Docker/PyPI]
 **Test Environment:** [OS, Python version if applicable]

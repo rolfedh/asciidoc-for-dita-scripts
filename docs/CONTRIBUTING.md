@@ -46,6 +46,61 @@ For the complete package structure, see [asciidoc-dita-toolkit.md](asciidoc-dita
    python3 -m pip install -r requirements-dev.txt
    ```
 
+## Beta Testing Files
+
+The project includes comprehensive test files and examples in `asciidoc_dita_toolkit/beta_testing_files/` that are automatically included in both PyPI packages and Docker images.
+
+### Working with Test Files
+
+**Access test files during development:**
+```sh
+# Find test files location
+find-beta-files
+
+# Or navigate directly
+cd asciidoc_dita_toolkit/beta_testing_files/
+```
+
+**Test your changes:**
+```sh
+# Use test files to validate plugin behavior
+asciidoc-dita-toolkit EntityReference -f asciidoc_dita_toolkit/beta_testing_files/EntityReference/sample.adoc
+
+# Compare with expected output
+diff asciidoc_dita_toolkit/beta_testing_files/EntityReference/sample.adoc \
+     asciidoc_dita_toolkit/beta_testing_files/EntityReference/expected.adoc
+```
+
+### Contributing Test Files
+
+When adding new plugins or improving existing ones:
+
+1. **Add test files** to the appropriate plugin directory:
+   ```
+   asciidoc_dita_toolkit/beta_testing_files/
+   ├── YourPlugin/
+   │   ├── sample.adoc           # Input file demonstrating the issue
+   │   ├── expected.adoc         # Expected output after transformation
+   │   ├── complex_example.adoc  # More complex scenarios
+   │   └── edge_cases.adoc       # Edge cases and unusual patterns
+   ```
+
+2. **Include both input and expected output** files to enable validation
+
+3. **Document special scenarios** in comments within the test files
+
+4. **Test your additions** before submitting:
+   ```sh
+   # Test the plugin on your new test files
+   asciidoc-dita-toolkit YourPlugin -f asciidoc_dita_toolkit/beta_testing_files/YourPlugin/sample.adoc
+
+   # Verify expected behavior
+   diff asciidoc_dita_toolkit/beta_testing_files/YourPlugin/sample.adoc \
+        asciidoc_dita_toolkit/beta_testing_files/YourPlugin/expected.adoc
+   ```
+
+> **📋 Detailed Guide**: For comprehensive information on using beta testing files, see [BETA_TESTING.md](BETA_TESTING.md).
+
 ## Development Commands
 
 The project includes a comprehensive Makefile for common development tasks:
@@ -499,7 +554,7 @@ refactor: improve CLI error handling
 Use the new Makefile `release` target for a fully automated release:
 
 ```sh
-# Automated patch version bump (0.1.7 → 0.1.8)
+# Automated patch version bump (0.1.8 → 0.1.9)
 make release
 
 # Specify custom version
@@ -526,8 +581,8 @@ make release VERSION=0.2.0
 
 ```sh
 # Using GitHub CLI
-gh release create v0.1.7 \
-  --title "Release 0.1.7: Enhanced Plugin System" \
+gh release create v0.1.8 \
+  --title "Release 0.1.8: Enhanced Plugin System" \
   --notes "This release adds new plugin capabilities and fixes several bugs."
 
 # Using GitHub web interface

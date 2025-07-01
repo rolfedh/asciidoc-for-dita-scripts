@@ -1,0 +1,65 @@
+:_mod-docs-content-type: REFERENCE
+= Configuration parameters reference
+
+This reference lists all available configuration parameters.
+
+== Database settings
+
+[cols="1,1,2"]
+|===
+|Parameter |Default |Description
+
+|db_host
+|localhost
+|Database server hostname
+
+|db_port  
+|5432
+|Database server port
+
+|db_name
+|myapp
+|Database name
+
+|db_timeout
+|30
+|Connection timeout in seconds
+|===
+
+== Security settings
+
+[cols="1,1,2"] 
+|===
+|Parameter |Default |Description
+
+|ssl_enabled
+|true
+|Enable SSL encryption
+
+|session_timeout
+|1800
+|Session timeout in seconds
+
+|max_login_attempts
+|3
+|Maximum failed login attempts
+|===
+
+== Performance settings
+
+[cols="1,1,2"]
+|===
+|Parameter |Default |Description
+
+|cache_size
+|100MB
+|Memory cache size
+
+|thread_pool_size
+|10
+|Worker thread pool size
+
+|request_timeout
+|60
+|Request timeout in seconds
+|===

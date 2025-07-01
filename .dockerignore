@@ -21,7 +21,7 @@ htmlcov/
 dmypy.json
 
 # Documentation and scripts that don't need to be in container
-docs/
+# docs/ - Now included for beta testing convenience
 scripts/
 tests/
 archive/

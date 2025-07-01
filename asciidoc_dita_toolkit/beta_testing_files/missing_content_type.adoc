@@ -1,0 +1,15 @@
+= How to configure your system
+
+This procedure helps you configure your system settings.
+
+.Prerequisites
+* You have administrator access
+* System is running and accessible
+
+.Procedure
+1. Open the configuration panel
+2. Navigate to system settings
+3. Update the required values
+4. Save your changes
+
+The system configuration is now complete.

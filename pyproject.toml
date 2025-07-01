@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "asciidoc-dita-toolkit"
-version = "0.1.7b1"
+version = "0.1.8b1"
 description = "A toolkit for processing AsciiDoc files for DITA publishing workflows"
 readme = "README.md"
 requires-python = ">=3.7"
-license = {text = "MIT"}
+license = "MIT"
 authors = [
   {name = "Rolfe Dlugy-Hegwer", email = "rolfedh@users.noreply.github.com"}
 ]
@@ -17,7 +17,6 @@ classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Intended Audience :: End Users/Desktop",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.7",
@@ -41,7 +40,14 @@ Documentation = "https://github.com/rolfedh/asciidoc-dita-toolkit/blob/main/READ
 
 [project.scripts]
 asciidoc-dita-toolkit = "asciidoc_dita_toolkit.asciidoc_dita.toolkit:main"
+find-beta-files = "asciidoc_dita_toolkit.find_beta_files:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["asciidoc_dita_toolkit*"]
+
+[tool.setuptools.package-data]
+"asciidoc_dita_toolkit.beta_testing_files" = ["*.md", "*.adoc"]
+
+[tool.setuptools]
+include-package-data = true

@@ -1,0 +1,12 @@
+:content-type: procedure
+= Updating system preferences
+
+This legacy format procedure shows how to update preferences.
+
+.Procedure
+1. Access the preferences menu
+2. Modify the desired settings
+3. Apply the changes
+4. Restart if required
+
+Your preferences have been updated successfully.
