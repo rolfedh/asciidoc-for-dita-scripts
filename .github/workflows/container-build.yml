@@ -71,6 +71,7 @@ jobs:
           org.opencontainers.image.vendor=Rolfe Dlugy-Hegwer
     
     - name: Build and push Docker image
+      id: build
       uses: docker/build-push-action@v5
       with:
         context: .
@@ -85,9 +86,16 @@ jobs:
     - name: Test container image
       if: matrix.dockerfile.path == 'Dockerfile.production'
       run: |
-        # Get the image name from the build step (use first tag)
-        IMAGE_NAME=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
-        echo "Testing image: $IMAGE_NAME"
+        # For PRs, the image is built locally but not pushed, so we need to use the image ID
+        if [ "${{ github.event_name }}" == "pull_request" ]; then
+          # Use the image ID from the build step
+          IMAGE_NAME="${{ steps.build.outputs.imageid }}"
+          echo "Testing local image (PR): $IMAGE_NAME"
+        else
+          # For non-PR events, use the registry tag
+          IMAGE_NAME=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
+          echo "Testing registry image: $IMAGE_NAME"
+        fi
         # Test the built image
         docker run --rm $IMAGE_NAME --version || true
         docker run --rm $IMAGE_NAME --help
