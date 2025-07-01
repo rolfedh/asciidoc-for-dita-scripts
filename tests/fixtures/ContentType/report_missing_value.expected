@@ -1,6 +1,5 @@
 // A topic with an invalid content type definition:
-:_mod-docs-content-type:
-
+:_mod-docs-content-type: PROCEDURE
 = Topic title
 
 A paragraph.
