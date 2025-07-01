@@ -1,163 +1,216 @@
 # Beta Testing Guide
 
-🎉 **Welcome to beta testing for the AsciiDoc DITA Toolkit!**
+🎉 **Welcome to beta testing for the AsciiDoc DITA Toolkit v0.1.8b1!**
 
-This guide covers both the **new ContentType interactive UI (v0.1.8b1)** and how to access **beta testing files** included with all installations.
+This guide helps you test the **new ContentType interactive UI** and explore features using **included test files**.
+
+## 📋 Quick Start
+
+1. [Install the beta](#-installation-options) 
+2. [Get test files](#-accessing-test-files)
+3. [Test the new features](#-testing-the-contenttype-plugin)
+4. [Report feedback](#-providing-feedback)
 
 ## 🚀 What's New in v0.1.8b1
 
-### ContentType Plugin - Interactive UI Framework
+### ContentType Plugin - Interactive UI
 
-We've completely reimplemented the ContentType plugin with a powerful interactive framework:
+Completely redesigned with four operation modes:
 
-- **Auto mode**: Automatically fixes detected issues
-- **Review mode**: Shows what would be changed without applying fixes  
-- **Interactive mode**: Prompts you to approve each fix individually
-- **Guided mode**: Provides detailed explanations and recommendations
+- **Auto** - Automatically fixes all detected issues
+- **Review** - Preview changes without applying them  
+- **Interactive** - Approve each fix individually
+- **Guided** - Get detailed explanations and recommendations
 
-### Enhanced Detection & Fixes
+### Enhanced Detection
 
-The plugin now detects and can fix:
-- ✅ Missing content type attributes
-- ✅ Empty or invalid content type values  
-- ✅ Commented-out content type lines
-- ✅ Deprecated content type formats
-- ✅ Misplaced content type attributes
+Now detects and fixes:
+- Missing content type attributes
+- Empty or invalid content type values  
+- Commented-out content type lines
+- Deprecated content type formats
+- Misplaced content type attributes
 
 ## 📦 Installation Options
 
-### Option 1: PyPI (Recommended)
+Choose your preferred installation method:
+
+### PyPI (Recommended)
 
 ```bash
-# Install the latest beta
 pip install asciidoc-dita-toolkit==0.1.8b1
-
-# Verify installation
 asciidoc-dita-toolkit --version
-find-beta-files --help
 ```
 
-### Option 2: Docker (No Setup Required)
+### Docker (Zero Setup)
 
 ```bash
-# Latest published version
 docker run --rm -v $(pwd):/workspace asciidoc-dita-toolkit:latest --help
-
-# Test ContentType plugin
-docker run --rm -v $(pwd):/workspace asciidoc-dita-toolkit:latest \
-  ContentType --mode interactive --file your_file.adoc
 ```
 
-## 📁 Accessing Beta Testing Files
+## 📁 Accessing Test Files
 
-Every installation includes comprehensive test files. Use the helper script to find them:
-
-### Quick Access
+Every installation includes comprehensive test files:
 
 ```bash
-# Find test files location
+# List all test files
 find-beta-files
 
-# Get path for scripting
-BETA_DIR=$(find-beta-files --path-only)
-echo "Test files at: $BETA_DIR"
+# Copy files to current directory
+cp "$(find-beta-files --path-only)"/*.adoc .
 
-# Copy files to work with
-cp "$BETA_DIR"/*.adoc ./my-tests/
-```
-
-### Docker Access
-
-```bash
-# Find files in container
-docker run --rm asciidoc-dita-toolkit:latest find-beta-files
-
-# Copy test files from container to host
-docker run --rm -v $(pwd):/output asciidoc-dita-toolkit:latest sh -c '
-  BETA_DIR=$(find-beta-files --path-only)
-  cp "$BETA_DIR"/*.adoc /output/
-'
-
-# Interactive exploration
-docker run --rm -it -v $(pwd):/workspace asciidoc-dita-toolkit:latest /bin/bash
+# Docker: Copy test files to host
+docker run --rm -v $(pwd):/output asciidoc-dita-toolkit:latest sh -c \
+  'cp $(find-beta-files --path-only)/*.adoc /output/'
 ```
 
 ## 🧪 Testing the ContentType Plugin
 
-### Command Reference
+### Essential Commands
 
 ```bash
-# See all available options
+# See all options
 asciidoc-dita-toolkit ContentType --help
 
-# Available modes: auto, review, interactive, guided
-# File options: --file FILE or --directory DIRECTORY  
-# Additional flags: --recursive, --dry-run, --batch, --quiet, --verbose
+# Basic testing modes
+ContentType --mode review --file FILE        # Preview changes
+ContentType --mode interactive --file FILE   # Approve each fix
+ContentType --mode auto --file FILE          # Apply all fixes
+ContentType --mode guided --file FILE        # Get explanations
+
+# Directory operations
+ContentType --mode auto --directory . --recursive --dry-run
 ```
 
-### Test Different Modes
+### Quick Test Workflow
 
 ```bash
-# 1. Review mode - See issues without making changes
-asciidoc-dita-toolkit ContentType --mode review --file your_file.adoc
+# 1. Get test files
+cp "$(find-beta-files --path-only)"/*.adoc .
 
-# 2. Interactive mode - Approve each fix individually  
-asciidoc-dita-toolkit ContentType --mode interactive --file your_file.adoc
-
-# 3. Auto mode - Automatically apply all fixes
-asciidoc-dita-toolkit ContentType --mode auto --file your_file.adoc
-
-# 4. Guided mode - Get detailed explanations
-asciidoc-dita-toolkit ContentType --mode guided --file your_file.adoc
-
-# 5. Directory processing with dry-run
-asciidoc-dita-toolkit ContentType --mode auto --directory . --recursive --dry-run
-```
-
-### Using Included Test Files
-
-The installation includes ready-to-test files with various content type issues:
-
-```bash
-# Get test files
-BETA_DIR=$(find-beta-files --path-only)
-cp "$BETA_DIR"/*.adoc ./test-workspace/
-cd test-workspace/
-
-# Test each file type
+# 2. Try different modes
 asciidoc-dita-toolkit ContentType --mode review --file missing_content_type.adoc
-asciidoc-dita-toolkit ContentType --mode auto --file empty_content_type.adoc --dry-run
-asciidoc-dita-toolkit ContentType --mode interactive --file commented_content_type.adoc
+asciidoc-dita-toolkit ContentType --mode interactive --file empty_content_type.adoc
+asciidoc-dita-toolkit ContentType --mode auto --file commented_content_type.adoc --dry-run
 ```
 
-## 📋 Test File Categories
+## 📋 Understanding Test Files
 
-### Files That Need Fixing
+### Files with Issues (Test the Fixes)
 
 | File | Issue | Expected Fix |
 |------|-------|--------------|
-| `missing_content_type.adoc` | No content type attribute | Add `:_mod-docs-content-type: PROCEDURE` |
-| `empty_content_type.adoc` | Empty content type value | Add appropriate content type value |
-| `commented_content_type.adoc` | Content type is commented out | Uncomment and fix if needed |
-| `wrong_content_type.adoc` | Deprecated content type format | Update to modern format |
+| `missing_content_type.adoc` | No content type attribute | Adds `:_mod-docs-content-type: PROCEDURE` |
+| `empty_content_type.adoc` | Empty value | Adds appropriate content type |
+| `commented_content_type.adoc` | Commented out | Uncomments and fixes |
+| `wrong_content_type.adoc` | Deprecated format | Updates to modern format |
 
-### Files That Should Be Ignored
+### Files that Should Pass (No Changes Expected)
 
 | File | Reason |
 |------|--------|
-| `correct_procedure.adoc` | Has valid `:_mod-docs-content-type: PROCEDURE` |
-| `correct_concept.adoc` | Has valid `:_mod-docs-content-type: CONCEPT` |
-| `correct_reference.adoc` | Has valid `:_mod-docs-content-type: REFERENCE` |
+| `correct_procedure.adoc` | Valid `:_mod-docs-content-type: PROCEDURE` |
+| `correct_concept.adoc` | Valid `:_mod-docs-content-type: CONCEPT` |
+| `correct_reference.adoc` | Valid `:_mod-docs-content-type: REFERENCE` |
 
-## 🧪 Test Scenarios
 
-### Create Your Own Test Cases
+## 🔍 What to Test & Report
+
+Focus your testing on these areas:
+
+### 🎯 Detection Accuracy
+- Does the plugin correctly identify issues?
+- Any false positives or missed problems?
+
+### 🛠️ Fix Quality  
+- Are automatic fixes appropriate and correct?
+- Does formatting remain proper after fixes?
+
+### 👤 User Experience
+- Are interactive prompts clear and helpful?
+- Is the guided mode educational?
+- Are error messages understandable?
+
+### ⚡ Performance
+- How does it handle large files?
+- Performance with complex AsciiDoc features?
+- Speed on your real-world content?
+
+
+
+## 📝 Providing Feedback
+
+**[Create a GitHub issue](https://github.com/rolfedh/asciidoc-dita-toolkit/issues)** with your feedback using this template:
+
+```markdown
+## Beta Testing Feedback - v0.1.8b1
+
+**Setup:** [PyPI/Docker] | [OS] | [Python version]
+**Plugin:** [ContentType/EntityReference/Other]
+
+### ✅ What Worked Well
+- List things that worked as expected
+
+### ❌ Issues Found  
+- Describe problems with sample files/commands to reproduce
+
+### 💡 Suggestions
+- Ideas for improvements
+
+### 📊 Quick Rating
+- Detection accuracy: [Good/Fair/Poor]
+- Fix quality: [Good/Fair/Poor]
+- User experience: [Good/Fair/Poor]
+- Performance: [Good/Fair/Poor]
+
+**Additional Comments:** [Your detailed feedback]
+```
+
+## 🎯 Priority Testing Areas
+
+We especially need feedback on:
+
+1. **ContentType Interactive UI** - Intuitive and helpful?
+2. **Real-world content** - Performance on your actual files?
+3. **Workflow integration** - Fits your existing processes?
+4. **Error handling** - Clear and actionable messages?
+
+## � Beta Timeline
+
+- **Beta period**: 2-4 weeks (launched July 2025)
+- **Feedback deadline**: Late July 2025  
+- **Final release**: Early August 2025
+
+---
+
+## 🧪 Additional Testing
+
+<details>
+<summary><strong>Testing Other Plugins</strong></summary>
+
+### EntityReference Plugin
+```bash
+# Test HTML entity reference conversion
+cp "$(find-beta-files --path-only)"/*.adoc .
+asciidoc-dita-toolkit EntityReference --file sample_with_entities.adoc
+```
+
+### General Testing
+```bash
+# Test all plugins on sample data
+asciidoc-dita-toolkit EntityReference --recursive
+asciidoc-dita-toolkit ContentType --mode review --directory .
+```
+</details>
+
+<details>
+<summary><strong>Create Custom Test Cases</strong></summary>
 
 #### Missing Content Type
 ```asciidoc
 = Your Topic Title
 
-Content goes here without any content type.
+Content without content type attribute.
 ```
 
 #### Empty Content Type  
@@ -165,7 +218,7 @@ Content goes here without any content type.
 :_mod-docs-content-type:
 = Your Topic Title
 
-Content with empty content type attribute.
+Content with empty content type.
 ```
 
 #### Commented Content Type
@@ -175,128 +228,17 @@ Content with empty content type attribute.
 
 Content with commented-out content type.
 ```
+</details>
 
-#### Misplaced Content Type
-```asciidoc
-= Your Topic Title
-:_mod-docs-content-type: PROCEDURE
+<details>
+<summary><strong>CI/CD Integration Examples</strong></summary>
 
-Content type appears after title (should be at top).
-```
-
-## 🔍 What to Test & Report
-
-### Detection Accuracy
-- ✅ Does the plugin correctly identify content type issues?
-- ❌ Are there false positives (incorrect issues reported)?
-- ❌ Are there false negatives (real issues missed)?
-
-### Fix Quality  
-- ✅ Are automatic fixes appropriate and correct?
-- ✅ Do fixes maintain proper AsciiDoc formatting?
-- ✅ Are content type values sensible defaults?
-
-### User Experience
-- ✅ Are interactive prompts clear and helpful?
-- ✅ Is the guided mode educational and informative?
-- ✅ Are error messages understandable?
-
-### Performance & Edge Cases
-- ✅ How does it handle large files or complex structures?
-- ✅ Does it work with includes, conditionals, or advanced AsciiDoc features?
-- ✅ How does it perform on your real-world content?
-
-## 🐛 Testing Other Plugins
-
-The toolkit includes test files for all plugins:
-
-### EntityReference Plugin
-```bash
-# Test HTML entity reference conversion
-BETA_DIR=$(find-beta-files --path-only)
-cp "$BETA_DIR"/*.adoc ./entity-tests/
-
-# Process a file with HTML entities
-asciidoc-dita-toolkit EntityReference --file entity-tests/sample_with_entities.adoc
-
-# Compare before/after
-diff entity-tests/sample_with_entities.adoc entity-tests/expected_output.adoc
-```
-
-### General Testing Workflow
-```bash
-# 1. Set up test workspace
-mkdir test-workspace && cd test-workspace
-
-# 2. Copy test files
-BETA_DIR=$(find-beta-files --path-only)
-cp -r "$BETA_DIR"/* .
-
-# 3. Test plugins on sample data
-asciidoc-dita-toolkit EntityReference --recursive
-asciidoc-dita-toolkit ContentType --mode review --directory .
-
-# 4. Validate results against expected outputs
-```
-
-## 📝 Providing Feedback
-
-Create a GitHub issue with your feedback: [GitHub Issues](https://github.com/rolfedh/asciidoc-dita-toolkit/issues)
-
-### Feedback Template
-```markdown
-## Beta Testing Feedback - v0.1.8b1
-
-**Installation Method:** [PyPI/Docker]
-**Test Environment:** [OS, Python version]
-**Plugin Tested:** [ContentType/EntityReference/Other]
-
-### ✅ What Worked Well
-- List things that worked as expected
-
-### ❌ Issues Found  
-- Describe problems or unexpected behavior
-- Include sample files or commands that reproduce issues
-
-### 💡 Suggestions
-- Ideas for improvements or missing features
-
-### 📊 Test Results
-- [ ] Detection accuracy: Good/Fair/Poor
-- [ ] Fix quality: Good/Fair/Poor
-- [ ] User experience: Good/Fair/Poor  
-- [ ] Performance: Good/Fair/Poor
-
-**Additional Comments:** [Your detailed feedback]
-```
-
-## 🎯 Priority Testing Areas
-
-We're especially interested in feedback on:
-
-1. **ContentType Interactive UI** - Is it intuitive and helpful?
-2. **Real-world content** - How does it perform on your actual files?
-3. **Workflow integration** - Does it fit into your existing processes?
-4. **Error handling** - Are error messages clear and actionable?
-5. **Performance** - How does it handle your typical file sizes?
-
-## 🗓️ Beta Timeline
-
-- **Beta period**: 2-4 weeks (launched July 2025)
-- **Feedback deadline**: Late July 2025  
-- **Final release target**: Early August 2025
-
-## 🚀 Advanced Usage
-
-### CI/CD Integration
-
+### GitHub Actions
 ```yaml
-# GitHub Actions example
 - name: Test with beta files
   run: |
     pip install asciidoc-dita-toolkit==0.1.8b1
-    BETA_DIR=$(find-beta-files --path-only)
-    cp -r "$BETA_DIR"/* ./test/
+    cp -r "$(find-beta-files --path-only)"/* ./test/
     asciidoc-dita-toolkit ContentType --mode auto --directory test/ --dry-run
 ```
 
@@ -304,34 +246,32 @@ We're especially interested in feedback on:
 ```yaml  
 - name: Test with Docker
   run: |
-    docker run --rm -v $(pwd):/workspace asciidoc-dita-toolkit:latest sh -c '
-      cp -r $(find-beta-files --path-only)/* /workspace/test/
-      asciidoc-dita-toolkit ContentType --mode review --directory /workspace/test/
-    '
+    docker run --rm -v $(pwd):/workspace asciidoc-dita-toolkit:latest sh -c \
+      'cp -r $(find-beta-files --path-only)/* /workspace/test/ && \
+       asciidoc-dita-toolkit ContentType --mode review --directory /workspace/test/'
 ```
+</details>
 
-### Troubleshooting
+<details>
+<summary><strong>Troubleshooting</strong></summary>
 
 **Files not found:**
 ```bash
-# Verify installation
 find-beta-files
 pip install --upgrade asciidoc-dita-toolkit==0.1.8b1
 ```
 
 **Container issues:**
 ```bash
-# Verify container has test files
 docker run --rm asciidoc-dita-toolkit:latest find-beta-files
 ```
 
 **Permission errors:**
 ```bash
-# Fix permissions when copying from container
-docker run --rm -v $(pwd):/output asciidoc-dita-toolkit:latest sh -c '
-  cp -r $(find-beta-files --path-only)/* /output/ && chmod -R 644 /output/*
-'
+docker run --rm -v $(pwd):/output asciidoc-dita-toolkit:latest sh -c \
+  'cp -r $(find-beta-files --path-only)/* /output/ && chmod -R 644 /output/*'
 ```
+</details>
 
 ## 📚 Additional Resources
 
@@ -341,4 +281,5 @@ docker run --rm -v $(pwd):/output asciidoc-dita-toolkit:latest sh -c '
 
 ---
 
-**Thank you for helping us test and improve the AsciiDoc DITA Toolkit!** Your feedback is invaluable for making this tool better for the entire technical writing community. 🎉
+**Thank you for testing the AsciiDoc DITA Toolkit!** 🎉  
+Your feedback helps make this tool better for the entire technical writing community.
