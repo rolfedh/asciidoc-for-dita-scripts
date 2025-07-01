@@ -54,13 +54,15 @@ class TestCLI(unittest.TestCase):
 
     def test_plugin_loading_with_missing_function(self):
         """Test handling of plugins missing register_subcommand function."""
-        with patch('sys.argv', ['toolkit']), \
-             patch('sys.stderr', new_callable=StringIO) as mock_stderr, \
-             patch('sys.stdout', new_callable=StringIO) as mock_stdout, \
-             patch('asciidoc_dita_toolkit.asciidoc_dita.toolkit.discover_plugins') as mock_discover, \
-             patch('importlib.import_module') as mock_import:
+        with patch("sys.argv", ["toolkit"]), patch(
+            "sys.stderr", new_callable=StringIO
+        ) as mock_stderr, patch("sys.stdout", new_callable=StringIO) as mock_stdout, patch(
+            "asciidoc_dita_toolkit.asciidoc_dita.toolkit.discover_plugins"
+        ) as mock_discover, patch(
+            "importlib.import_module"
+        ) as mock_import:
 
-            mock_discover.return_value = ['test_plugin']
+            mock_discover.return_value = ["test_plugin"]
             mock_module = MagicMock()
             del mock_module.register_subcommand  # Remove the function
             mock_import.return_value = mock_module
@@ -71,13 +73,15 @@ class TestCLI(unittest.TestCase):
 
     def test_plugin_loading_with_import_error(self):
         """Test handling of plugin import errors."""
-        with patch('sys.argv', ['toolkit']), \
-             patch('sys.stderr', new_callable=StringIO) as mock_stderr, \
-             patch('sys.stdout', new_callable=StringIO) as mock_stdout, \
-             patch('asciidoc_dita_toolkit.asciidoc_dita.toolkit.discover_plugins') as mock_discover, \
-             patch('importlib.import_module', side_effect=ImportError("Test import error")):
+        with patch("sys.argv", ["toolkit"]), patch(
+            "sys.stderr", new_callable=StringIO
+        ) as mock_stderr, patch("sys.stdout", new_callable=StringIO) as mock_stdout, patch(
+            "asciidoc_dita_toolkit.asciidoc_dita.toolkit.discover_plugins"
+        ) as mock_discover, patch(
+            "importlib.import_module", side_effect=ImportError("Test import error")
+        ):
 
-            mock_discover.return_value = ['broken_plugin']
+            mock_discover.return_value = ["broken_plugin"]
 
             toolkit.main()
             error_output = mock_stderr.getvalue()
@@ -87,7 +91,7 @@ class TestCLI(unittest.TestCase):
     def test_plugin_help(self):
         """Test that plugin help works correctly."""
 
-        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+        with patch("sys.stdout", new_callable=StringIO) as mock_stdout:
             with self.assertRaises(SystemExit) as cm:
                 toolkit.main()
         # argparse exits with code 0 for --help
@@ -120,9 +124,7 @@ class TestEntityReferencePlugin(unittest.TestCase):
         input_line = "Unknown &unknown; entity"
         with patch("builtins.print") as mock_print:
             result = self.plugin.replace_entities(input_line)
-            mock_print.assert_called_with(
-                "Warning: No AsciiDoc attribute for &unknown;"
-            )
+            mock_print.assert_called_with("Warning: No AsciiDoc attribute for &unknown;")
             self.assertEqual(result, input_line)
 
 
@@ -158,9 +160,7 @@ class TestContentTypePlugin(unittest.TestCase):
 
     def test_add_content_type_label_new_file(self):
         """Test adding content type label to a file without one."""
-        with tempfile.NamedTemporaryFile(
-            mode="w+", suffix=".adoc", delete=False
-        ) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w+", suffix=".adoc", delete=False) as tmp:
             tmp.write("= Test Document\n\nContent here.\n")
             tmp.flush()
 
@@ -178,12 +178,8 @@ class TestContentTypePlugin(unittest.TestCase):
 
     def test_add_content_type_label_existing_label(self):
         """Test that existing labels are not overwritten."""
-        with tempfile.NamedTemporaryFile(
-            mode="w+", suffix=".adoc", delete=False
-        ) as tmp:
-            tmp.write(
-                ":_mod-docs-content-type: PROCEDURE\n= Test Document\n\nContent here.\n"
-            )
+        with tempfile.NamedTemporaryFile(mode="w+", suffix=".adoc", delete=False) as tmp:
+            tmp.write(":_mod-docs-content-type: PROCEDURE\n= Test Document\n\nContent here.\n")
             tmp.flush()
 
             try:
@@ -197,9 +193,7 @@ class TestContentTypePlugin(unittest.TestCase):
                 self.assertIn(":_mod-docs-content-type: PROCEDURE", content)
                 # Should not have the new label
                 self.assertNotIn(":_mod-docs-content-type: CONCEPT", content)
-                mock_print.assert_called_with(
-                    f"Skipping {tmp.name}, label already present"
-                )
+                mock_print.assert_called_with(f"Skipping {tmp.name}, label already present")
             finally:
                 os.unlink(tmp.name)
 

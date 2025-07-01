@@ -104,9 +104,7 @@ def common_arg_parser(parser):
         default=".",
         help="Root directory to search (default: current directory)",
     )
-    sources.add_argument(
-        "-f", "--file", type=str, help="Scan only the specified .adoc file"
-    )
+    sources.add_argument("-f", "--file", type=str, help="Scan only the specified .adoc file")
     parser.add_argument(
         "-r",
         "--recursive",
@@ -125,11 +123,7 @@ def is_valid_adoc_file(filepath):
     Returns:
         True if the path is a valid .adoc file, False otherwise
     """
-    return (
-        os.path.isfile(filepath)
-        and filepath.endswith(".adoc")
-        and not os.path.islink(filepath)
-    )
+    return os.path.isfile(filepath) and filepath.endswith(".adoc") and not os.path.islink(filepath)
 
 
 def process_adoc_files(args, process_file_func):

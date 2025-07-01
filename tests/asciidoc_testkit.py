@@ -8,9 +8,7 @@ import difflib
 import os
 
 
-def get_fixture_pairs(
-    fixture_dir, input_ext=".adoc", expected_ext=".expected", warn_missing=True
-):
+def get_fixture_pairs(fixture_dir, input_ext=".adoc", expected_ext=".expected", warn_missing=True):
     """
     Yield (input_path, expected_path) pairs for all input_ext files with expected_ext counterparts.
     If warn_missing is True, print a warning for each input file missing an expected file.
@@ -27,9 +25,7 @@ def get_fixture_pairs(
             if os.path.exists(expected_path):
                 yield input_path, expected_path
             elif warn_missing:
-                print(
-                    f"Warning: Missing {fname[:-len(input_ext)] + expected_ext} file."
-                )
+                print(f"Warning: Missing {fname[:-len(input_ext)] + expected_ext} file.")
 
 
 def get_same_dir_fixture_pairs(
@@ -52,9 +48,7 @@ def get_same_dir_fixture_pairs(
             if os.path.exists(expected_path):
                 yield input_path, expected_path
             elif warn_missing:
-                print(
-                    f"Warning: Missing {fname[:-len(input_ext)] + expected_ext} file."
-                )
+                print(f"Warning: Missing {fname[:-len(input_ext)] + expected_ext} file.")
 
 
 def run_linewise_test(input_path, expected_path, transform_func):
@@ -87,9 +81,7 @@ def run_file_based_test(input_path, expected_path, process_func):
     import tempfile
 
     # Create a temporary copy of the input file
-    with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".adoc", delete=False
-    ) as temp_file:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".adoc", delete=False) as temp_file:
         temp_path = temp_file.name
 
     try:
