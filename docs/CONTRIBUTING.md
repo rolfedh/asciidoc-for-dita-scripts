@@ -13,6 +13,9 @@ For the complete package structure, see [asciidoc-dita-toolkit.md](asciidoc-dita
 - **`docs/`**: Project documentation
 - **`requirements-dev.txt`**: Development dependencies
 - **`Makefile`**: Development automation commands
+- **`Dockerfile`**: Development container configuration
+- **`Dockerfile.production`**: Production container configuration
+- **`scripts/container.sh`**: Container management script
 
 ## Getting Started
 
@@ -85,6 +88,53 @@ make publish
 # Clean build artifacts
 make clean
 ```
+
+### Container Development
+
+The project supports containerized development and distribution with automated builds:
+
+```sh
+# Build development container (includes dev tools)
+make container-build
+
+# Build production container (optimized)
+make container-build-prod
+
+# Run tests in container
+make container-test
+
+# Start interactive container shell for debugging
+make container-shell
+
+# Validate all container configurations
+make container-validate
+
+# Push containers to registry (maintainers only)
+make container-push
+make container-push-prod
+
+# Clean up local container images
+make container-clean
+```
+
+**Container Features:**
+
+- **Development image** (`rolfedh/asciidoc-dita-toolkit:latest`): Includes dev dependencies and tools
+- **Production image** (`rolfedh/asciidoc-dita-toolkit-prod:latest`): Optimized multi-stage build
+- **Automated CI/CD**: GitHub Actions builds and publishes containers on releases
+- **Multi-platform**: Supports linux/amd64 and linux/arm64 architectures
+- **Registry publishing**: Pushes to both Docker Hub and GitHub Container Registry
+
+**Manual container usage:**
+
+```sh
+# Test your changes in a clean container environment
+./scripts/container.sh build
+./scripts/container.sh test
+./scripts/container.sh shell
+```
+
+See `docs/CONTAINER_DISTRIBUTION.md` for complete container documentation.
 
 ### Installation
 
