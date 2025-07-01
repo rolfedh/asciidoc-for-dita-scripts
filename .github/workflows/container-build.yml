@@ -85,6 +85,9 @@ jobs:
     - name: Test container image
       if: matrix.dockerfile.path == 'Dockerfile.production'
       run: |
+        # Get the image name from the build step (use first tag)
+        IMAGE_NAME=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
+        echo "Testing image: $IMAGE_NAME"
         # Test the built image
-        docker run --rm ${{ env.REGISTRY_GHCR }}/rolfedh/asciidoc-dita-toolkit${{ matrix.dockerfile.suffix }}:latest --version || true
-        docker run --rm ${{ env.REGISTRY_GHCR }}/rolfedh/asciidoc-dita-toolkit${{ matrix.dockerfile.suffix }}:latest --help
+        docker run --rm $IMAGE_NAME --version || true
+        docker run --rm $IMAGE_NAME --help
