@@ -33,7 +33,20 @@ docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit:beta --help
 
 # Test on your AsciiDoc files
 docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit:beta \
-  --plugin ContentType --mode interactive your_file.adoc
+  ContentType --mode interactive --file your_file.adoc
+
+# Other useful Docker commands:
+# Auto-fix mode
+docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit:beta \
+  ContentType --mode auto --file your_file.adoc
+
+# Process directory recursively
+docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit:beta \
+  ContentType --mode auto --directory /workspace --recursive
+
+# Dry run to see what would be changed
+docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit:beta \
+  ContentType --mode auto --file your_file.adoc --dry-run
 ```
 
 ### Option 2: PyPI Installation
@@ -48,22 +61,40 @@ asciidoc-dita-toolkit --version
 
 ## 🧪 Testing Instructions
 
+### Command Reference
+
+First, check the available options:
+```bash
+# See all available options
+asciidoc-dita-toolkit ContentType --help
+
+# Available modes: auto, review, interactive, guided
+# File options: --file FILE or --directory DIRECTORY
+# Additional flags: --recursive, --dry-run, --batch, --quiet, --verbose
+```
+
 ### Basic Testing
 
 Test the different interaction modes on your AsciiDoc files:
 
 ```bash
 # 1. Review mode - See what issues are detected (no changes made)
-asciidoc-dita-toolkit --plugin ContentType --mode review your_file.adoc
+asciidoc-dita-toolkit ContentType --mode review --file your_file.adoc
 
 # 2. Interactive mode - Approve each fix individually
-asciidoc-dita-toolkit --plugin ContentType --mode interactive your_file.adoc
+asciidoc-dita-toolkit ContentType --mode interactive --file your_file.adoc
 
 # 3. Auto mode - Automatically apply all recommended fixes
-asciidoc-dita-toolkit --plugin ContentType --mode auto your_file.adoc
+asciidoc-dita-toolkit ContentType --mode auto --file your_file.adoc
 
 # 4. Guided mode - Get detailed explanations
-asciidoc-dita-toolkit --plugin ContentType --mode guided your_file.adoc
+asciidoc-dita-toolkit ContentType --mode guided --file your_file.adoc
+
+# 5. Process entire directory recursively
+asciidoc-dita-toolkit ContentType --mode auto --directory . --recursive
+
+# 6. Dry run - See what would be changed without making changes
+asciidoc-dita-toolkit ContentType --mode auto --file your_file.adoc --dry-run
 ```
 
 ### Test Scenarios
