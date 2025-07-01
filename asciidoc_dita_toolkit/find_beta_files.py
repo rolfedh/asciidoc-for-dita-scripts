@@ -19,10 +19,9 @@ def find_beta_test_files():
         # Fallback: look in the package directory
         import asciidoc_dita_toolkit
         package_dir = os.path.dirname(asciidoc_dita_toolkit.__file__)
-        parent_dir = os.path.dirname(package_dir)
-        beta_testing_path = os.path.join(parent_dir, 'beta-testing')
+        beta_testing_path = os.path.join(package_dir, 'beta_testing_files')
         
-        if os.path.exists(beta_testing_path):
+        if os.path.exists(beta_testing_path) and os.listdir(beta_testing_path):
             return beta_testing_path
             
         return None
