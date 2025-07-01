@@ -4,3 +4,4 @@ include CHANGELOG.md
 include requirements.txt
 include requirements-dev.txt
 recursive-include docs *.md
+recursive-include asciidoc_dita_toolkit/beta_testing_files *.adoc *.md
