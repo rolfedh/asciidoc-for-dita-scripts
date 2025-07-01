@@ -25,7 +25,7 @@ COPY asciidoc_dita_toolkit/ ./asciidoc_dita_toolkit/
 COPY pyproject.toml README.md LICENSE ./
 
 # Copy beta testing files for user convenience
-COPY beta-testing/ ./beta-testing/
+COPY asciidoc_dita_toolkit/beta_testing_files/ ./beta-testing/
 COPY docs/ ./docs/
 
 # Install the package in development mode
