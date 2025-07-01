@@ -10,19 +10,24 @@ To run: python3 tests/test_EntityReference.py
 
 Recommended: Integrate this script into CI to catch regressions.
 """
+
 import os
 import sys
 import unittest
-from unittest.mock import patch
 from io import StringIO
+from unittest.mock import patch
 
 # Add the project root to the path for imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference import replace_entities, process_file
-from tests.asciidoc_testkit import run_linewise_test, get_same_dir_fixture_pairs, run_file_based_test
+from asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference import (
+    process_file, replace_entities)
+from tests.asciidoc_testkit import (get_same_dir_fixture_pairs,
+                                    run_file_based_test, run_linewise_test)
 
-FIXTURE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'fixtures', 'EntityReference'))
+FIXTURE_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "fixtures", "EntityReference")
+)
 
 
 class TestEntityReference(unittest.TestCase):
@@ -36,7 +41,7 @@ class TestEntityReference(unittest.TestCase):
             ("&mdash; em dash", "{mdash} em dash"),
             ("&ndash; en dash", "{ndash} en dash"),
         ]
-        
+
         for input_text, expected in test_cases:
             with self.subTest(input_text=input_text):
                 result = replace_entities(input_text)
@@ -46,12 +51,12 @@ class TestEntityReference(unittest.TestCase):
         """Test that supported XML entities are not replaced."""
         supported_cases = [
             "This &amp; that",
-            "Less than &lt; symbol", 
+            "Less than &lt; symbol",
             "Greater than &gt; symbol",
             "Quote &quot; mark",
-            "Apostrophe &apos; mark"
+            "Apostrophe &apos; mark",
         ]
-        
+
         for text in supported_cases:
             with self.subTest(text=text):
                 result = replace_entities(text)
@@ -59,7 +64,7 @@ class TestEntityReference(unittest.TestCase):
 
     def test_unknown_entity_warning(self):
         """Test that unknown entities generate warnings but remain unchanged."""
-        with patch('builtins.print') as mock_print:
+        with patch("builtins.print") as mock_print:
             result = replace_entities("Unknown &unknown; entity")
             mock_print.assert_called_with("Warning: No AsciiDoc attribute for &unknown;")
             self.assertEqual(result, "Unknown &unknown; entity")
@@ -94,12 +99,12 @@ class TestEntityReference(unittest.TestCase):
                     # Use file-based test for fixtures that contain comments
                     # (ignore_* fixtures need comment handling)
                     fixture_name = os.path.basename(input_path)
-                    if fixture_name.startswith('ignore_'):
+                    if fixture_name.startswith("ignore_"):
                         success = run_file_based_test(input_path, expected_path, process_file)
                     else:
                         success = run_linewise_test(input_path, expected_path, replace_entities)
                     self.assertTrue(success, f"Fixture test failed for {input_path}")
-            
+
             if fixture_count > 0:
                 print(f"Ran {fixture_count} fixture-based tests")
         else:
@@ -110,18 +115,18 @@ def main():
     """Run tests with optional fixture-based testing."""
     # First run unit tests
     unittest.main(verbosity=2, exit=False)
-    
+
     # Then run fixture-based tests if available
     if os.path.exists(FIXTURE_DIR):
         print("\nRunning fixture-based tests...")
         any_failed = False
         test_count = 0
-        
+
         for input_path, expected_path in get_same_dir_fixture_pairs(FIXTURE_DIR):
             test_count += 1
             if not run_linewise_test(input_path, expected_path, replace_entities):
                 any_failed = True
-        
+
         if test_count == 0:
             print("No fixture files found.")
         elif any_failed:

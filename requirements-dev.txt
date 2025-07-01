@@ -2,16 +2,16 @@
 # Install with: pip install -r requirements-dev.txt
 
 # Testing
-coverage>=6.0,<8.0
+coverage>=6.0
 
 # Code quality and formatting
-black>=22.1.0,<25.0
-flake8>=4.0.0,<8.0
-isort>=5.0.0,<6.0
+black>=22.1.0
+flake8>=4.0.0
+isort>=5.0.0
 
 # Build and distribution
-build>=0.8.0,<2.0
-twine>=4.0.0,<6.0
+build>=0.8.0
+twine>=4.0.0
 
 # Pre-commit hooks
-pre-commit>=2.20.0,<4.0
+pre-commit>=2.20.0
