@@ -1,10 +1,5 @@
 """
-ContentType Plugin with In        self.content_type_patterns = {
-            'current': re.compile(r'^:_mod-docs-content-type:\s*(.*?)(?:\r?\n|$)', re.MULTILINE),
-            'deprecated_content': re.compile(r'^:_content-type:\s*(.*?)(?:\r?\n|$)', re.MULTILINE),
-            'deprecated_module': re.compile(r'^:_module-type:\s*(.*?)(?:\r?\n|$)', re.MULTILINE),
-            'commented': re.compile(r'^//+\s*:_mod-docs-content-type:\s*(.*?)(?:\r?\n|$)', re.MULTILINE)
-        }ive UI
+ContentType Plugin with Interactive UI
 
 This plugin processes AsciiDoc files to ensure proper :_mod-docs-content-type: attributes
 are present and correctly formatted. It provides an interactive UI for handling various
