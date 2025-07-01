@@ -79,13 +79,18 @@ git push origin feature/your-feature-name
 # Activate virtual environment
 source .venv/bin/activate
 
-# Build distribution packages
+# IMPORTANT: Clean all build artifacts first
+rm -rf dist/ build/ *.egg-info/
+
+# Build distribution packages from clean state
 python -m build
 
 # Verify build output
 ls -la dist/
 # Should see: your-package-X.X.XbN-py3-none-any.whl and .tar.gz
 ```
+
+**⚠️ Critical Step**: Always clean build artifacts before building. This prevents obsolete files from previous versions being packaged into the new distribution.
 
 ### Step 5: Create Docker Beta Image
 
@@ -323,15 +328,17 @@ git push origin --delete feature/your-feature-name
 
 ### Build Problems
 ```bash
-# Clean dist directory
-rm -rf dist/
+# Clean dist directory and all build artifacts (IMPORTANT!)
+rm -rf dist/ build/ *.egg-info/
 
 # Reinstall build tools
 pip install --upgrade build twine
 
-# Rebuild
+# Rebuild from clean state
 python -m build
 ```
+
+**⚠️ Important**: Always clean build artifacts before rebuilding. Leftover files from previous versions can cause packaging issues where obsolete files get included in the new distribution, leading to version conflicts and unexpected behavior.
 
 ### Docker Issues
 ```bash
@@ -343,13 +350,45 @@ docker build --no-cache -t rolfedh/asciidoc-dita-toolkit:beta .
 ```
 
 ### PyPI Upload Issues
+
 ```bash
 # Check credentials
+python -m twine check dist/*
+
+# If you get "Metadata is missing required fields" error:
+# This can happen with older Twine versions and newer pyproject.toml format
+pip install --upgrade twine
 python -m twine check dist/*
 
 # Use API token instead of password
 python -m twine upload --username __token__ --password pypi-... dist/*
 ```
+
+### .pypirc Configuration Issues
+
+If Twine prompts for API token when using `--repository testpypi` instead of reading from `.pypirc`:
+
+**Issue**: Your `.pypirc` file may only have `[pypi]` section but not `[testpypi]`.
+
+**Solution**: Update `~/.pypirc` to include both repositories:
+
+```ini
+[distutils]
+index-servers =
+    pypi
+    testpypi
+
+[pypi]
+username = __token__
+password = pypi-YOUR_PYPI_TOKEN_HERE
+
+[testpypi]
+repository = https://test.pypi.org/legacy/
+username = __token__
+password = pypi-YOUR_TEST_PYPI_TOKEN_HERE
+```
+
+**Note**: Test PyPI tokens may expire more frequently than production tokens. If you get "403 Forbidden" for test PyPI, you can proceed directly to production PyPI for beta releases since beta versions are appropriate for production PyPI as pre-releases.
 
 ## 📊 Success Metrics
 

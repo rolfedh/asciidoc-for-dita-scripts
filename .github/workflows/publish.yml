@@ -23,6 +23,8 @@ jobs:
 
       - name: Build package
         run: |
+          # Clean build artifacts to prevent packaging obsolete files
+          rm -rf dist/ build/ *.egg-info/
           python -m build
 
       - name: Publish to PyPI
