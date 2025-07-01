@@ -639,4 +639,53 @@ def main(args):
     return None
 
 
-# Legacy functions removed - functionality replaced by interactive UI framework
+# Legacy functions for backward compatibility with tests
+
+def get_content_type_from_filename(filename):
+    """
+    Guess the content type from the file name conventions.
+    Returns one of 'ASSEMBLY', 'CONCEPT', 'PROCEDURE', 'REFERENCE', 'SNIPPET', or None.
+    
+    This function supports legacy test compatibility.
+    """
+    import os
+    import re
+    
+    name = os.path.basename(filename).lower()
+    if re.search(r'assembly[-_]', name):
+        return 'ASSEMBLY'
+    if re.search(r'con[-_]', name):
+        return 'CONCEPT'
+    if re.search(r'proc[-_]', name):
+        return 'PROCEDURE'
+    if re.search(r'ref[-_]', name):
+        return 'REFERENCE'
+    if re.search(r'snip[-_]', name):
+        return 'SNIPPET'
+    return None
+
+
+def add_content_type_label(file_path, content_type):
+    """
+    Adds :_mod-docs-content-type: LABEL to the top of the file if not present.
+    Does not overwrite an existing label.
+    
+    This function supports legacy test compatibility.
+    """
+    import re
+    
+    with open(file_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    
+    # Check if label already exists
+    if re.search(r'^:_mod-docs-content-type:', content, re.MULTILINE):
+        print(f"Skipping {file_path}, label already present")
+        return
+    
+    # Insert label at the top
+    new_content = f":_mod-docs-content-type: {content_type}\n{content}"
+    
+    with open(file_path, 'w', encoding='utf-8') as f:
+        f.write(new_content)
+    
+    print(f"Added label to {file_path}")
