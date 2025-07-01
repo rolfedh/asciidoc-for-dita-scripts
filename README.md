@@ -24,7 +24,29 @@ The AsciiDoc DITA Toolkit is a command-line tool for technical writers and edito
 
 ## 📦 Installation
 
-### Option 1: PyPI (Recommended)
+### Option 1: Container (No Python Required)
+
+Use Docker containers if you prefer not to install Python dependencies locally, or need consistent environments across teams:
+
+```sh
+# Production use (smaller, optimized)
+docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit-prod:latest --help
+
+# Development use (includes dev tools)
+docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit:latest --help
+
+# GitHub Container Registry (alternative)
+docker run --rm -v $(pwd):/workspace ghcr.io/rolfedh/asciidoc-dita-toolkit:latest --help
+```
+
+**Benefits of container approach:**
+
+- No need to install Python or manage dependencies
+- Consistent environment across different systems
+- Easy to use in CI/CD pipelines
+- Automatic cleanup after each run
+
+### Option 2: PyPI
 
 Install the toolkit using pip:
 
@@ -32,28 +54,22 @@ Install the toolkit using pip:
 python3 -m pip install asciidoc-dita-toolkit
 ```
 
-### Option 2: Container
-
-Run using Docker:
-
-```sh
-# Docker Hub
-docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit:latest --help
-
-# GitHub Container Registry  
-docker run --rm -v $(pwd):/workspace ghcr.io/rolfedh/asciidoc-dita-toolkit:latest --help
-```
-
 ### Upgrading
 
-**PyPI:**
+**Container:**
+
 ```sh
-python3 -m pip install --upgrade asciidoc-dita-toolkit
+# Production image (recommended for most users)
+docker pull rolfedh/asciidoc-dita-toolkit-prod:latest
+
+# Development image (includes dev tools)
+docker pull rolfedh/asciidoc-dita-toolkit:latest
 ```
 
-**Container:**
+**PyPI:**
+
 ```sh
-docker pull rolfedh/asciidoc-dita-toolkit:latest
+python3 -m pip install --upgrade asciidoc-dita-toolkit
 ```
 
 ### Requirements
@@ -108,20 +124,40 @@ asciidoc-dita-toolkit EntityReference -d /path/to/docs -r
 
 ### Container Usage
 
-If using the container version:
+If using the container version, all commands work the same but are prefixed with the Docker run command:
 
 ```sh
 # List plugins
-docker run --rm rolfedh/asciidoc-dita-toolkit:latest --list-plugins
+docker run --rm rolfedh/asciidoc-dita-toolkit-prod:latest --list-plugins
 
 # Fix entity references in current directory
-docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit:latest EntityReference -r
+docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit-prod:latest EntityReference -r
 
 # Add content type labels to a specific file
-docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit:latest ContentType -f docs/myfile.adoc
+docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit-prod:latest ContentType -f docs/myfile.adoc
 
-# Interactive shell for development
+# Interactive shell for development (use dev image)
 docker run --rm -it -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit:latest /bin/bash
+```
+
+**Container command breakdown:**
+
+- `docker run --rm` - Run and automatically remove container when done
+- `-v $(pwd):/workspace` - Mount current directory as `/workspace` in container
+- `rolfedh/asciidoc-dita-toolkit-prod:latest` - The production container image (recommended)
+- Everything after the image name works exactly like the PyPI version
+
+**Tip:** Create a shell alias to simplify container usage:
+
+```sh
+alias asciidoc-dita-toolkit='docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit-prod:latest'
+```
+
+Then use it exactly like the PyPI version:
+
+```sh
+asciidoc-dita-toolkit --list-plugins
+asciidoc-dita-toolkit EntityReference -r
 ```
 
 ### 🔌 Available Plugins
