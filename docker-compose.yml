@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  # Development container with source code mounted
+  asciidoc-toolkit-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+      - ./docs:/workspace
+    working_dir: /workspace
+    command: /bin/bash
+    stdin_open: true
+    tty: true
+    environment:
+      - PYTHONPATH=/app
+
+  # Production container for testing
+  asciidoc-toolkit-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    volumes:
+      - ./docs:/workspace:ro
+    working_dir: /workspace
+    command: --help
+
+  # Container for running tests
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: python -m pytest tests/
+    environment:
+      - PYTHONPATH=/app
+
+  # Container for linting and code quality
+  lint:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: python -m flake8 asciidoc_dita_toolkit/
+    environment:
+      - PYTHONPATH=/app

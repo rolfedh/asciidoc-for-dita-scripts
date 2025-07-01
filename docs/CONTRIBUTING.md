@@ -275,7 +275,6 @@ To manually have the GitHub Actions workflow build and upload the package to PyP
    ```sh
    git checkout main
    git pull origin main
-   
    git tag v<new-version>  # Example: v0.1.8
    git push origin v<new-version>
    ```
@@ -454,8 +453,8 @@ make release VERSION=0.2.0
 2. **Run quality checks**: Execute `make check` (format, lint, test)
 3. **Version management**: Auto-bump patch version or use your specified VERSION
 4. **Update files**: Modify `pyproject.toml` and generate changelog entry
-5. **Git operations**: Commit changes, create tag, push both to origin
-6. **Next steps**: Display instructions for monitoring GitHub Actions
+5. **Git operations**: Create release branch, commit changes, push branch
+6. **Next steps**: Display instructions for creating PR and completing release
 
 **Manual Release Process (Alternative):**
 

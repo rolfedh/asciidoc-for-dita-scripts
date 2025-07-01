@@ -1,0 +1,47 @@
+# Multi-stage Dockerfile for production use
+FROM python:3.11-slim as builder
+
+# Install build dependencies
+RUN pip install --upgrade pip setuptools wheel
+
+# Set working directory
+WORKDIR /build
+
+# Copy source code
+COPY . .
+
+# Build wheel
+RUN python -m pip wheel --no-deps --wheel-dir /build/wheels .
+
+# Production stage
+FROM python:3.11-slim
+
+# Accept version as build argument
+ARG VERSION=latest
+
+# Set metadata
+LABEL maintainer="Rolfe Dlugy-Hegwer <rolfedh@users.noreply.github.com>"
+LABEL description="AsciiDoc DITA Toolkit - CLI tools for processing AsciiDoc files for DITA publishing workflows"
+LABEL version=$VERSION
+LABEL org.opencontainers.image.source="https://github.com/rolfedh/asciidoc-dita-toolkit"
+LABEL org.opencontainers.image.url="https://github.com/rolfedh/asciidoc-dita-toolkit"
+LABEL org.opencontainers.image.documentation="https://github.com/rolfedh/asciidoc-dita-toolkit/blob/main/README.md"
+LABEL org.opencontainers.image.title="AsciiDoc DITA Toolkit"
+LABEL org.opencontainers.image.description="CLI tools for processing AsciiDoc files for DITA publishing workflows"
+
+# Create a non-root user for security
+RUN useradd --create-home --shell /bin/bash --uid 1000 toolkit
+
+# Install the wheel from builder stage
+COPY --from=builder /build/wheels/*.whl /tmp/
+RUN pip install --no-cache-dir /tmp/*.whl && rm -rf /tmp/*.whl
+
+# Switch to non-root user
+USER toolkit
+
+# Set the default working directory for mounted volumes
+WORKDIR /workspace
+
+# Default command
+ENTRYPOINT ["asciidoc-dita-toolkit"]
+CMD ["--help"]

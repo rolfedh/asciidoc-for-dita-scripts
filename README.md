@@ -24,7 +24,7 @@ The AsciiDoc DITA Toolkit is a command-line tool for technical writers and edito
 
 ## 📦 Installation
 
-### Recommended: PyPI
+### Option 1: PyPI (Recommended)
 
 Install the toolkit using pip:
 
@@ -32,12 +32,28 @@ Install the toolkit using pip:
 python3 -m pip install asciidoc-dita-toolkit
 ```
 
-### Upgrading
+### Option 2: Container
 
-To upgrade to the latest version:
+Run using Docker:
 
 ```sh
+# Docker Hub
+docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit:latest --help
+
+# GitHub Container Registry  
+docker run --rm -v $(pwd):/workspace ghcr.io/rolfedh/asciidoc-dita-toolkit:latest --help
+```
+
+### Upgrading
+
+**PyPI:**
+```sh
 python3 -m pip install --upgrade asciidoc-dita-toolkit
+```
+
+**Container:**
+```sh
+docker pull rolfedh/asciidoc-dita-toolkit:latest
 ```
 
 ### Requirements
@@ -88,6 +104,24 @@ asciidoc-dita-toolkit ContentType -r
 
 ```sh
 asciidoc-dita-toolkit EntityReference -d /path/to/docs -r
+```
+
+### Container Usage
+
+If using the container version:
+
+```sh
+# List plugins
+docker run --rm rolfedh/asciidoc-dita-toolkit:latest --list-plugins
+
+# Fix entity references in current directory
+docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit:latest EntityReference -r
+
+# Add content type labels to a specific file
+docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit:latest ContentType -f docs/myfile.adoc
+
+# Interactive shell for development
+docker run --rm -it -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit:latest /bin/bash
 ```
 
 ### 🔌 Available Plugins

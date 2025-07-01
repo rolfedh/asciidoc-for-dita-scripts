@@ -1,0 +1,46 @@
+# .dockerignore
+# Ignore development and build artifacts
+.git/
+.github/
+.venv/
+.pytest_cache/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+build/
+dist/
+.tox/
+.coverage
+.coverage.*
+htmlcov/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Documentation and scripts that don't need to be in container
+docs/
+scripts/
+tests/
+archive/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local configuration
+.env
+.env.local
+
+# Development files
+.pre-commit-config.yaml
+Makefile

@@ -16,6 +16,16 @@ help:
 	@echo "  changelog  - Generate changelog entry for latest version"
 	@echo "  changelog-version - Generate changelog for specific version (VERSION=x.y.z)"
 	@echo "  release    - Automated release: bump patch version, commit, tag, push (MAINTAINERS ONLY) (VERSION=x.y.z to override)"
+	@echo ""
+	@echo "Container targets:"
+	@echo "  container-build     - Build development container"
+	@echo "  container-build-prod - Build production container"
+	@echo "  container-test      - Run tests in container"
+	@echo "  container-shell     - Start interactive container shell"
+	@echo "  container-push      - Push development container to registry"
+	@echo "  container-push-prod - Push production container to registry"
+	@echo "  container-clean     - Clean up container images"
+	@echo "  container-validate  - Validate all container configurations"
 
 # Test targets
 test:
@@ -94,9 +104,48 @@ changelog-version:
 	@echo "Generating changelog for version $(VERSION)..."
 	./scripts/generate-changelog.sh $(VERSION)
 
+# Container targets
+container-build:
+	@echo "Building development container..."
+	./scripts/container.sh build
+
+container-build-prod:
+	@echo "Building production container..."
+	./scripts/container.sh build --prod
+
+container-test:
+	@echo "Running tests in container..."
+	./scripts/container.sh test
+
+container-shell:
+	@echo "Starting interactive container shell..."
+	./scripts/container.sh shell
+
+container-push:
+	@echo "Pushing development container to registry..."
+	./scripts/container.sh push
+
+container-push-prod:
+	@echo "Pushing production container to registry..."
+	./scripts/container.sh push --prod
+
+container-clean:
+	@echo "Cleaning up container images..."
+	./scripts/container.sh clean
+
+container-validate:
+	@echo "Validating container configurations..."
+	@echo "✅ Checking Dockerfile syntax..."
+	@docker build --no-cache -f Dockerfile -t test-dev . > /dev/null 2>&1 && echo "  Dockerfile: OK" || echo "  Dockerfile: FAILED"
+	@echo "✅ Checking Dockerfile.production syntax..."
+	@docker build --no-cache -f Dockerfile.production -t test-prod . > /dev/null 2>&1 && echo "  Dockerfile.production: OK" || echo "  Dockerfile.production: FAILED"
+	@echo "✅ Checking docker-compose syntax..."
+	@docker-compose config > /dev/null 2>&1 && echo "  docker-compose.yml: OK" || (docker compose config > /dev/null 2>&1 && echo "  docker-compose.yml: OK" || echo "  docker-compose.yml: FAILED")
+	@echo "✅ Cleaning up test images..."
+	@docker rmi test-dev test-prod > /dev/null 2>&1 || true
+
 # Release automation target (MAINTAINERS ONLY)
 release: check
-	@set -e
 	@echo "Starting automated release process..."
 	@echo "⚠️  WARNING: This target is for project maintainers only!"
 	@echo "   Contributors should not use this target."
@@ -110,7 +159,6 @@ release: check
 			exit 1; \
 		fi; \
 	else \
-		echo "FORCE set, skipping maintainer confirmation."; \
 	fi
 	@# Check if we're on main/master branch
 	@branch=$$(git symbolic-ref --short HEAD); \
@@ -167,7 +215,6 @@ release: check
 	echo "Creating release branch: $$release_branch"; \
 	git checkout -b "$$release_branch"; \
 	echo "Updating version in pyproject.toml..."; \
-	# Portable sed for Linux and macOS
 	if sed --version >/dev/null 2>&1; then \
 		sed -i 's/^version = ".*"/version = "'"$$new_version"'"/' pyproject.toml; \
 	else \
@@ -197,3 +244,4 @@ release: check
 	echo "   git tag v$$new_version"; \
 	echo "   git push origin v$$new_version"; \
 	echo "5. GitHub Actions will automatically build and publish to PyPI"
+
