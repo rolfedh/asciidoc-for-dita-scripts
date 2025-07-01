@@ -79,15 +79,17 @@ make check
 ### Building and Publishing
 
 ```sh
+# Clean build artifacts from previous builds (important!)
+make clean
+
 # Build distribution packages
 make build
 
 # Publish to PyPI (MAINTAINERS ONLY - requires PYPI_API_TOKEN)
 make publish
-
-# Clean build artifacts
-make clean
 ```
+
+**Important**: Always run `make clean` before building to remove any obsolete build artifacts from previous versions. This prevents packaging outdated files that could cause version conflicts.
 
 ### Container Development
 
@@ -343,14 +345,21 @@ To manually have the GitHub Actions workflow build and upload the package to PyP
 
 **Manual publishing (alternative):**
 
-1. Build the package:
+1. Clean previous build artifacts:
+
+   ```sh
+   # Remove any obsolete build files that could cause version conflicts
+   rm -rf dist/ build/ *.egg-info/
+   ```
+
+2. Build the package:
 
    ```sh
    python3 -m pip install --upgrade build twine
    python3 -m build
    ```
 
-2. Upload to PyPI:
+3. Upload to PyPI:
 
    ```sh
    python3 -m twine upload dist/*
