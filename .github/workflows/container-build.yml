@@ -16,6 +16,8 @@ env:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    # Skip container builds for PRs to avoid resource issues
+    if: github.event_name != 'pull_request'
     permissions:
       contents: read
       packages: write
@@ -79,7 +81,7 @@ jobs:
         push: ${{ github.event_name != 'pull_request' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        platforms: linux/amd64,linux/arm64
+        platforms: linux/amd64
         cache-from: type=gha
         cache-to: type=gha,mode=max
     
