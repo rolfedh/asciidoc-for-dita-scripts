@@ -34,6 +34,17 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Run code quality checks
+        continue-on-error: true  # Allow code quality issues for now
+        run: |
+          # Check code formatting
+          black --check --diff asciidoc_dita_toolkit/ tests/ || echo "Code formatting issues found"
+          # Check import sorting  
+          isort --check-only --diff asciidoc_dita_toolkit/ tests/ || echo "Import sorting issues found"
+          # Run linting (allow some issues for now)
+          flake8 asciidoc_dita_toolkit/ tests/ --max-line-length=100 --ignore=E203,W503,E501,F401,E402,W291 || echo "Linting issues found"
 
       - name: Run tests
         run: |
