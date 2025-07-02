@@ -9,7 +9,7 @@ The AsciiDoc DITA Toolkit GUI provides an intuitive, dialog-based interface for 
 After installing the toolkit:
 
 ```bash
-asciidoc-dita-toolkit-gui
+adg¹
 ```
 
 Or use the launcher scripts:
@@ -71,7 +71,7 @@ Or use the launcher scripts:
 
 1. **Launch the GUI**
    ```bash
-   asciidoc-dita-toolkit-gui
+   adg¹
    ```
 
 2. **Load test files** (recommended for first time)
@@ -170,11 +170,15 @@ The "Load Test Files" button creates these sample files:
 
 ## Getting Help
 
-- **Command line help**: `asciidoc-dita-toolkit --help`
-- **Plugin-specific help**: `asciidoc-dita-toolkit <plugin> --help`
+- **Command line help**: `adt --help`¹
+- **Plugin-specific help**: `adt <plugin> --help`¹
 - **GitHub Issues**: [Report bugs or request features](https://github.com/rolfedh/asciidoc-dita-toolkit/issues)
 - **Documentation**: [Main README](https://github.com/rolfedh/asciidoc-dita-toolkit/blob/main/README.md)
 
 ---
 
 *The GUI makes the AsciiDoc DITA Toolkit accessible to users who prefer visual interfaces over command-line tools, while maintaining all the power and flexibility of the underlying plugins.*
+
+---
+
+¹ The commands `adt` and `adg` are convenient aliases for the full commands `asciidoc-dita-toolkit` and `asciidoc-dita-toolkit-gui` respectively.

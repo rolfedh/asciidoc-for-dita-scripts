@@ -39,7 +39,7 @@ Choose your preferred installation method:
 
 ```bash
 pip install asciidoc-dita-toolkit==0.1.8b2
-asciidoc-dita-toolkit --version
+adt --version
 ```
 
 ### Docker (Zero Setup)
@@ -70,7 +70,7 @@ docker run --rm -v $(pwd):/output asciidoc-dita-toolkit:latest sh -c \
 
 ```bash
 # See all options
-asciidoc-dita-toolkit ContentType --help
+adt ContentType --help
 
 # Basic testing modes
 ContentType --mode review --file FILE        # Preview changes
@@ -89,9 +89,9 @@ ContentType --mode auto --directory . --recursive --dry-run
 cp "$(find-beta-files --path-only)"/*.adoc .
 
 # 2. Try different modes
-asciidoc-dita-toolkit ContentType --mode review --file missing_content_type.adoc
-asciidoc-dita-toolkit ContentType --mode interactive --file empty_content_type.adoc
-asciidoc-dita-toolkit ContentType --mode auto --file commented_content_type.adoc --dry-run
+adt ContentType --mode review --file missing_content_type.adoc
+adt ContentType --mode interactive --file empty_content_type.adoc
+adt ContentType --mode auto --file commented_content_type.adoc --dry-run
 ```
 
 ## 📋 Understanding Test Files
@@ -192,14 +192,14 @@ We especially need feedback on:
 ```bash
 # Test HTML entity reference conversion
 cp "$(find-beta-files --path-only)"/*.adoc .
-asciidoc-dita-toolkit EntityReference --file sample_with_entities.adoc
+adt EntityReference --file sample_with_entities.adoc
 ```
 
 ### General Testing
 ```bash
 # Test all plugins on sample data
-asciidoc-dita-toolkit EntityReference --recursive
-asciidoc-dita-toolkit ContentType --mode review --directory .
+adt EntityReference --recursive
+adt ContentType --mode review --directory .
 ```
 </details>
 
@@ -239,7 +239,7 @@ Content with commented-out content type.
   run: |
     pip install asciidoc-dita-toolkit==0.1.8b2
     cp -r "$(find-beta-files --path-only)"/* ./test/
-    asciidoc-dita-toolkit ContentType --mode auto --directory test/ --dry-run
+    adt ContentType --mode auto --directory test/ --dry-run
 ```
 
 ### Docker in CI
@@ -248,7 +248,7 @@ Content with commented-out content type.
   run: |
     docker run --rm -v $(pwd):/workspace asciidoc-dita-toolkit:latest sh -c \
       'cp -r $(find-beta-files --path-only)/* /workspace/test/ && \
-       asciidoc-dita-toolkit ContentType --mode review --directory /workspace/test/'
+       adt ContentType --mode review --directory /workspace/test/'
 ```
 </details>
 

@@ -54,10 +54,10 @@ Install the toolkit using pip:
 python3 -m pip install asciidoc-dita-toolkit
 
 # Test the installation
-asciidoc-dita-toolkit --help
+adt --help¹
 
 # Launch the GUI (recommended for new users)
-asciidoc-dita-toolkit-gui
+adg¹
 ```
 
 ### Upgrading
@@ -90,7 +90,7 @@ python3 -m pip install --upgrade asciidoc-dita-toolkit
 For an intuitive, dialog-based interface, use the GUI:
 
 ```sh
-asciidoc-dita-toolkit-gui
+adg¹
 ```
 
 The GUI provides:
@@ -118,13 +118,13 @@ For automation, scripting, or advanced usage:
 ### List available plugins
 
 ```sh
-asciidoc-dita-toolkit --list-plugins
+adt --list-plugins¹
 ```
 
 ### Run a plugin
 
 ```sh
-asciidoc-dita-toolkit <plugin> [options]
+adt <plugin> [options]¹
 ```
 
 - `<plugin>`: Name of the plugin to run (e.g., `EntityReference`, `ContentType`)
@@ -143,19 +143,19 @@ All plugins support these options:
 #### Fix HTML entity references in a file
 
 ```sh
-asciidoc-dita-toolkit EntityReference -f path/to/file.adoc
+adt EntityReference -f path/to/file.adoc¹
 ```
 
 #### Add content type labels to all files recursively
 
 ```sh
-asciidoc-dita-toolkit ContentType -r
+adt ContentType -r¹
 ```
 
 #### Process all .adoc files in a specific directory
 
 ```sh
-asciidoc-dita-toolkit EntityReference -d /path/to/docs -r
+adt EntityReference -d /path/to/docs -r¹
 ```
 
 ### Container Usage
@@ -186,31 +186,33 @@ docker run --rm -it -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit:latest /b
 **Tip:** Create a shell alias to simplify container usage:
 
 ```sh
-alias asciidoc-dita-toolkit='docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit-prod:latest'
+alias adt='docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit-prod:latest'
 ```
 
 Then use it exactly like the PyPI version:
 
 ```sh
-asciidoc-dita-toolkit --list-plugins
-asciidoc-dita-toolkit EntityReference -r
+adt --list-plugins
+adt EntityReference -r
 ```
 
 ### 🔌 Available Plugins
 
 | Plugin | Description | Example Usage |
 |--------|-------------|---------------|
-| `EntityReference` | Replace unsupported HTML character entity references with AsciiDoc attribute references | `asciidoc-dita-toolkit EntityReference -f file.adoc` |
-| `ContentType` | Add `:_mod-docs-content-type:` labels where missing, based on filename | `asciidoc-dita-toolkit ContentType -r` |
+| `EntityReference` | Replace unsupported HTML character entity references with AsciiDoc attribute references | `adt EntityReference -f file.adoc`¹ |
+| `ContentType` | Add `:_mod-docs-content-type:` labels where missing, based on filename | `adt ContentType -r`¹ |
 
 > **📋 Technical Details**: For plugin internals and supported entity mappings, see [docs/asciidoc-dita-toolkit.md](docs/asciidoc-dita-toolkit.md).
+
+---
 
 ## 🔍 Troubleshooting
 
 - **Python Version**: Make sure you are using Python 3.7 or newer
 - **Installation Issues**: Try upgrading pip: `python3 -m pip install --upgrade pip`
 - **Development Setup**: If you need to use a local clone, see the [contributor guide](docs/CONTRIBUTING.md)
-- **Plugin Errors**: Use `-v` or `--verbose` flag for detailed error information
+- **Plugin Errors**: Use `-v` or `--verbose` flag for detailed error information¹
 
 ## 📚 Related Resources
 
@@ -228,3 +230,7 @@ Want to add new plugins or help improve the toolkit?
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+¹ The commands `adt` and `adg` are convenient aliases for the full commands `asciidoc-dita-toolkit` and `asciidoc-dita-toolkit-gui` respectively. Both sets of commands work identically.
