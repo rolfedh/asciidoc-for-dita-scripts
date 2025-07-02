@@ -29,14 +29,11 @@ The AsciiDoc DITA Toolkit is a command-line tool for technical writers and edito
 Use Docker containers if you prefer not to install Python dependencies locally, or need consistent environments across teams:
 
 ```sh
-# Production use (smaller, optimized)
-docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit-prod:latest --help
-
-# Development use (includes dev tools)
+# Standard container image (includes dev tools)
 docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit:latest --help
 
-# GitHub Container Registry (alternative)
-docker run --rm -v $(pwd):/workspace ghcr.io/rolfedh/asciidoc-dita-toolkit:latest --help
+# Test the container
+docker run --rm rolfedh/asciidoc-dita-toolkit:latest --version
 ```
 
 **Benefits of container approach:**
@@ -135,8 +132,8 @@ adt <plugin> [options]¹
 All plugins support these options:
 
 - `-f FILE` or `--file FILE`: Process a specific file
-- `-r` or `--recursive`: Process all .adoc files recursively in the current directory (enabled by default)
-- `-d DIR` or `--directory DIR`: Specify the root directory to search (default: current directory)
+- `-nr` or `--no-recursive`: Process only the specified directory (non-recursive)
+- Directory paths: Processed recursively by default (no flag needed)
 
 ### 📝 Examples
 
@@ -155,7 +152,7 @@ adt ContentType¹
 #### Process all .adoc files in a specific directory (recursive by default)
 
 ```sh
-adt EntityReference path/to/docs/¹
+adt EntityReference docs/¹
 ```
 
 #### Process directory non-recursively (single level only)
@@ -207,7 +204,7 @@ adt EntityReference
 | Plugin | Description | Example Usage |
 |--------|-------------|---------------|
 | `EntityReference` | Replace unsupported HTML character entity references with AsciiDoc attribute references | `adt EntityReference -f file.adoc`¹ |
-| `ContentType` | Add `:_mod-docs-content-type:` labels where missing, with interactive prompts and deprecated attribute conversion | `adt ContentType docs/`¹ |
+| `ContentType` | Add `:_mod-docs-content-type:` labels where missing, with interactive prompts, deprecated attribute conversion, and filename-based auto-detection | `adt ContentType docs/`¹ |
 
 > **📋 Technical Details**: For plugin internals and supported entity mappings, see [docs/asciidoc-dita-toolkit.md](docs/asciidoc-dita-toolkit.md).
 

@@ -29,22 +29,16 @@ Enhanced with comprehensive new features:
 - **Non-recursive option** with `-nr/--no-recursive` flag
 - **Comprehensive test file suite** with backup and restore system
 
-## 📦 Installation Options
+## 📦 Installation
 
-Choose your preferred installation method:
-
-### PyPI (Recommended)
+Install the beta version via PyPI:
 
 ```bash
 pip install asciidoc-dita-toolkit==0.1.8b2
 adt --version
 ```
 
-### Docker (Zero Setup)
-
-```bash
-docker run --rm -v $(pwd):/workspace asciidoc-dita-toolkit:latest --help
-```
+> **💡 Note:** Docker installation is also available but PyPI is recommended for beta testing as it's simpler and provides better debugging information.
 
 ## 📁 Accessing Test Files
 
