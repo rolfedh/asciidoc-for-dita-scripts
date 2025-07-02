@@ -45,11 +45,11 @@ Edit `pyproject.toml`:
 ```toml
 [project]
 name = "asciidoc-dita-toolkit"
-version = "0.1.8b1"  # Format: MAJOR.MINOR.PATCHbN (where N is beta number)
+version = "0.1.8b2"  # Format: MAJOR.MINOR.PATCHbN (where N is beta number)
 ```
 
 **Version Naming Convention:**
-- `0.1.8b1` - First beta of version 0.1.8
+- `0.1.8b2` - Second beta of version 0.1.8
 - `0.1.8b2` - Second beta if fixes are needed
 - `0.1.8` - Final release version
 
@@ -113,7 +113,7 @@ docker push rolfedh/asciidoc-dita-toolkit:beta
 python -m twine upload --repository testpypi dist/*
 
 # Test installation from test PyPI
-pip install --index-url https://test.pypi.org/simple/ asciidoc-dita-toolkit==0.1.8b1
+pip install --index-url https://test.pypi.org/simple/ asciidoc-dita-toolkit==0.1.8b2
 ```
 
 **Option B: Direct to PyPI**
@@ -122,22 +122,22 @@ pip install --index-url https://test.pypi.org/simple/ asciidoc-dita-toolkit==0.1
 python -m twine upload dist/*
 
 # Verify availability
-pip install asciidoc-dita-toolkit==0.1.8b1
+pip install asciidoc-dita-toolkit==0.1.8b2
 ```
 
 ### Step 7: Create GitHub Pre-release
 
 ```bash
 # Tag the beta version
-git tag v0.1.8b1
-git push origin v0.1.8b1
+git tag v0.1.8b2
+git push origin v0.1.8b2
 ```
 
 Then on GitHub:
 1. Go to **Releases** → **Create a new release**
-2. Choose tag: `v0.1.8b1`
+2. Choose tag: `v0.1.8b2`
 3. Target: `feature/your-feature-name` branch
-4. Title: `v0.1.8b1 - [Feature Name] Beta`
+4. Title: `v0.1.8b2 - [Feature Name] Beta`
 5. ✅ **Check "This is a pre-release"**
 6. Description: Link to beta testing guide and highlight new features
 
@@ -421,7 +421,7 @@ Track these metrics during beta:
 ## 📋 **Quick Reference Summary**
 
 ### Beta Phase Workflow:
-1. ✅ **Feature branch** + beta version (v0.1.8b1)
+1. ✅ **Feature branch** + beta version (v0.1.8b2)
 2. ✅ **Build & distribute** (Docker, PyPI)  
 3. ✅ **Create GitHub pre-release**
 4. ✅ **Announce beta** (GitHub Discussions, README)

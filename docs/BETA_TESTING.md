@@ -1,6 +1,6 @@
 # Beta Testing Guide
 
-🎉 **Welcome to beta testing for the AsciiDoc DITA Toolkit v0.1.8b1!**
+🎉 **Welcome to beta testing for the AsciiDoc DITA Toolkit v0.1.8b2!**
 
 This guide helps you test the **new ContentType interactive UI** and explore features using **included test files**.
 
@@ -11,7 +11,7 @@ This guide helps you test the **new ContentType interactive UI** and explore fea
 3. [Test the new features](#-testing-the-contenttype-plugin)
 4. [Report feedback](#-providing-feedback)
 
-## 🚀 What's New in v0.1.8b1
+## 🚀 What's New in v0.1.8b2
 
 ### ContentType Plugin - Interactive UI
 
@@ -38,7 +38,7 @@ Choose your preferred installation method:
 ### PyPI (Recommended)
 
 ```bash
-pip install asciidoc-dita-toolkit==0.1.8b1
+pip install asciidoc-dita-toolkit==0.1.8b2
 asciidoc-dita-toolkit --version
 ```
 
@@ -143,7 +143,7 @@ Focus your testing on these areas:
 **[Create a GitHub issue](https://github.com/rolfedh/asciidoc-dita-toolkit/issues)** with your feedback using this template:
 
 ```markdown
-## Beta Testing Feedback - v0.1.8b1
+## Beta Testing Feedback - v0.1.8b2
 
 **Setup:** [PyPI/Docker] | [OS] | [Python version]
 **Plugin:** [ContentType/EntityReference/Other]
@@ -237,7 +237,7 @@ Content with commented-out content type.
 ```yaml
 - name: Test with beta files
   run: |
-    pip install asciidoc-dita-toolkit==0.1.8b1
+    pip install asciidoc-dita-toolkit==0.1.8b2
     cp -r "$(find-beta-files --path-only)"/* ./test/
     asciidoc-dita-toolkit ContentType --mode auto --directory test/ --dry-run
 ```
@@ -258,7 +258,7 @@ Content with commented-out content type.
 **Files not found:**
 ```bash
 find-beta-files
-pip install --upgrade asciidoc-dita-toolkit==0.1.8b1
+pip install --upgrade asciidoc-dita-toolkit==0.1.8b2
 ```
 
 **Container issues:**
