@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "asciidoc-dita-toolkit"
-version = "0.1.6"
+version = "0.2.0"
 description = "A toolkit for processing AsciiDoc files for DITA publishing workflows"
 readme = "README.md"
 requires-python = ">=3.7"
@@ -33,6 +33,11 @@ dependencies = [
   # No external dependencies - uses only Python standard library
 ]
 
+[project.optional-dependencies]
+gui = [
+  # tkinter is included with Python on most systems, but may need python3-tk on some Linux distributions
+]
+
 [project.urls]
 Homepage = "https://github.com/rolfedh/asciidoc-dita-toolkit"
 Repository = "https://github.com/rolfedh/asciidoc-dita-toolkit"
@@ -41,6 +46,10 @@ Documentation = "https://github.com/rolfedh/asciidoc-dita-toolkit/blob/main/READ
 
 [project.scripts]
 asciidoc-dita-toolkit = "asciidoc_dita_toolkit.asciidoc_dita.toolkit:main"
+asciidoc-dita-toolkit-gui = "asciidoc_dita_toolkit.asciidoc_dita.gui:main"
+
+[project.entry-points."console_scripts"]
+find-beta-files = "asciidoc_dita_toolkit.find_beta_files:main"
 
 [tool.setuptools.packages.find]
 where = ["."]

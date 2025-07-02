@@ -52,6 +52,12 @@ Install the toolkit using pip:
 
 ```sh
 python3 -m pip install asciidoc-dita-toolkit
+
+# Test the installation
+asciidoc-dita-toolkit --help
+
+# Launch the GUI (recommended for new users)
+asciidoc-dita-toolkit-gui
 ```
 
 ### Upgrading
@@ -78,6 +84,36 @@ python3 -m pip install --upgrade asciidoc-dita-toolkit
 - No external dependencies (uses only Python standard library)
 
 ## 🔧 Usage
+
+### GUI Interface (Recommended for New Users)
+
+For an intuitive, dialog-based interface, use the GUI:
+
+```sh
+asciidoc-dita-toolkit-gui
+```
+
+The GUI provides:
+- **Plugin selection** - Choose from available plugins with descriptions
+- **Easy configuration** - Browse for files/directories, set options with checkboxes
+- **Multiple modes** - Review, Interactive, Auto, and Guided modes (when supported)
+- **Real-time results** - See output and progress in an integrated results panel
+- **Test file management** - Load sample test files to experiment with
+
+**Benefits of the GUI:**
+- No need to remember command-line syntax
+- Visual feedback and error messages
+- Perfect for learning how the tools work
+- Test files included for experimentation
+
+**System Requirements for GUI:**
+- Python with tkinter support (included with most Python installations)
+- On Linux: may need to install `python3-tk` package
+- Works on Windows, macOS, and Linux
+
+### Command Line Interface
+
+For automation, scripting, or advanced usage:
 
 ### List available plugins
 
