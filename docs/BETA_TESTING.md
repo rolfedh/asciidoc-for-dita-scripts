@@ -15,18 +15,19 @@ This guide helps you test the **new ContentType interactive UI** and explore fea
 
 ### ContentType Plugin Improvements
 
-Enhanced detection and fixing of:
-- Missing content type attributes
-- Empty or invalid content type values  
-- Commented-out content type lines
-- Misplaced content type attributes
+Enhanced with comprehensive new features:
+- **Interactive prompts** when content type cannot be determined
+- **Deprecated attribute conversion** (`:_content-type:` and `:_module-type:` → `:_mod-docs-content-type:`)
+- **Filename-based auto-detection** for all standard prefixes
+- **Clear visual feedback** with colored output and separator lines
+- **Empty attribute handling** with user prompts
 
-### File Processing Options
+### File Processing Enhancements
 
-Both plugins now support:
-- Single file processing (`-f/--file`)
-- Directory processing (`-d/--directory`)
-- Recursive processing (enabled by default, disable with `-nr/--no-recursive`)
+- **Recursive processing by default** for directories
+- **Simplified command structure** - no more `--directory` flag needed
+- **Non-recursive option** with `-nr/--no-recursive` flag
+- **Comprehensive test file suite** with backup and restore system
 
 ## 📦 Installation Options
 
@@ -47,15 +48,19 @@ docker run --rm -v $(pwd):/workspace asciidoc-dita-toolkit:latest --help
 
 ## 📁 Accessing Test Files
 
-Create test files manually or copy from examples:
+The toolkit includes a comprehensive set of test files for thorough testing:
 
 ```bash
-# Create test directory
-mkdir test_files && cd test_files
+# Test files are included in the repository
+cd asciidoc-dita-toolkit/test_files/
 
-# Copy existing .adoc files from your project
-# Or create test files as shown in the examples below
+# Or create your own test directory
+mkdir my_test_files && cd my_test_files
 ```
+
+**Complete test suite available at:** `test_files/` directory with backup system via `restore_test_files.sh`
+
+> **💡 Important:** Always run `./restore_test_files.sh` between test runs to reset files to their original state for consistent testing.
 
 ## 🧪 Testing the ContentType Plugin
 
@@ -81,49 +86,92 @@ adt ContentType
 ### Quick Test Workflow
 
 ```bash
-# 1. Create test files (see examples below)
-mkdir test_files && cd test_files
+# 1. Use included test files
+cd test_files/
 
-# 2. Test single file
+# 2. Test single file processing
 adt ContentType -f missing_content_type.adoc
 
-# 3. Test directory processing (now recursive by default)
+# 3. Test directory processing (recursive by default)
 adt ContentType .
+
+# 4. Test interactive prompts (select option 1-7 when prompted)
+adt ContentType ignore_comments.adoc
+
+# 5. Test filename auto-detection  
+adt ContentType proc_example.adoc
+
+# 6. IMPORTANT: Reset test files for another round
+cd .. && ./restore_test_files.sh
+
+# 7. Repeat tests as needed
 ```
+
+> **⚠️ Production Safety Reminder:** When testing on your actual documentation repository, always:
+> * **Create a working branch** (`git checkout -b test-content-type`)
+> * **Review all changes carefully** before committing
 
 ## 📋 Understanding Test Files
 
-### Files with Issues (Test the Fixes)
+The included test files cover all ContentType plugin scenarios:
 
-| File | Issue | Expected Fix |
-|------|-------|--------------|
-| `missing_content_type.adoc` | No content type attribute | Adds `:_mod-docs-content-type: PROCEDURE` |
-| `empty_content_type.adoc` | Empty value | Adds appropriate content type |
-| `commented_content_type.adoc` | Commented out | Uncomments and fixes |
+### 🔧 Files Requiring Fixes
 
-### Files that Should Pass (No Changes Expected)
+| File | Issue | Expected Behavior |
+|------|-------|------------------|
+| `missing_content_type.adoc` | No content type attribute | Interactive prompt to select type |
+| `empty_content_type.adoc` | Empty `:_mod-docs-content-type:` | Interactive prompt to select type |
+| `commented_content_type.adoc` | Only commented-out content type | Interactive prompt to select type |
+| `deprecated_test.adoc` | Uses `:_content-type: CONCEPT` | Auto-converts to `:_mod-docs-content-type: CONCEPT` |
+| `proc_test.adoc` | Uses `:_module-type: REFERENCE` | Auto-converts to `:_mod-docs-content-type: REFERENCE` |
+| `empty_deprecated.adoc` | Empty `:_content-type:` | Interactive prompt to select type |
+
+### 🤖 Files with Auto-Detection
+
+| File | Filename Pattern | Expected Auto-Detection |
+|------|------------------|------------------------|
+| `assembly_example.adoc` | `assembly_` prefix | Adds `:_mod-docs-content-type: ASSEMBLY` |
+| `proc_example.adoc` | `proc_` prefix | Adds `:_mod-docs-content-type: PROCEDURE` |
+| `con_example.adoc` | `con_` prefix | Adds `:_mod-docs-content-type: CONCEPT` |
+| `ref_example.adoc` | `ref_` prefix | Adds `:_mod-docs-content-type: REFERENCE` |
+| `snip_example.adoc` | `snip_` prefix | Adds `:_mod-docs-content-type: SNIPPET` |
+
+### ✅ Files Already Correct
 
 | File | Reason |
 |------|--------|
-| `correct_procedure.adoc` | Valid `:_mod-docs-content-type: PROCEDURE` |
-| `correct_concept.adoc` | Valid `:_mod-docs-content-type: CONCEPT` |
-| `correct_reference.adoc` | Valid `:_mod-docs-content-type: REFERENCE` |
+| `correct_procedure.adoc` | Has valid `:_mod-docs-content-type: PROCEDURE` |
+
+### 🔧 Utility Files
+
+| File | Purpose |
+|------|---------|
+| `with_entities.adoc` | For testing EntityReference plugin |
+| `ignore_comments.adoc` | Generic file for interactive testing |
 
 
 ## 🔍 What to Test & Report
 
 Focus your testing on these areas:
 
+> **🔄 Between Tests:** Run `./restore_test_files.sh` to reset test files to their original state for consistent results.
+
 ### 🎯 Detection Accuracy
-- Does the plugin correctly identify issues?
+- Does the plugin correctly identify missing/empty/deprecated content types?
+- Does filename-based auto-detection work for all prefixes (`assembly_`, `proc_`, `con_`, `ref_`, `snip_`)?
+- Are interactive prompts triggered appropriately?
 - Any false positives or missed problems?
 
 ### 🛠️ Fix Quality  
-- Are automatic fixes appropriate and correct?
+- Are deprecated attribute conversions correct?
+- Does interactive content type selection work properly?
+- Are auto-detected content types appropriate for filenames?
 - Does formatting remain proper after fixes?
 
 ### 👤 User Experience
-- Are error messages clear and helpful?
+- Are interactive prompts clear and easy to use?
+- Is the colored output helpful and readable?
+- Are separator lines improving readability?
 - Does the output clearly show what was changed?
 - Is the CLI intuitive to use?
 
@@ -166,10 +214,12 @@ Focus your testing on these areas:
 
 We especially need feedback on:
 
-1. **File processing accuracy** - Does it correctly identify and fix issues?
-2. **Real-world content** - Performance on your actual files?
-3. **Workflow integration** - Fits your existing processes?
-4. **Error handling** - Clear and actionable messages?
+1. **Interactive prompts** - Are the content type options clear? Is the selection process intuitive?
+2. **Filename auto-detection** - Does it correctly identify content types from filename prefixes?
+3. **Deprecated attribute conversion** - Are conversions accurate and preserve content?
+4. **Visual feedback** - Is the colored output and separator formatting helpful?
+5. **Real-world content** - Performance and accuracy on your actual files?
+6. **Test file workflow** - Is the backup/restore system useful for testing?
 
 ## � Beta Timeline
 
