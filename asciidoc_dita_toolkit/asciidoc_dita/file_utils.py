@@ -90,7 +90,8 @@ def common_arg_parser(parser):
     """
     Add standard options to the supplied parser:
     -d / --directory: Root directory to search (default: current directory)
-    -r / --recursive: Search subdirectories recursively
+    -r / --recursive: Search subdirectories recursively (default: enabled)
+    -nr / --no-recursive: Disable recursive search, only process current directory
     -f / --file: Scan only the specified .adoc file
 
     Args:
@@ -109,7 +110,15 @@ def common_arg_parser(parser):
         "-r",
         "--recursive",
         action="store_true",
-        help="Search subdirectories recursively",
+        default=True,
+        help="Search subdirectories recursively (default: enabled)",
+    )
+    parser.add_argument(
+        "-nr",
+        "--no-recursive",
+        action="store_false",
+        dest="recursive",
+        help="Disable recursive search, only process current directory",
     )
 
 

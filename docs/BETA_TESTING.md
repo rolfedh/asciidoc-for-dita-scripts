@@ -13,23 +13,20 @@ This guide helps you test the **new ContentType interactive UI** and explore fea
 
 ## 🚀 What's New in v0.1.8b2
 
-### ContentType Plugin - Interactive UI
+### ContentType Plugin Improvements
 
-Completely redesigned with four operation modes:
-
-- **Auto** - Automatically fixes all detected issues
-- **Review** - Preview changes without applying them  
-- **Interactive** - Approve each fix individually
-- **Guided** - Get detailed explanations and recommendations
-
-### Enhanced Detection
-
-Now detects and fixes:
+Enhanced detection and fixing of:
 - Missing content type attributes
 - Empty or invalid content type values  
 - Commented-out content type lines
-- Deprecated content type formats
 - Misplaced content type attributes
+
+### File Processing Options
+
+Both plugins now support:
+- Single file processing (`-f/--file`)
+- Directory processing (`-d/--directory`)
+- Recursive processing (enabled by default, disable with `-nr/--no-recursive`)
 
 ## 📦 Installation Options
 
@@ -50,18 +47,14 @@ docker run --rm -v $(pwd):/workspace asciidoc-dita-toolkit:latest --help
 
 ## 📁 Accessing Test Files
 
-Every installation includes comprehensive test files:
+Create test files manually or copy from examples:
 
 ```bash
-# List all test files
-find-beta-files
+# Create test directory
+mkdir test_files && cd test_files
 
-# Copy files to current directory
-cp "$(find-beta-files --path-only)"/*.adoc .
-
-# Docker: Copy test files to host
-docker run --rm -v $(pwd):/output asciidoc-dita-toolkit:latest sh -c \
-  'cp $(find-beta-files --path-only)/*.adoc /output/'
+# Copy existing .adoc files from your project
+# Or create test files as shown in the examples below
 ```
 
 ## 🧪 Testing the ContentType Plugin
@@ -72,26 +65,30 @@ docker run --rm -v $(pwd):/output asciidoc-dita-toolkit:latest sh -c \
 # See all options
 adt ContentType --help
 
-# Basic testing modes
-ContentType --mode review --file FILE        # Preview changes
-ContentType --mode interactive --file FILE   # Approve each fix
-ContentType --mode auto --file FILE          # Apply all fixes
-ContentType --mode guided --file FILE        # Get explanations
+# Process single file
+adt ContentType -f FILE
 
-# Directory operations
-ContentType --mode auto --directory . --recursive --dry-run
+# Process directory (recursive by default)
+adt ContentType DIR
+
+# Process directory non-recursively  
+adt ContentType DIR -nr
+
+# Process current directory (default, recursive)
+adt ContentType
 ```
 
 ### Quick Test Workflow
 
 ```bash
-# 1. Get test files
-cp "$(find-beta-files --path-only)"/*.adoc .
+# 1. Create test files (see examples below)
+mkdir test_files && cd test_files
 
-# 2. Try different modes
-adt ContentType --mode review --file missing_content_type.adoc
-adt ContentType --mode interactive --file empty_content_type.adoc
-adt ContentType --mode auto --file commented_content_type.adoc --dry-run
+# 2. Test single file
+adt ContentType -f missing_content_type.adoc
+
+# 3. Test directory processing (now recursive by default)
+adt ContentType .
 ```
 
 ## 📋 Understanding Test Files
@@ -103,7 +100,6 @@ adt ContentType --mode auto --file commented_content_type.adoc --dry-run
 | `missing_content_type.adoc` | No content type attribute | Adds `:_mod-docs-content-type: PROCEDURE` |
 | `empty_content_type.adoc` | Empty value | Adds appropriate content type |
 | `commented_content_type.adoc` | Commented out | Uncomments and fixes |
-| `wrong_content_type.adoc` | Deprecated format | Updates to modern format |
 
 ### Files that Should Pass (No Changes Expected)
 
@@ -127,9 +123,9 @@ Focus your testing on these areas:
 - Does formatting remain proper after fixes?
 
 ### 👤 User Experience
-- Are interactive prompts clear and helpful?
-- Is the guided mode educational?
-- Are error messages understandable?
+- Are error messages clear and helpful?
+- Does the output clearly show what was changed?
+- Is the CLI intuitive to use?
 
 ### ⚡ Performance
 - How does it handle large files?
@@ -170,7 +166,7 @@ Focus your testing on these areas:
 
 We especially need feedback on:
 
-1. **ContentType Interactive UI** - Intuitive and helpful?
+1. **File processing accuracy** - Does it correctly identify and fix issues?
 2. **Real-world content** - Performance on your actual files?
 3. **Workflow integration** - Fits your existing processes?
 4. **Error handling** - Clear and actionable messages?
@@ -191,15 +187,14 @@ We especially need feedback on:
 ### EntityReference Plugin
 ```bash
 # Test HTML entity reference conversion
-cp "$(find-beta-files --path-only)"/*.adoc .
-adt EntityReference --file sample_with_entities.adoc
+adt EntityReference -f sample_with_entities.adoc
 ```
 
 ### General Testing
 ```bash
 # Test all plugins on sample data
-adt EntityReference --recursive
-adt ContentType --mode review --directory .
+adt EntityReference
+adt ContentType .
 ```
 </details>
 
@@ -238,17 +233,15 @@ Content with commented-out content type.
 - name: Test with beta files
   run: |
     pip install asciidoc-dita-toolkit==0.1.8b2
-    cp -r "$(find-beta-files --path-only)"/* ./test/
-    adt ContentType --mode auto --directory test/ --dry-run
+    adt ContentType test/
 ```
 
 ### Docker in CI
 ```yaml  
 - name: Test with Docker
   run: |
-    docker run --rm -v $(pwd):/workspace asciidoc-dita-toolkit:latest sh -c \
-      'cp -r $(find-beta-files --path-only)/* /workspace/test/ && \
-       adt ContentType --mode review --directory /workspace/test/'
+    docker run --rm -v $(pwd):/workspace asciidoc-dita-toolkit:latest \
+      adt ContentType /workspace/test/
 ```
 </details>
 
@@ -257,19 +250,19 @@ Content with commented-out content type.
 
 **Files not found:**
 ```bash
-find-beta-files
+adt --help
 pip install --upgrade asciidoc-dita-toolkit==0.1.8b2
 ```
 
 **Container issues:**
 ```bash
-docker run --rm asciidoc-dita-toolkit:latest find-beta-files
+docker run --rm asciidoc-dita-toolkit:latest adt --help
 ```
 
 **Permission errors:**
 ```bash
-docker run --rm -v $(pwd):/output asciidoc-dita-toolkit:latest sh -c \
-  'cp -r $(find-beta-files --path-only)/* /output/ && chmod -R 644 /output/*'
+# Ensure files are writable
+chmod 644 *.adoc
 ```
 </details>
 

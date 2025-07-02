@@ -128,34 +128,40 @@ adt <plugin> [options]¹
 ```
 
 - `<plugin>`: Name of the plugin to run (e.g., `EntityReference`, `ContentType`)
-- `[options]`: Plugin-specific options (e.g., `-f` for a file, `-r` for recursive)
+- `[options]`: Plugin-specific options (e.g., `-f` for a file, `-nr` to disable recursive)
 
 ### Common Options
 
 All plugins support these options:
 
 - `-f FILE` or `--file FILE`: Process a specific file
-- `-r` or `--recursive`: Process all .adoc files recursively in the current directory
+- `-r` or `--recursive`: Process all .adoc files recursively in the current directory (enabled by default)
 - `-d DIR` or `--directory DIR`: Specify the root directory to search (default: current directory)
 
 ### 📝 Examples
 
-#### Fix HTML entity references in a file
+#### Fix HTML entity references in a single file
 
 ```sh
 adt EntityReference -f path/to/file.adoc¹
 ```
 
-#### Add content type labels to all files recursively
+#### Add content type labels (processes current directory recursively by default)
 
 ```sh
-adt ContentType -r¹
+adt ContentType¹
 ```
 
-#### Process all .adoc files in a specific directory
+#### Process all .adoc files in a specific directory (recursive by default)
 
 ```sh
-adt EntityReference -d /path/to/docs -r¹
+adt EntityReference path/to/docs/¹
+```
+
+#### Process directory non-recursively (single level only)
+
+```sh
+adt ContentType docs/ -nr¹
 ```
 
 ### Container Usage
@@ -167,7 +173,7 @@ If using the container version, all commands work the same but are prefixed with
 docker run --rm rolfedh/asciidoc-dita-toolkit-prod:latest --list-plugins
 
 # Fix entity references in current directory
-docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit-prod:latest EntityReference -r
+docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit-prod:latest EntityReference
 
 # Add content type labels to a specific file
 docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit-prod:latest ContentType -f docs/myfile.adoc
@@ -193,7 +199,7 @@ Then use it exactly like the PyPI version:
 
 ```sh
 adt --list-plugins
-adt EntityReference -r
+adt EntityReference
 ```
 
 ### 🔌 Available Plugins
@@ -201,7 +207,7 @@ adt EntityReference -r
 | Plugin | Description | Example Usage |
 |--------|-------------|---------------|
 | `EntityReference` | Replace unsupported HTML character entity references with AsciiDoc attribute references | `adt EntityReference -f file.adoc`¹ |
-| `ContentType` | Add `:_mod-docs-content-type:` labels where missing, based on filename | `adt ContentType -r`¹ |
+| `ContentType` | Add `:_mod-docs-content-type:` labels where missing, with interactive prompts and deprecated attribute conversion | `adt ContentType docs/`¹ |
 
 > **📋 Technical Details**: For plugin internals and supported entity mappings, see [docs/asciidoc-dita-toolkit.md](docs/asciidoc-dita-toolkit.md).
 

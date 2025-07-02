@@ -1,6 +1,6 @@
 # CLI Simplification Design Document
 
-This document outlines potential improvements to make the AsciiDoc DITA Toolkit CLI more user-friendly and intuitive. Items marked with an asterisk (*) require new core functionality to be developed.
+This document outlines improvements to make the AsciiDoc DITA Toolkit CLI more user-friendly and intuitive. Items marked with ✅ are implemented, items marked with an asterisk (*) require new core functionality to be developed.
 
 ## Command Structure Simplification
 
@@ -75,17 +75,18 @@ adt --config dita-prep docs/    # uses saved profile
 
 ## File Handling Simplification
 
-### 7. **Smart File Detection**
-Auto-detect AsciiDoc files:
+### 7. **Smart File Detection** ✅ **IMPLEMENTED**
+Auto-detect AsciiDoc files with recursive processing by default:
 ```bash
-adt EntityReference .           # finds all .adoc files automatically
-adt --recursive .               # implied recursive for directories
+adt EntityReference docs/       # processes all .adoc files recursively (default)
+adt ContentType . -nr           # explicit non-recursive with --no-recursive/-nr flag
 ```
 
-**Implementation Notes:**
-- Partially exists: plugins already filter for .adoc files
-- Could make recursive default for directory operations
-- Enhance file discovery to be more intelligent
+**✅ Implementation Status:**
+- ✅ Recursive processing is now the default for directory operations
+- ✅ Added `--no-recursive/-nr` flag for backward compatibility
+- ✅ Plugins automatically filter for .adoc files
+- ✅ Enhanced user experience with sensible defaults
 
 ### 8. **Batch Operations** *
 Simplified batch processing:

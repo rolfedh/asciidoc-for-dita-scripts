@@ -213,6 +213,51 @@ Our test suite covers:
 - ✅ File processing with proper mocking
 - ✅ Graceful handling of missing test fixtures
 
+## Test Files and Manual Testing
+
+For manual testing and development of plugins (especially the ContentType plugin), the project includes a comprehensive test files directory with backup and restore functionality.
+
+### Test Files Directory
+
+The `test_files/` directory contains carefully crafted AsciiDoc files that cover all plugin scenarios:
+
+- Files with correct content type attributes
+- Files with empty or missing content type attributes  
+- Files with deprecated content type formats
+- Files with detectable filename prefixes (`assembly_`, `proc_`, `con_`, `ref_`, `snip_`)
+- Files requiring interactive user prompts
+- Edge cases like commented-out attributes
+
+**Complete documentation**: See [`test_files/README.md`](../test_files/README.md) for detailed descriptions of each test file and expected plugin behaviors.
+
+### Backup and Restore System
+
+Since manual testing modifies test files, a backup system ensures you can always return to a clean state:
+
+**Key components:**
+- `test_files_backup/` - Clean backup of all test files
+- `restore_test_files.sh` - One-command script to restore clean state
+- `test_files/README.md` - Complete reference guide
+
+**Usage workflow:**
+```sh
+# 1. Run manual tests (files get modified by plugins)
+adt ContentType test_files/
+
+# 2. Restore clean state with one command  
+./restore_test_files.sh
+
+# 3. Ready for next test run
+```
+
+**Benefits:**
+- ✅ No need to manually reset 14+ test files after each test
+- ✅ Guaranteed pristine state for consistent testing
+- ✅ Complete documentation of expected plugin behaviors
+- ✅ Efficient development and debugging workflow
+
+This system is especially valuable when developing or debugging the ContentType plugin, which modifies file content based on various detection and conversion rules.
+
 ### Writing New Tests
 
 **For CLI changes:**
