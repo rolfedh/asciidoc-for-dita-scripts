@@ -294,7 +294,7 @@ The project now includes a fully automated release workflow via the `make releas
 **Usage:**
 
 ```sh
-# Automated patch version bump (e.g., 0.1.9b1 → 0.2.0)
+# Automated patch version bump (e.g., 0.1.9b2 → 0.2.0)
 make release
 
 # Specify a custom version

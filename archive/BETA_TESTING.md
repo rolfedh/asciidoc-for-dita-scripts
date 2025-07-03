@@ -1,6 +1,6 @@
 # Beta Testing Guide
 
-🎉 **Welcome to beta testing for the AsciiDoc DITA Toolkit v0.1.9b1!**
+🎉 **Welcome to beta testing for the AsciiDoc DITA Toolkit v0.1.9b2!**
 
 This guide helps you test the **modernized CLI and enhanced ContentType plugin** using **included test files**.
 
@@ -11,7 +11,7 @@ This guide helps you test the **modernized CLI and enhanced ContentType plugin**
 3. [Test the new features](#-testing-the-contenttype-plugin)
 4. [Report feedback](#-providing-feedback)
 
-## 🚀 What's New in v0.1.9b1
+## 🚀 What's New in v0.1.9b2
 
 ### CLI Modernization
 
@@ -36,7 +36,7 @@ Enhanced with comprehensive new features:
 Install the beta version via PyPI:
 
 ```bash
-pip install asciidoc-dita-toolkit==0.1.9b1
+pip install asciidoc-dita-toolkit==0.1.9b2
 adt --version
 ```
 
@@ -220,7 +220,7 @@ Focus your testing on these areas:
 **[Create a GitHub issue](https://github.com/rolfedh/asciidoc-dita-toolkit/issues)** with your feedback using this template:
 
 ```markdown
-## Beta Testing Feedback - v0.1.9b1
+## Beta Testing Feedback - v0.1.9b2
 
 **Setup:** [PyPI/Docker] | [OS] | [Python version]
 **Plugin:** [ContentType/EntityReference/Other]
