@@ -121,11 +121,12 @@ adt --list-plugins¹
 ### Run a plugin
 
 ```sh
-adt <plugin> [options]¹
+adt <plugin> [file_or_dir] [options]¹
 ```
 
 - `<plugin>`: Name of the plugin to run (e.g., `EntityReference`, `ContentType`)
-- `[options]`: Plugin-specific options (e.g., `-f` for a file, `-nr` to disable recursive)
+- `[file_or_dir]`: File or directory to process (auto-detected)
+- `[options]`: Plugin-specific options (e.g., `-nr` to disable recursive processing)
 
 ### Common Options
 
@@ -215,7 +216,6 @@ adt EntityReference
 - **Python Version**: Make sure you are using Python 3.7 or newer
 - **Installation Issues**: Try upgrading pip: `python3 -m pip install --upgrade pip`
 - **Development Setup**: If you need to use a local clone, see the [contributor guide](docs/CONTRIBUTING.md)
-- **Plugin Errors**: Use `-v` or `--verbose` flag for detailed error information¹
 
 ## 📚 Related Resources
 

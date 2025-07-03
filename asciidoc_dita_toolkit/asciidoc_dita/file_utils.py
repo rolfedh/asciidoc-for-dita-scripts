@@ -90,43 +90,55 @@ def write_text_preserve_endings(filepath, lines):
 def common_arg_parser(parser):
     """
     Add standard options to the supplied parser:
+    [file_or_dir]: Optional positional argument that auto-detects file vs directory
+    -nr / --no-recursive: Disable recursive search, only process current directory
+    
+    Deprecated (hidden from usage but still functional):
     -d / --directory: Root directory to search (default: current directory)
     -r / --recursive: Search subdirectories recursively (default: enabled)
-    -nr / --no-recursive: Disable recursive search, only process current directory
     -f / --file: Scan only the specified .adoc file
-    [path]: Optional positional argument that auto-detects file vs directory
 
     Args:
         parser: ArgumentParser instance to add arguments to
     """
     # Add optional positional argument for auto-detection
     parser.add_argument(
-        "path",
+        "file_or_directory",
         nargs="?",
-        help="File or directory path (auto-detected). If not specified, uses current directory."
+        metavar="file_or_dir",
+        help="File or directory to search. If not specified, uses current directory."
     )
     
-    sources = parser.add_mutually_exclusive_group()
-    sources.add_argument(
-        "-d",
-        "--directory",
-        type=str,
-        help="Root directory to search (explicit directory mode)",
-    )
-    sources.add_argument("-f", "--file", type=str, help="Scan only the specified .adoc file (explicit file mode)")
-    parser.add_argument(
-        "-r",
-        "--recursive",
-        action="store_true",
-        default=True,
-        help="Search subdirectories recursively (default: enabled)",
-    )
+    # Add the main option users should use
     parser.add_argument(
         "-nr",
         "--no-recursive",
         action="store_false",
         dest="recursive",
         help="Disable recursive search, only process current directory",
+    )
+    
+    # Deprecated options - hidden from main usage but still functional for backward compatibility
+    deprecated_group = parser.add_argument_group("deprecated options (hidden)")
+    sources = deprecated_group.add_mutually_exclusive_group()
+    sources.add_argument(
+        "-d",
+        "--directory",
+        type=str,
+        help=argparse.SUPPRESS,  # Hide from help output
+    )
+    sources.add_argument(
+        "-f", 
+        "--file", 
+        type=str, 
+        help=argparse.SUPPRESS,  # Hide from help output
+    )
+    deprecated_group.add_argument(
+        "-r",
+        "--recursive",
+        action="store_true",
+        default=True,
+        help=argparse.SUPPRESS,  # Hide from help output
     )
 
 
@@ -196,13 +208,13 @@ def resolve_target_path(args):
         return args.directory, 'directory'
     
     # Auto-detection from positional argument
-    if args.path:
-        if os.path.isfile(args.path):
-            return args.path, 'file'
-        elif os.path.isdir(args.path):
-            return args.path, 'directory'
+    if args.file_or_directory:
+        if os.path.isfile(args.file_or_directory):
+            return args.file_or_directory, 'file'
+        elif os.path.isdir(args.file_or_directory):
+            return args.file_or_directory, 'directory'
         else:
-            raise ValueError(f"Path does not exist or is not accessible: {args.path}")
+            raise ValueError(f"Path does not exist or is not accessible: {args.file_or_directory}")
     
     # Default to current directory
     return ".", 'directory'

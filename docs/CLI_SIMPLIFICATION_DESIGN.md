@@ -14,7 +14,7 @@ adt ContentType docs/            # auto-detect it's a directory
 **Implementation Status:** ✅ **COMPLETED**
 - Modified argument parsing in `file_utils.py` to detect file vs directory automatically
 - Updated ContentType plugin to handle implicit target detection
-- Users can now run `adt ContentType <file-or-directory>` without `-f` or `-d` flags
+- Users can now run `adt ContentType <file_or_dir>` without `-f` or `-d` flags
 - Recursive processing is enabled by default for directories
 
 ### 2. **Smart Plugin Selection** *
@@ -28,7 +28,8 @@ adt --fix-all docs/             # runs all applicable plugins
 - Requires content analysis engine to determine which plugins are needed
 - Need plugin metadata to define applicability rules
 
-### 3. **Preset Workflows** *
+### 3. **Preset Workflows** * see [Preset Workflows](#preset-workflows)
+
 Create common workflow shortcuts:
 ```bash
 adt --prep-for-dita docs/       # runs all DITA prep plugins
@@ -115,14 +116,9 @@ adt --common file.adoc          # runs most commonly used plugins
 
 ### 9. **Progress and Context**
 Better user feedback:
-```bash
-adt --verbose                   # shows what's happening (exists)
-adt --dry-run --summary         # shows what would change *
-adt --report docs/              # generates a report instead of changes *
-```
+
 
 **Implementation Notes:**
-- `--verbose` already exists
 - Summary and report modes require new output formatting
 - Could leverage existing dry-run foundations where available
 
@@ -194,7 +190,6 @@ adt --tutorial                  # interactive tutorial
 
 ### Phase 1: Low-Hanging Fruit
 - **Smart File Detection** ✅ **IMPLEMENTED + SMART ANALYSIS ENHANCED** (enhance existing functionality)
-- **Progress and Context** (`--verbose` exists, enhance others)
 - **Preset Workflows** (use existing plugin system)
 
 ### Phase 2: User Experience
@@ -285,3 +280,129 @@ adt ContentType file.adoc        # Auto-detection with intelligent suggestions
 - ✅ Documentation updated for new workflow
 - ✅ Safety features for beta testing and production use
 - ✅ Full Red Hat modular documentation standards compliance
+
+## Preset Workflows
+
+I'll elaborate on the **Preset Workflows** concept from line 192. This is an interesting feature that could be implemented using the existing plugin system. Let me explain what this means and how it could work:
+
+## **Preset Workflows** - Deep Dive
+
+The "Preset Workflows" concept refers to creating predefined combinations of plugins that users can run with a single command, rather than having to run each plugin individually. This would dramatically simplify common documentation workflows.
+
+### **Current State vs Vision**
+
+**Current Reality:**
+```bash
+# Users must run plugins individually
+adt ContentType docs/
+adt EntityReference docs/
+# (hypothetically, if more plugins existed)
+```
+
+**Preset Workflows Vision:**
+```bash
+# Single command runs multiple related plugins
+adt --prep-for-dita docs/       # runs all DITA preparation plugins
+adt --clean file.adoc           # runs all cleanup/formatting plugins  
+adt --validate docs/            # runs all validation plugins
+```
+
+### **How It Could Work with Existing Plugin System**
+
+The current plugin architecture in toolkit.py already has the foundation for this:
+
+1. **Plugin Discovery**: The system already discovers plugins dynamically
+2. **Plugin Registration**: Each plugin registers itself with `register_subcommand()`
+3. **Plugin Execution**: Plugins are executed through their `func()` method
+
+### **Implementation Approach**
+
+#### **1. Plugin Metadata Enhancement**
+Each plugin could declare categories/tags:
+
+```python
+# In ContentType.py
+__description__ = "Add content type labels"
+__categories__ = ["dita-prep", "cleanup", "validation"]
+__priority__ = 1  # execution order within workflows
+```
+
+#### **2. Workflow Configuration**
+Define workflows in a configuration file or code:
+
+```python
+# workflows.py
+WORKFLOWS = {
+    "prep-for-dita": {
+        "description": "Prepare files for DITA publishing",
+        "plugins": ["ContentType", "EntityReference"],
+        "order": ["ContentType", "EntityReference"]  # execution order
+    },
+    "cleanup": {
+        "description": "Clean up and format files",
+        "plugins": ["EntityReference", "ContentType"],
+        "order": ["EntityReference", "ContentType"]
+    }
+}
+```
+
+#### **3. Workflow Executor**
+Add workflow support to the main CLI:
+
+```python
+# In toolkit.py
+parser.add_argument(
+    "--prep-for-dita",
+    metavar="PATH", 
+    help="Run all DITA preparation plugins on specified path"
+)
+```
+
+### **Benefits of This Approach**
+
+1. **User Simplicity**: One command instead of multiple
+2. **Consistency**: Ensures plugins run in optimal order
+3. **Efficiency**: Batch processing reduces overhead
+4. **Discoverability**: Users learn about plugin combinations
+5. **Extensibility**: Easy to add new workflows as plugins evolve
+
+### **Example Workflows for AsciiDoc DITA**
+
+Given the current two plugins (`ContentType` and `EntityReference`):
+
+```bash
+# Full DITA preparation workflow
+adt --prep-for-dita docs/
+# Internally runs:
+# 1. ContentType docs/     # Add missing content type attributes
+# 2. EntityReference docs/ # Fix HTML entity references
+
+# Quick cleanup workflow  
+adt --cleanup file.adoc
+# Internally runs both plugins on a single file
+
+# Validation-only workflow (future)
+adt --validate docs/ --dry-run
+# Runs plugins in report-only mode to show issues
+```
+
+### **Why This Makes Sense**
+
+The **"use existing plugin system"** note is particularly insightful because:
+
+1. **No Core Changes Needed**: The plugin architecture already supports this
+2. **Plugin Independence**: Each plugin remains standalone and testable
+3. **Workflow Flexibility**: Different workflows can combine plugins differently
+4. **Easy Maintenance**: Adding new plugins automatically makes them available for workflows
+
+### **Current Implementation Gap**
+
+Right now, this would require:
+1. Adding workflow configuration system
+2. Enhancing the argument parser to support workflow flags
+3. Creating a workflow executor that runs multiple plugins in sequence
+4. Ensuring plugins can be composed safely (no conflicts)
+
+This is a **Phase 1** feature because it builds on existing infrastructure rather than requiring new core functionality - making it relatively straightforward to implement while providing significant user value.
+
+Would you like me to elaborate on any specific aspect of how preset workflows could be implemented?

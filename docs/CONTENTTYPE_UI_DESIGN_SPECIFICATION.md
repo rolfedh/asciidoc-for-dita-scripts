@@ -50,7 +50,7 @@ Three distinct severity levels with appropriate visual and behavioral cues:
 
 ## Command Line Interface Design
 
-### Global Options
+<!-- ### Global Options
 
 ```bash
 asciidoc-dita-toolkit ContentType [options] [files...]
@@ -63,7 +63,7 @@ Options:
   --format           Output format: text|json|markdown (default: text)
   --config           Configuration file path for custom settings
   --quiet, -q        Suppress non-essential output
-  --verbose, -v      Enable detailed logging
+  # --verbose, -v      Enable detailed logging -->
 ```
 
 ### Interactive Interface Components

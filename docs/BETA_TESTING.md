@@ -18,7 +18,7 @@ This guide helps you test the **modernized CLI and enhanced ContentType plugin**
 Major improvements to user experience:
 - **Auto-detection** of files vs directories - no more `-f` or `-d` flags needed
 - **Recursive processing by default** for directories
-- **Simple command structure**: `adt ContentType <file-or-directory>`
+- **Simple command structure**: `adt ContentType <file_or_dir>`
 - **Non-recursive option** with `-nr/--no-recursive` flag
 
 ### ContentType Plugin Improvements
@@ -35,7 +35,7 @@ Enhanced with comprehensive new features:
 
 - **Auto-detection** of files vs directories eliminates need for `-f` and `-d` flags
 - **Recursive processing by default** for directories
-- **Simplified command structure** - just `adt ContentType <file-or-directory>`
+- **Simplified command structure** - just `adt ContentType <file_or_dir>`
 - **Non-recursive option** with `-nr/--no-recursive` flag
 - **Comprehensive test file suite** with backup and restore system
 
