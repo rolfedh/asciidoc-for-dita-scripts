@@ -1,8 +1,8 @@
 # Beta Testing Guide
 
-🎉 **Welcome to beta testing for the AsciiDoc DITA Toolkit v0.1.8b2!**
+🎉 **Welcome to beta testing for the AsciiDoc DITA Toolkit v0.2.0!**
 
-This guide helps you test the **new ContentType interactive UI** and explore features using **included test files**.
+This guide helps you test the **modernized CLI and enhanced ContentType plugin** using **included test files**.
 
 ## 📋 Quick Start
 
@@ -11,12 +11,21 @@ This guide helps you test the **new ContentType interactive UI** and explore fea
 3. [Test the new features](#-testing-the-contenttype-plugin)
 4. [Report feedback](#-providing-feedback)
 
-## 🚀 What's New in v0.1.8b2
+## 🚀 What's New in v0.2.0
+
+### CLI Modernization
+
+Major improvements to user experience:
+- **Auto-detection** of files vs directories - no more `-f` or `-d` flags needed
+- **Recursive processing by default** for directories
+- **Simple command structure**: `adt ContentType <file-or-directory>`
+- **Non-recursive option** with `-nr/--no-recursive` flag
 
 ### ContentType Plugin Improvements
 
 Enhanced with comprehensive new features:
-- **Interactive prompts** when content type cannot be determined
+- **Smart content type analysis** based on title style, filename, and content patterns
+- **Interactive prompts** with intelligent pre-selection when content type cannot be determined
 - **Deprecated attribute conversion** (`:_content-type:` and `:_module-type:` → `:_mod-docs-content-type:`)
 - **Filename-based auto-detection** for all standard prefixes
 - **Clear visual feedback** with colored output and separator lines
@@ -24,8 +33,9 @@ Enhanced with comprehensive new features:
 
 ### File Processing Enhancements
 
+- **Auto-detection** of files vs directories eliminates need for `-f` and `-d` flags
 - **Recursive processing by default** for directories
-- **Simplified command structure** - no more `--directory` flag needed
+- **Simplified command structure** - just `adt ContentType <file-or-directory>`
 - **Non-recursive option** with `-nr/--no-recursive` flag
 - **Comprehensive test file suite** with backup and restore system
 
@@ -34,7 +44,7 @@ Enhanced with comprehensive new features:
 Install the beta version via PyPI:
 
 ```bash
-pip install asciidoc-dita-toolkit==0.1.8b2
+pip install asciidoc-dita-toolkit==0.2.0
 adt --version
 ```
 
@@ -64,17 +74,17 @@ mkdir my_test_files && cd my_test_files
 # See all options
 adt ContentType --help
 
-# Process single file
-adt ContentType -f FILE
+# Process single file (auto-detected)
+adt ContentType FILE
 
-# Process directory (recursive by default)
+# Process directory (recursive by default, auto-detected)
 adt ContentType DIR
 
 # Process directory non-recursively  
 adt ContentType DIR -nr
 
 # Process current directory (default, recursive)
-adt ContentType
+adt ContentType .
 ```
 
 ### Quick Test Workflow
@@ -83,8 +93,8 @@ adt ContentType
 # 1. Use included test files
 cd test_files/
 
-# 2. Test single file processing
-adt ContentType -f missing_content_type.adoc
+# 2. Test single file processing (auto-detection)
+adt ContentType missing_content_type.adoc
 
 # 3. Test directory processing (recursive by default)
 adt ContentType .
@@ -95,10 +105,17 @@ adt ContentType ignore_comments.adoc
 # 5. Test filename auto-detection  
 adt ContentType proc_example.adoc
 
-# 6. IMPORTANT: Reset test files for another round
+# 6. Test smart content type analysis
+adt ContentType installing_docker.adoc
+
+# 7. Test auto-detection of files vs directories (no flags needed!)
+adt ContentType missing_content_type.adoc  # Single file
+adt ContentType .                          # Directory
+
+# 8. IMPORTANT: Reset test files for another round
 cd .. && ./restore_test_files.sh
 
-# 7. Repeat tests as needed
+# 9. Repeat tests as needed
 ```
 
 > **⚠️ Production Safety Reminder:** When testing on your actual documentation repository, always:
@@ -129,6 +146,19 @@ The included test files cover all ContentType plugin scenarios:
 | `con_example.adoc` | `con_` prefix | Adds `:_mod-docs-content-type: CONCEPT` |
 | `ref_example.adoc` | `ref_` prefix | Adds `:_mod-docs-content-type: REFERENCE` |
 | `snip_example.adoc` | `snip_` prefix | Adds `:_mod-docs-content-type: SNIPPET` |
+
+### 🧠 Smart Analysis Test Files
+
+These files test the enhanced smart analysis features that detect content types based on title style and content patterns:
+
+| File | Analysis Target | Expected Smart Detection |
+|------|----------------|-------------------------|
+| `installing_docker.adoc` | Gerund title + procedure patterns | Should suggest PROCEDURE (title starts with "Installing", has numbered steps, .Procedure section) |
+| `docker_commands.adoc` | Reference indicators | Should suggest REFERENCE (title contains "reference", has tables and definition lists) |
+| `what_is_containerization.adoc` | Concept indicators | Should suggest CONCEPT (noun phrase title, explanatory content) |
+| `docker_guide_assembly.adoc` | Assembly patterns | Should suggest ASSEMBLY (contains include:: statements) |
+
+> **🧪 Testing Smart Analysis:** These files have no content type attributes, allowing you to test how well the enhanced plugin analyzes title styles and content patterns to make smart suggestions during interactive prompts.
 
 ### ✅ Files Already Correct
 

@@ -14,6 +14,7 @@ Intended for use by all scripts in this repository to avoid code duplication and
 import argparse
 import os
 import re
+import sys
 
 # Regex to split lines and preserve their original line endings
 LINE_SPLITTER = re.compile(rb"(.*?)(\r\n|\r|\n|$)")
@@ -93,19 +94,26 @@ def common_arg_parser(parser):
     -r / --recursive: Search subdirectories recursively (default: enabled)
     -nr / --no-recursive: Disable recursive search, only process current directory
     -f / --file: Scan only the specified .adoc file
+    [path]: Optional positional argument that auto-detects file vs directory
 
     Args:
         parser: ArgumentParser instance to add arguments to
     """
+    # Add optional positional argument for auto-detection
+    parser.add_argument(
+        "path",
+        nargs="?",
+        help="File or directory path (auto-detected). If not specified, uses current directory."
+    )
+    
     sources = parser.add_mutually_exclusive_group()
     sources.add_argument(
         "-d",
         "--directory",
         type=str,
-        default=".",
-        help="Root directory to search (default: current directory)",
+        help="Root directory to search (explicit directory mode)",
     )
-    sources.add_argument("-f", "--file", type=str, help="Scan only the specified .adoc file")
+    sources.add_argument("-f", "--file", type=str, help="Scan only the specified .adoc file (explicit file mode)")
     parser.add_argument(
         "-r",
         "--recursive",
@@ -137,22 +145,64 @@ def is_valid_adoc_file(filepath):
 
 def process_adoc_files(args, process_file_func):
     """
-    Batch processing pattern for .adoc files:
-    - If --file is given and valid, process only that file.
-    - Otherwise, find all .adoc files (recursively if requested) in the specified directory and process each.
+    Batch processing pattern for .adoc files with auto-detection support:
+    - Automatically detects whether the argument is a file or directory
+    - If file mode, processes only that file
+    - If directory mode, finds all .adoc files (recursively if requested) and processes each
 
     Args:
-        args: Parsed command line arguments (must have 'file', 'directory', 'recursive' attributes)
+        args: Parsed command line arguments 
         process_file_func: Function that takes a file path and processes it
     """
+    try:
+        target_path, mode = resolve_target_path(args)
+        
+        if mode == 'file':
+            if is_valid_adoc_file(target_path):
+                process_file_func(target_path)
+            else:
+                print(f"Error: {target_path} is not a valid .adoc file or is a symlink.")
+        else:  # directory mode
+            adoc_files = find_adoc_files(target_path, getattr(args, "recursive", True))
+            for filepath in adoc_files:
+                process_file_func(filepath)
+                
+    except ValueError as e:
+        print(f"Error: {e}")
+        sys.exit(1)
+
+def resolve_target_path(args):
+    """
+    Resolve the target path from command line arguments, supporting auto-detection.
+    
+    Priority order:
+    1. Explicit -f/--file flag (returns file path, 'file' mode)
+    2. Explicit -d/--directory flag (returns directory path, 'directory' mode)  
+    3. Positional path argument with auto-detection
+    4. Default to current directory
+    
+    Args:
+        args: Parsed command line arguments
+        
+    Returns:
+        tuple: (path, mode) where mode is 'file' or 'directory'
+    """
+    # Explicit file mode
     if args.file:
-        if is_valid_adoc_file(args.file):
-            process_file_func(args.file)
+        return args.file, 'file'
+    
+    # Explicit directory mode
+    if args.directory:
+        return args.directory, 'directory'
+    
+    # Auto-detection from positional argument
+    if args.path:
+        if os.path.isfile(args.path):
+            return args.path, 'file'
+        elif os.path.isdir(args.path):
+            return args.path, 'directory'
         else:
-            print(f"Error: {args.file} is not a valid .adoc file or is a symlink.")
-    else:
-        adoc_files = find_adoc_files(
-            getattr(args, "directory", "."), getattr(args, "recursive", False)
-        )
-        for filepath in adoc_files:
-            process_file_func(filepath)
+            raise ValueError(f"Path does not exist or is not accessible: {args.path}")
+    
+    # Default to current directory
+    return ".", 'directory'

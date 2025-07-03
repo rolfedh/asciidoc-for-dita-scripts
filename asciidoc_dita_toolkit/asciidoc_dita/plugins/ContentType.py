@@ -87,9 +87,12 @@ def detect_existing_content_type(lines):
     return (None, None, None)
 
 
-def prompt_user_for_content_type():
+def prompt_user_for_content_type(suggested_type=None):
     """
-    Prompt user to select content type interactively.
+    Prompt user to select content type interactively with smart pre-selection.
+
+    Args:
+        suggested_type: Suggested content type based on analysis
 
     Returns:
         Selected content type string or None if skipped
@@ -103,14 +106,36 @@ def prompt_user_for_content_type():
         "TBD"
     ]
     
-    print("\nNo content type detected. Please select:")
+    # Find suggested option index
+    suggested_index = None
+    if suggested_type and suggested_type in options:
+        suggested_index = options.index(suggested_type) + 1
+    
+    if suggested_type:
+        print(f"\nContent type not specified. Based on analysis, this appears to be a {Highlighter(suggested_type).highlight()}.")
+        print("\nSelect content type:")
+    else:
+        print("\nNo content type detected. Please select:")
+    
     for i, option in enumerate(options, 1):
-        print(f"[{i}] {option}")
+        if i == suggested_index:
+            print(f"[{i}] ✓ {Highlighter(option).highlight()} (recommended)")
+        else:
+            print(f"[{i}]   {option}")
     print("[7] Skip this file")
+    
+    # Set default choice message
+    default_choice = suggested_index if suggested_index else ""
+    prompt_msg = f"Choice (1-7) [{suggested_index}]: " if suggested_index else "Choice (1-7): "
     
     while True:
         try:
-            choice = input("Choice (1-7): ").strip()
+            choice = input(prompt_msg).strip()
+            
+            # Use suggested default if user just presses Enter
+            if choice == "" and suggested_index:
+                choice = str(suggested_index)
+            
             if choice == "7":
                 return None
             
@@ -125,6 +150,132 @@ def prompt_user_for_content_type():
         except EOFError:
             print("\nOperation cancelled.")
             sys.exit(0)
+
+
+def analyze_title_style(title):
+    """
+    Analyze title style to suggest content type.
+    
+    Args:
+        title: The document title (H1 heading)
+        
+    Returns:
+        Suggested content type string or None
+    """
+    if not title:
+        return None
+        
+    title = title.strip()
+    
+    # Remove title prefix (= or #) and clean up
+    title = re.sub(r'^[=# ]+', '', title).strip()
+    
+    # Procedure patterns (gerund forms)
+    gerund_patterns = [
+        r'^(Creating|Installing|Configuring|Setting up|Building|Deploying|Managing|Updating|Upgrading)',
+        r'^(Adding|Removing|Deleting|Enabling|Disabling|Starting|Stopping|Restarting)',
+        r'^(Implementing|Establishing|Defining|Developing|Generating|Publishing)'
+    ]
+    
+    for pattern in gerund_patterns:
+        if re.match(pattern, title, re.IGNORECASE):
+            return "PROCEDURE"
+    
+    # Reference patterns
+    reference_patterns = [
+        r'(reference|commands?|options?|parameters?|settings?|configuration)',
+        r'(syntax|examples?|list of|table of|glossary)',
+        r'(api|cli|command.?line)'
+    ]
+    
+    for pattern in reference_patterns:
+        if re.search(pattern, title, re.IGNORECASE):
+            return "REFERENCE"
+    
+    # Assembly patterns (collection indicators)
+    assembly_patterns = [
+        r'(guide|tutorial|walkthrough|workflow)',
+        r'(getting started|quick start|step.?by.?step)'
+    ]
+    
+    for pattern in assembly_patterns:
+        if re.search(pattern, title, re.IGNORECASE):
+            return "ASSEMBLY"
+    
+    # Default to concept for other noun phrases
+    return "CONCEPT"
+
+
+def analyze_content_patterns(content):
+    """
+    Analyze content structure to suggest content type.
+    
+    Args:
+        content: Full file content as string
+        
+    Returns:
+        Suggested content type string or None
+    """
+    # Assembly indicators (most specific, check first)
+    if re.search(r'include::', content):
+        return "ASSEMBLY"
+    
+    # Procedure indicators
+    procedure_patterns = [
+        r'^\s*\d+\.\s',  # numbered steps
+        r'^\.\s*Procedure\s*$',  # .Procedure section
+        r'^\.\s*Prerequisites?\s*$',  # .Prerequisites section
+        r'^\.\s*Verification\s*$',  # .Verification section
+        r'^\s*\*\s+[A-Z].*\.$'  # bullet points with imperative sentences
+    ]
+    
+    procedure_count = 0
+    for pattern in procedure_patterns:
+        if re.search(pattern, content, re.MULTILINE):
+            procedure_count += 1
+    
+    if procedure_count >= 2:  # Multiple procedure indicators
+        return "PROCEDURE"
+    
+    # Reference indicators
+    reference_patterns = [
+        r'\|====',  # AsciiDoc tables
+        r'^\w+::\s*$',  # definition lists
+        r'^\[options="header"\]',  # table headers
+        r'^\|\s*\w+\s*\|\s*\w+',  # table rows
+    ]
+    
+    reference_count = 0
+    for pattern in reference_patterns:
+        if re.search(pattern, content, re.MULTILINE):
+            reference_count += 1
+    
+    # Count definition lists (::)
+    definition_count = len(re.findall(r'::\s*$', content, re.MULTILINE))
+    if definition_count > 3 or reference_count >= 1:
+        return "REFERENCE"
+    
+    # No clear patterns found
+    return None
+
+
+def get_document_title(lines):
+    """
+    Extract the document title (first H1 heading) from file lines.
+    
+    Args:
+        lines: List of (text, ending) tuples from file
+        
+    Returns:
+        Title string or None
+    """
+    for text, _ in lines:
+        stripped = text.strip()
+        if stripped.startswith('= '):
+            return stripped[2:].strip()
+        elif stripped.startswith('# '):
+            return stripped[2:].strip()
+    return None
 
 
 def process_content_type_file(filepath):
@@ -148,7 +299,15 @@ def process_content_type_file(filepath):
                     print(f"  ✓ Content type already set: {Highlighter(content_type).success()}")
                 else:
                     print(f"  ⚠️  Empty content type attribute found")
-                    content_type = prompt_user_for_content_type()
+                    
+                    # Try smart content analysis for empty attributes
+                    title = get_document_title(lines)
+                    full_content = '\n'.join([text for text, _ in lines])
+                    title_suggestion = analyze_title_style(title) if title else None
+                    content_suggestion = analyze_content_patterns(full_content)
+                    suggested_type = content_suggestion or title_suggestion
+                    
+                    content_type = prompt_user_for_content_type(suggested_type)
                     if content_type:
                         # Replace empty attribute
                         lines[line_index] = (f":_mod-docs-content-type: {content_type}", lines[line_index][1])
@@ -168,7 +327,15 @@ def process_content_type_file(filepath):
                     print(f"  ✓ Converted to: {Highlighter(f':_mod-docs-content-type: {content_type}').success()}")
                 else:
                     print(f"  ⚠️  Empty deprecated attribute found")
-                    content_type = prompt_user_for_content_type()
+                    
+                    # Try smart content analysis for empty deprecated attributes
+                    title = get_document_title(lines)
+                    full_content = '\n'.join([text for text, _ in lines])
+                    title_suggestion = analyze_title_style(title) if title else None
+                    content_suggestion = analyze_content_patterns(full_content)
+                    suggested_type = content_suggestion or title_suggestion
+                    
+                    content_type = prompt_user_for_content_type(suggested_type)
                     if content_type:
                         lines[line_index] = (f":_mod-docs-content-type: {content_type}", lines[line_index][1])
                         write_text_preserve_endings(filepath, lines)
@@ -187,8 +354,27 @@ def process_content_type_file(filepath):
             print("=" * 40)
             return
         
-        # No detection possible, prompt user
-        content_type = prompt_user_for_content_type()
+        # Try smart content analysis
+        print("  🔍 Analyzing file content...")
+        
+        # Get document title and full content for analysis
+        title = get_document_title(lines)
+        full_content = '\n'.join([text for text, _ in lines])
+        
+        # Analyze title style and content patterns
+        title_suggestion = analyze_title_style(title) if title else None
+        content_suggestion = analyze_content_patterns(full_content)
+        
+        # Choose the most specific suggestion
+        suggested_type = content_suggestion or title_suggestion
+        
+        if suggested_type:
+            print(f"  💭 Analysis suggests: {Highlighter(suggested_type).highlight()}")
+            if title:
+                print(f"     Based on title: '{title[:50]}{'...' if len(title) > 50 else ''}'")
+        
+        # Prompt user with smart pre-selection
+        content_type = prompt_user_for_content_type(suggested_type)
         if content_type:
             lines.insert(0, (f":_mod-docs-content-type: {content_type}", "\n"))
             write_text_preserve_endings(filepath, lines)

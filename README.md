@@ -131,22 +131,22 @@ adt <plugin> [options]¹
 
 All plugins support these options:
 
-- `-f FILE` or `--file FILE`: Process a specific file
-- `-nr` or `--no-recursive`: Process only the specified directory (non-recursive)
-- Directory paths: Processed recursively by default (no flag needed)
+- **Auto-detection**: Automatically detects files vs directories - no flags needed
+- `-nr` or `--no-recursive`: Process directory non-recursively (single level only)
+- **Recursive by default**: Directory paths are processed recursively by default
 
 ### 📝 Examples
 
 #### Fix HTML entity references in a single file
 
 ```sh
-adt EntityReference -f path/to/file.adoc¹
+adt EntityReference path/to/file.adoc¹
 ```
 
 #### Add content type labels (processes current directory recursively by default)
 
 ```sh
-adt ContentType¹
+adt ContentType .¹
 ```
 
 #### Process all .adoc files in a specific directory (recursive by default)
@@ -170,10 +170,10 @@ If using the container version, all commands work the same but are prefixed with
 docker run --rm rolfedh/asciidoc-dita-toolkit-prod:latest --list-plugins
 
 # Fix entity references in current directory
-docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit-prod:latest EntityReference
+docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit-prod:latest EntityReference .
 
 # Add content type labels to a specific file
-docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit-prod:latest ContentType -f docs/myfile.adoc
+docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit-prod:latest ContentType docs/myfile.adoc
 
 # Interactive shell for development (use dev image)
 docker run --rm -it -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit:latest /bin/bash
@@ -203,8 +203,8 @@ adt EntityReference
 
 | Plugin | Description | Example Usage |
 |--------|-------------|---------------|
-| `EntityReference` | Replace unsupported HTML character entity references with AsciiDoc attribute references | `adt EntityReference -f file.adoc`¹ |
-| `ContentType` | Add `:_mod-docs-content-type:` labels where missing, with interactive prompts, deprecated attribute conversion, and filename-based auto-detection | `adt ContentType docs/`¹ |
+| `EntityReference` | Replace unsupported HTML character entity references with AsciiDoc attribute references | `adt EntityReference file.adoc`¹ |
+| `ContentType` | Add `:_mod-docs-content-type:` labels with smart analysis, interactive prompts, deprecated attribute conversion, and filename-based auto-detection | `adt ContentType docs/`¹ |
 
 > **📋 Technical Details**: For plugin internals and supported entity mappings, see [docs/asciidoc-dita-toolkit.md](docs/asciidoc-dita-toolkit.md).
 
