@@ -349,7 +349,7 @@ To manually have the GitHub Actions workflow build and upload the package to PyP
 2. **Create a release preparation branch:**
 
    ```sh
-   git checkout -b release/v<new-version>  # Example: release/v0.1.8
+   git checkout -b release/v<new-version>  # Example: release/v0.2.0
    ```
 
 3. **Update the version** in `pyproject.toml`.
@@ -372,7 +372,7 @@ To manually have the GitHub Actions workflow build and upload the package to PyP
    ```sh
    git checkout main
    git pull origin main
-   git tag v<new-version>  # Example: v0.1.8
+   git tag v<new-version>  # Example: v0.2.0
    git push origin v<new-version>
    ```
 
@@ -383,9 +383,9 @@ To manually have the GitHub Actions workflow build and upload the package to PyP
 ## Troubleshooting if the tagging gets ahead of the version
 
    ```sh
-   git tag -d v0.1.3
-   git tag v0.1.3
-   git push --force origin v0.1.3
+   git tag -d v0.2.0
+   git tag v0.2.0
+   git push --force origin v0.2.0
    ```
 
 **Manual publishing (alternative):**
@@ -544,7 +544,7 @@ refactor: improve CLI error handling
 Use the new Makefile `release` target for a fully automated release:
 
 ```sh
-# Automated patch version bump (0.1.7 → 0.1.8)
+# Automated patch version bump (0.2.0 → 0.2.1)
 make release
 
 # Specify custom version
@@ -571,8 +571,8 @@ make release VERSION=0.2.0
 
 ```sh
 # Using GitHub CLI
-gh release create v0.1.7 \
-  --title "Release 0.1.7: Enhanced Plugin System" \
+gh release create v0.2.0 \
+  --title "Release 0.2.0: Enhanced Plugin System" \
   --notes "This release adds new plugin capabilities and fixes several bugs."
 
 # Using GitHub web interface

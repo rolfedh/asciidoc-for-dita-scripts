@@ -211,7 +211,7 @@ Focus your testing on these areas:
 **[Create a GitHub issue](https://github.com/rolfedh/asciidoc-dita-toolkit/issues)** with your feedback using this template:
 
 ```markdown
-## Beta Testing Feedback - v0.1.8b2
+## Beta Testing Feedback - v0.2.0
 
 **Setup:** [PyPI/Docker] | [OS] | [Python version]
 **Plugin:** [ContentType/EntityReference/Other]
@@ -306,7 +306,7 @@ Content with commented-out content type.
 ```yaml
 - name: Test with beta files
   run: |
-    pip install asciidoc-dita-toolkit==0.1.8b2
+    pip install asciidoc-dita-toolkit==0.2.0
     adt ContentType test/
 ```
 
@@ -325,7 +325,7 @@ Content with commented-out content type.
 **Files not found:**
 ```bash
 adt --help
-pip install --upgrade asciidoc-dita-toolkit==0.1.8b2
+pip install --upgrade asciidoc-dita-toolkit==0.2.0
 ```
 
 **Container issues:**

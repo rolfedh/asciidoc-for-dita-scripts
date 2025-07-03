@@ -14,12 +14,12 @@ Docker Hub provides free public repositories and is the most widely used contain
 ```bash
 # Build and tag the image
 docker build -t rolfedh/asciidoc-dita-toolkit:latest .
-docker build -t rolfedh/asciidoc-dita-toolkit:0.1.6 .
+docker build -t rolfedh/asciidoc-dita-toolkit:0.2.0 .
 
 # Push to Docker Hub
 docker login
 docker push rolfedh/asciidoc-dita-toolkit:latest
-docker push rolfedh/asciidoc-dita-toolkit:0.1.6
+docker push rolfedh/asciidoc-dita-toolkit:0.2.0
 ```
 
 **Usage:**
@@ -39,14 +39,14 @@ GitHub's container registry integrates well with GitHub Actions and provides fre
 ```bash
 # Build and tag for GHCR
 docker build -t ghcr.io/rolfedh/asciidoc-dita-toolkit:latest .
-docker build -t ghcr.io/rolfedh/asciidoc-dita-toolkit:0.1.6 .
+docker build -t ghcr.io/rolfedh/asciidoc-dita-toolkit:0.2.0 .
 
 # Login to GHCR
 echo $GITHUB_TOKEN | docker login ghcr.io -u rolfedh --password-stdin
 
 # Push to GHCR
 docker push ghcr.io/rolfedh/asciidoc-dita-toolkit:latest
-docker push ghcr.io/rolfedh/asciidoc-dita-toolkit:0.1.6
+docker push ghcr.io/rolfedh/asciidoc-dita-toolkit:0.2.0
 ```
 
 ### 3. Red Hat Quay.io
@@ -69,17 +69,17 @@ Distribute to multiple registries for maximum availability:
 
 ```bash
 # Build once, tag for multiple registries
-docker build -t asciidoc-dita-toolkit:0.1.6 .
+docker build -t asciidoc-dita-toolkit:0.2.0 .
 
 # Tag for different registries
-docker tag asciidoc-dita-toolkit:0.1.6 rolfedh/asciidoc-dita-toolkit:0.1.6
-docker tag asciidoc-dita-toolkit:0.1.6 ghcr.io/rolfedh/asciidoc-dita-toolkit:0.1.6
-docker tag asciidoc-dita-toolkit:0.1.6 quay.io/rolfedh/asciidoc-dita-toolkit:0.1.6
+docker tag asciidoc-dita-toolkit:0.2.0 rolfedh/asciidoc-dita-toolkit:0.2.0
+docker tag asciidoc-dita-toolkit:0.2.0 ghcr.io/rolfedh/asciidoc-dita-toolkit:0.2.0
+docker tag asciidoc-dita-toolkit:0.2.0 quay.io/rolfedh/asciidoc-dita-toolkit:0.2.0
 
 # Push to all registries
-docker push rolfedh/asciidoc-dita-toolkit:0.1.6
-docker push ghcr.io/rolfedh/asciidoc-dita-toolkit:0.1.6
-docker push quay.io/rolfedh/asciidoc-dita-toolkit:0.1.6
+docker push rolfedh/asciidoc-dita-toolkit:0.2.0
+docker push ghcr.io/rolfedh/asciidoc-dita-toolkit:0.2.0
+docker push quay.io/rolfedh/asciidoc-dita-toolkit:0.2.0
 ```
 
 ## Container Variants
