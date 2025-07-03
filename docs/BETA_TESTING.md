@@ -77,7 +77,7 @@ adt ContentType missing_content_type.adoc
 adt ContentType .
 
 # Start with a fresh set of files after directory processing (files have been modified)
-cd test_files_2
+cd ../test_files_2
 
 # 4. Test interactive prompts (select option 1-7 when prompted)
 adt ContentType ignore_comments.adoc
@@ -88,8 +88,8 @@ adt ContentType proc_example.adoc
 # 6. Test smart content type analysis
 adt ContentType installing_docker.adoc
 
-# 7. If you want another set of test files to play with
-cd test_files_3
+# 7. Optional: If you want another set of test files to play with
+cd ../test_files_3
 ```
 
 ## 📝 Providing Feedback
