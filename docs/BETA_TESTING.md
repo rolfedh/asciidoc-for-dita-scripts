@@ -18,10 +18,6 @@ When `adt` is released, you'll typically create a new working branch in your rep
 4. **Smart content analysis** - Examines file content patterns (headings, structure, keywords) to suggest appropriate content type
 5. **Interactive prompts** - When auto-detection fails, guides you through manual content type selection
 
-## 📅 Beta Timeline
-
-- **Beta period**: 1 week (ends on Friday July 11 2025)
-- 
 ## 📋 Quick Start
 
 1. [Install the beta](#-installation) 
@@ -39,20 +35,6 @@ adt --version
 ```
 
 > **💡 Need to upgrade or having issues?** See [Upgrading and Troubleshooting](#-upgrading-and-troubleshooting)
-
-## 📁 Unpacking the Test Files
-
-Custom `*.adoc` files are included with the PyPI package for testing:
-
-```bash
-# Create a dedicated test directory and copy test files there
-mkdir ~/adt-beta-test
-cd ~/adt-beta-test
-adt-test-files copy ./test_files
-cd test_files
-
-# You're ready to test!
-```
 
 > **💡 Reset test files:** The toolkit modifies files during testing. To get fresh test files for another round, simply copy them again: `adt-test-files copy ./test_files_fresh`
 
@@ -97,7 +79,7 @@ adt ContentType missing_content_type.adoc
 adt ContentType .
 
 # Start with a fresh set of files after directory processing (files have been modified)
-cd test_files_2
+cd ../test_files_2
 
 # 4. Test interactive prompts (select option 1-7 when prompted)
 adt ContentType ignore_comments.adoc
@@ -108,15 +90,14 @@ adt ContentType proc_example.adoc
 # 6. Test smart content type analysis
 adt ContentType installing_docker.adoc
 
-# 7. If you want another set of test files to play with
-cd test_files_3
+# 7. Optional: If you want another set of test files to play with
+cd ../test_files_3
 ```
 
 ## 📝 Providing Feedback
 
 Please share your thoughts with us by
 [creating a beta testing feedback issue in GitHub](https://github.com/rolfedh/asciidoc-dita-toolkit/issues/new?template=beta-testing-feedback.md).
-
 We especially appreciate your feedback on:
 
 1. **Interactive prompts** - Are the content type options clear?
