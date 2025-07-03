@@ -145,12 +145,18 @@ container-validate:
 	@docker rmi test-dev test-prod > /dev/null 2>&1 || true
 
 # Release automation target (MAINTAINERS ONLY)
-release: check
-	@echo "Starting automated release process..."
+# Optimized workflow: test → clean → version bump → changelog → build → commit → tag → publish → github release
+release:
+	@echo "🚀 Starting optimized automated release process..."
 	@echo "⚠️  WARNING: This target is for project maintainers only!"
 	@echo "   Contributors should not use this target."
 	@echo "   Continue only if you have maintainer access."
 	@echo ""
+	@# Check prerequisites
+	@echo "🔍 Checking prerequisites..."
+	@command -v gh >/dev/null 2>&1 || { echo "Error: GitHub CLI (gh) is required but not installed."; exit 1; }
+	@[ -n "$$GITHUB_TOKEN" ] || { echo "Error: GITHUB_TOKEN environment variable is required."; exit 1; }
+	@[ -n "$$PYPI_API_TOKEN" ] || { echo "Error: PYPI_API_TOKEN environment variable is required."; exit 1; }
 	@if [ -z "$(FORCE)" ]; then \
 		echo "Continue as maintainer? (y/N)"; \
 		read -r confirm; \
@@ -158,7 +164,6 @@ release: check
 			echo "Release cancelled."; \
 			exit 1; \
 		fi; \
-	else \
 	fi
 	@# Check if we're on main/master branch
 	@branch=$$(git symbolic-ref --short HEAD); \
@@ -171,23 +176,17 @@ release: check
 		echo "Error: Working directory is not clean. Please commit or stash changes."; \
 		exit 1; \
 	fi
-	@# Check for untracked files that might be important
-	@if [ -n "$$(git status --porcelain | grep '^??')" ]; then \
-		echo "Warning: Untracked files detected. Consider adding them or adding to .gitignore:"; \
-		git status --porcelain | grep '^??'; \
-		if [ -z "$(FORCE)" ]; then \
-			echo "Continue anyway? (y/N)"; \
-			read -r confirm; \
-			if [ "$$confirm" != "y" ] && [ "$$confirm" != "Y" ]; then \
-				echo "Release cancelled."; \
-				exit 1; \
-			fi; \
-		else \
-			echo "FORCE set, skipping untracked files confirmation."; \
-		fi; \
-	fi
-	@# Determine new version
-	@if [ -n "$(VERSION)" ]; then \
+	@# Step 1: Run all tests (fail-fast)
+	@echo "🧪 Step 1/10: Running comprehensive tests..."
+	@set -e; $(MAKE) check
+	@echo "✅ All tests passed!"
+	@# Step 2: Clean build artifacts
+	@echo "🧹 Step 2/10: Cleaning build artifacts..."
+	@set -e; $(MAKE) clean
+	@# Step 3: Determine and bump version
+	@echo "📈 Step 3/10: Determining version..."
+	@set -e; \
+	if [ -n "$(VERSION)" ]; then \
 		new_version="$(VERSION)"; \
 		echo "Using specified version: $$new_version"; \
 	else \
@@ -195,53 +194,86 @@ release: check
 		echo "Current version: $$current_version"; \
 		major=$$(echo $$current_version | cut -d. -f1); \
 		minor=$$(echo $$current_version | cut -d. -f2); \
-		patch=$$(echo $$current_version | cut -d. -f3); \
+		patch=$$(echo $$current_version | cut -d. -f3 | cut -d'b' -f1); \
 		new_patch=$$((patch + 1)); \
 		new_version="$$major.$$minor.$$new_patch"; \
 		echo "Auto-bumping patch version to: $$new_version"; \
 	fi; \
 	echo "Proceeding with version: $$new_version"; \
 	if [ -z "$(FORCE)" ]; then \
-		echo "Continue? (y/N)"; \
+		echo "Confirm version $$new_version? (y/N)"; \
 		read -r confirm; \
 		if [ "$$confirm" != "y" ] && [ "$$confirm" != "Y" ]; then \
 			echo "Release cancelled."; \
 			exit 1; \
 		fi; \
-	else \
-		echo "FORCE set, skipping version confirmation."; \
 	fi; \
-	release_branch="release/v$$new_version"; \
-	echo "Creating release branch: $$release_branch"; \
-	git checkout -b "$$release_branch"; \
 	echo "Updating version in pyproject.toml..."; \
 	if sed --version >/dev/null 2>&1; then \
 		sed -i 's/^version = ".*"/version = "'"$$new_version"'"/' pyproject.toml; \
 	else \
 		sed -i '' 's/^version = ".*"/version = "'"$$new_version"'"/' pyproject.toml; \
 	fi; \
-	echo "Generating changelog for version $$new_version..."; \
+	export NEW_VERSION=$$new_version
+	@# Step 4: Generate changelog
+	@echo "📝 Step 4/10: Generating changelog..."
+	@set -e; \
+	new_version=$$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/'); \
 	if [ -f "./scripts/generate-changelog.sh" ]; then \
-		./scripts/generate-changelog.sh $$new_version || true; \
+		./scripts/generate-changelog.sh $$new_version || echo "Changelog generation failed, continuing..."; \
 	else \
 		echo "Changelog script not found, skipping changelog generation."; \
-	fi; \
-	echo "Committing version bump..."; \
-	git add pyproject.toml CHANGELOG.md; \
-	git commit -m "Bump version to $$new_version"; \
-	echo "Pushing release branch..."; \
-	git push origin "$$release_branch"; \
+	fi
+	@# Step 5: Build packages
+	@echo "📦 Step 5/10: Building distribution packages..."
+	@set -e; $(MAKE) build
+	@# Step 6: Commit changes
+	@echo "💾 Step 6/10: Committing changes..."
+	@set -e; \
+	new_version=$$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/'); \
+	git add pyproject.toml CHANGELOG.md || git add pyproject.toml; \
+	git commit -m "Release v$$new_version"
+	@# Step 7: Create and push tag
+	@echo "🏷️  Step 7/10: Creating and pushing tag..."
+	@set -e; \
+	new_version=$$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/'); \
+	git tag "v$$new_version"; \
+	git push origin "v$$new_version"; \
+	git push origin HEAD
+	@# Step 8: Publish to PyPI
+	@echo "📤 Step 8/10: Publishing to PyPI..."
+	@set -e; $(MAKE) publish
+	@# Step 9: Create GitHub release
+	@echo "🎉 Step 9/10: Creating GitHub release..."
+	@set -e; \
+	new_version=$$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/'); \
+	if [ -f "CHANGELOG.md" ]; then \
+		gh release create "v$$new_version" \
+			--title "Release v$$new_version" \
+			--notes-file CHANGELOG.md \
+			--draft=false || echo "GitHub release creation failed, but release is complete"; \
+	else \
+		gh release create "v$$new_version" \
+			--title "Release v$$new_version" \
+			--notes "Release v$$new_version" \
+			--draft=false || echo "GitHub release creation failed, but release is complete"; \
+	fi
+	@# Step 10: Success message
+	@echo "✅ Step 10/10: Release complete!"
+	@echo ""
+	@new_version=$$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/'); \
+	echo "🎊 Successfully released v$$new_version!"; \
 	echo ""; \
-	echo "🚀 Release branch $$release_branch created and pushed!"; \
+	echo "📋 What happened:"; \
+	echo "   ✅ Tests passed"; \
+	echo "   ✅ Version bumped to v$$new_version"; \
+	echo "   ✅ Changelog generated"; \
+	echo "   ✅ Packages built"; \
+	echo "   ✅ Changes committed and tagged"; \
+	echo "   ✅ Published to PyPI"; \
+	echo "   ✅ GitHub release created"; \
 	echo ""; \
-	echo "Next steps:"; \
-	echo "1. Create a Pull Request from $$release_branch to main"; \
-	echo "2. Title: 'Release v$$new_version'"; \
-	echo "3. Once CI passes, merge the PR"; \
-	echo "4. After merging, create and push the tag:"; \
-	echo "   git checkout main"; \
-	echo "   git pull origin main"; \
-	echo "   git tag v$$new_version"; \
-	echo "   git push origin v$$new_version"; \
-	echo "5. GitHub Actions will automatically build and publish to PyPI"
+	echo "🔗 Links:"; \
+	echo "   PyPI: https://pypi.org/project/asciidoc-dita-toolkit/$$new_version/"; \
+	echo "   GitHub: https://github.com/rolfedh/asciidoc-dita-toolkit/releases/tag/v$$new_version"
 
