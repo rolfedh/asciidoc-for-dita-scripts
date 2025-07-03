@@ -7,14 +7,6 @@ assignees: rolfedh
 
 ---
 
----
-name: Beta Testing Feedback
-about: Share your feedback on the AsciiDoc DITA Toolkit beta
-title: 'Beta Testing Feedback - [Brief description]'
-labels: beta-testing, feedback
-assignees: ''
----
-
 ## Beta Testing Feedback
 
 **My setup:**
