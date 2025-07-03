@@ -40,22 +40,6 @@ adt --version
 
 > **💡 Need to upgrade or having issues?** See [Upgrading and Troubleshooting](#-upgrading-and-troubleshooting)
 
-## 📁 Unpacking the Test Files
-
-Custom `*.adoc` files are included with the PyPI package for testing:
-
-```bash
-# Create a dedicated test directory and copy test files there
-mkdir ~/adt-beta-test
-cd ~/adt-beta-test
-adt-test-files copy ./test_files
-cd test_files
-
-# You're ready to test!
-```
-
-> **💡 Reset test files:** The toolkit modifies files during testing. To get fresh test files for another round, simply copy them again: `adt-test-files copy ./test_files_fresh`
-
 ## 🧪 Testing the ContentType Plugin
 
 ### Command overview
