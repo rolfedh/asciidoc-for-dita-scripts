@@ -49,6 +49,7 @@ asciidoc-dita-toolkit = "asciidoc_dita_toolkit.asciidoc_dita.toolkit:main"
 asciidoc-dita-toolkit-gui = "asciidoc_dita_toolkit.asciidoc_dita.gui:main"
 adt = "asciidoc_dita_toolkit.asciidoc_dita.toolkit:main"
 adg = "asciidoc_dita_toolkit.asciidoc_dita.gui:main"
+adt-test-files = "asciidoc_dita_toolkit.test_files:main"
 
 [project.entry-points."console_scripts"]
 find-beta-files = "asciidoc_dita_toolkit.find_beta_files:main"
@@ -56,3 +57,6 @@ find-beta-files = "asciidoc_dita_toolkit.find_beta_files:main"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["asciidoc_dita_toolkit*"]
+
+[tool.setuptools.package-data]
+"asciidoc_dita_toolkit" = ["beta_testing_files/**/*.adoc", "beta_testing_files/**/*.md", "beta_testing_files/**/*.sh"]
