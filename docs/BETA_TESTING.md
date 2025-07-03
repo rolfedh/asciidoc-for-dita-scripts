@@ -18,10 +18,6 @@ When `adt` is released, you'll typically create a new working branch in your rep
 4. **Smart content analysis** - Examines file content patterns (headings, structure, keywords) to suggest appropriate content type
 5. **Interactive prompts** - When auto-detection fails, guides you through manual content type selection
 
-## 📅 Beta Timeline
-
-- **Beta period**: 1 week (ends on Friday July 11 2025)
-- 
 ## 📋 Quick Start
 
 1. [Install the beta](#-installation) 
