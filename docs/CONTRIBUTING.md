@@ -330,7 +330,7 @@ Use the new `make release` command for a complete automated workflow:
 make release
 
 # Or specify a custom version
-make release VERSION=0.2.0
+make release VERSION=0.1.9b1
 ```
 
 This will handle version bumping, changelog generation, commits, tagging, and pushing automatically. GitHub Actions will then build and upload the package to PyPI using the `PYPI_API_TOKEN` secret.
@@ -349,7 +349,7 @@ To manually have the GitHub Actions workflow build and upload the package to PyP
 2. **Create a release preparation branch:**
 
    ```sh
-   git checkout -b release/v<new-version>  # Example: release/v0.2.0
+   git checkout -b release/v<new-version>  # Example: release/v0.1.9b1
    ```
 
 3. **Update the version** in `pyproject.toml`.
@@ -372,7 +372,7 @@ To manually have the GitHub Actions workflow build and upload the package to PyP
    ```sh
    git checkout main
    git pull origin main
-   git tag v<new-version>  # Example: v0.2.0
+   git tag v<new-version>  # Example: v0.1.9b1
    git push origin v<new-version>
    ```
 
@@ -383,9 +383,9 @@ To manually have the GitHub Actions workflow build and upload the package to PyP
 ## Troubleshooting if the tagging gets ahead of the version
 
    ```sh
-   git tag -d v0.2.0
-   git tag v0.2.0
-   git push --force origin v0.2.0
+   git tag -d v0.1.9b1
+   git tag v0.1.9b1
+   git push --force origin v0.1.9b1
    ```
 
 **Manual publishing (alternative):**
@@ -544,11 +544,11 @@ refactor: improve CLI error handling
 Use the new Makefile `release` target for a fully automated release:
 
 ```sh
-# Automated patch version bump (0.2.0 → 0.2.1)
+# Automated patch version bump (0.1.9b1 → 0.2.1)
 make release
 
 # Specify custom version
-make release VERSION=0.2.0
+make release VERSION=0.1.9b1
 ```
 
 **The `make release` command will:**
@@ -571,8 +571,8 @@ make release VERSION=0.2.0
 
 ```sh
 # Using GitHub CLI
-gh release create v0.2.0 \
-  --title "Release 0.2.0: Enhanced Plugin System" \
+gh release create v0.1.9b1 \
+  --title "Release 0.1.9b1: Enhanced Plugin System" \
   --notes "This release adds new plugin capabilities and fixes several bugs."
 
 # Using GitHub web interface

@@ -739,7 +739,7 @@ Mouse Operations:
     def show_about(self):
         """Show about dialog."""
         about_text = """AsciiDoc DITA Toolkit GUI
-Version 0.2.0
+Version 0.1.9b1
 
 A graphical interface for processing AsciiDoc files 
 for DITA publishing workflows.
