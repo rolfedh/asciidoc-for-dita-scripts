@@ -45,13 +45,13 @@ Edit `pyproject.toml`:
 ```toml
 [project]
 name = "asciidoc-dita-toolkit"
-version = "0.1.7b1"  # Format: MAJOR.MINOR.PATCHbN (where N is beta number)
+version = "0.1.9b3"  # Format: MAJOR.MINOR.PATCHbN (where N is beta number)
 ```
 
 **Version Naming Convention:**
-- `0.1.7b1` - First beta of version 0.1.7
-- `0.1.7b2` - Second beta if fixes are needed
-- `0.1.7` - Final release version
+- `0.1.9b3` - First beta of version 0.1.9b3
+- `0.1.9b3` - Second beta if fixes are needed
+- `0.1.9b3` - Final release version
 
 ### Step 3: Create Feature Branch
 
@@ -113,7 +113,7 @@ docker push rolfedh/asciidoc-dita-toolkit:beta
 python -m twine upload --repository testpypi dist/*
 
 # Test installation from test PyPI
-pip install --index-url https://test.pypi.org/simple/ asciidoc-dita-toolkit==0.1.7b1
+pip install --index-url https://test.pypi.org/simple/ asciidoc-dita-toolkit==0.1.9b3
 ```
 
 **Option B: Direct to PyPI**
@@ -122,22 +122,22 @@ pip install --index-url https://test.pypi.org/simple/ asciidoc-dita-toolkit==0.1
 python -m twine upload dist/*
 
 # Verify availability
-pip install asciidoc-dita-toolkit==0.1.7b1
+pip install asciidoc-dita-toolkit==0.1.9b3
 ```
 
 ### Step 7: Create GitHub Pre-release
 
 ```bash
 # Tag the beta version
-git tag v0.1.7b1
-git push origin v0.1.7b1
+git tag v0.1.9b3
+git push origin v0.1.9b3
 ```
 
 Then on GitHub:
 1. Go to **Releases** → **Create a new release**
-2. Choose tag: `v0.1.7b1`
+2. Choose tag: `v0.1.9b3`
 3. Target: `feature/your-feature-name` branch
-4. Title: `v0.1.7b1 - [Feature Name] Beta`
+4. Title: `v0.1.9b3 - [Feature Name] Beta`
 5. ✅ **Check "This is a pre-release"**
 6. Description: Link to beta testing guide and highlight new features
 
@@ -203,7 +203,7 @@ git checkout feature/your-feature-name
 git commit -m "fix: Address beta feedback issues"
 
 # Bump to next beta version
-# Edit pyproject.toml: version = "0.1.7b2"
+# Edit pyproject.toml: version = "0.1.9b3"
 
 # Rebuild and redeploy
 python -m build
@@ -212,8 +212,8 @@ python -m twine upload dist/*
 docker push rolfedh/asciidoc-dita-toolkit:beta
 
 # Tag new beta
-git tag v0.1.7b2
-git push origin v0.1.7b2
+git tag v0.1.9b3
+git push origin v0.1.9b3
 ```
 
 ## ✅ Final Release Process
@@ -226,10 +226,10 @@ When beta testing is complete and feedback addressed:
 
 ```bash
 # Update version to final
-# Edit pyproject.toml: version = "0.1.7"
+# Edit pyproject.toml: version = "0.1.9b3"
 
 # Final commit
-git commit -m "release: Finalize v0.1.7
+git commit -m "release: Finalize v0.1.9b3
 
 - Address all beta feedback
 - Update version to final release
@@ -280,19 +280,19 @@ python -m twine upload dist/*
 
 # Build and push final Docker images
 docker build -t rolfedh/asciidoc-dita-toolkit:latest .
-docker build -t rolfedh/asciidoc-dita-toolkit:0.1.7 .
+docker build -t rolfedh/asciidoc-dita-toolkit:0.1.9b3 .
 docker push rolfedh/asciidoc-dita-toolkit:latest
-docker push rolfedh/asciidoc-dita-toolkit:0.1.7
+docker push rolfedh/asciidoc-dita-toolkit:0.1.9b3
 
 # Tag final release
-git tag v0.1.7
-git push origin v0.1.7
+git tag v0.1.9b3
+git push origin v0.1.9b3
 ```
 
 ### Step 4: GitHub Final Release
 
 Create final release on GitHub:
-1. Choose tag: `v0.1.7`
+1. Choose tag: `v0.1.9b3`
 2. Target: `main` branch
 3. ✅ **Uncheck "This is a pre-release"**
 4. Include changelog with beta feedback improvements
@@ -421,16 +421,16 @@ Track these metrics during beta:
 ## 📋 **Quick Reference Summary**
 
 ### Beta Phase Workflow:
-1. ✅ **Feature branch** + beta version (v0.1.7b1)
+1. ✅ **Feature branch** + beta version (v0.1.9b3)
 2. ✅ **Build & distribute** (Docker, PyPI)  
 3. ✅ **Create GitHub pre-release**
 4. ✅ **Announce beta** (GitHub Discussions, README)
 5. ⏳ **Gather feedback** (2-4 weeks)
-6. 🔄 **Iterate if needed** (v0.1.7b2, etc.)
+6. 🔄 **Iterate if needed** (v0.1.9b3, etc.)
 
 ### Final Release Workflow:
 7. ✅ **Address feedback** on feature branch
-8. ✅ **Update to final version** (v0.1.7)
+8. ✅ **Update to final version** (v0.1.9b3)
 9. ✅ **Create Pull Request** (with beta summary)
 10. ✅ **Merge to main** after approval
 11. ✅ **Final release** and cleanup

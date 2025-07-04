@@ -165,8 +165,9 @@ class TestContentTypePlugin(unittest.TestCase):
             tmp.flush()
 
             try:
-                with patch("builtins.print") as mock_print:
-                    self.plugin.add_content_type_label(tmp.name, "CONCEPT")
+                with patch("builtins.print") as mock_print, \
+                     patch("builtins.input", return_value="2"):  # Select CONCEPT
+                    self.plugin.process_content_type_file(tmp.name)
 
                 with open(tmp.name, "r") as f:
                     content = f.read()
@@ -184,7 +185,7 @@ class TestContentTypePlugin(unittest.TestCase):
 
             try:
                 with patch("builtins.print") as mock_print:
-                    self.plugin.add_content_type_label(tmp.name, "CONCEPT")
+                    self.plugin.process_content_type_file(tmp.name)
 
                 with open(tmp.name, "r") as f:
                     content = f.read()
@@ -193,7 +194,49 @@ class TestContentTypePlugin(unittest.TestCase):
                 self.assertIn(":_mod-docs-content-type: PROCEDURE", content)
                 # Should not have the new label
                 self.assertNotIn(":_mod-docs-content-type: CONCEPT", content)
-                mock_print.assert_called_with(f"Skipping {tmp.name}, label already present")
+                # Should print that content type is already set
+                mock_print.assert_any_call("  ✓ Content type already set: \033[0;32mPROCEDURE\033[0m")
+            finally:
+                os.unlink(tmp.name)
+
+    def test_filename_based_auto_detection(self):
+        """Test that content type is auto-detected from filename prefix."""
+        with tempfile.NamedTemporaryFile(mode="w+", suffix=".adoc", delete=False, prefix="proc_") as tmp:
+            tmp.write("= Test Procedure\n\nStep 1: Do something.\n")
+            tmp.flush()
+
+            try:
+                with patch("builtins.print") as mock_print:
+                    self.plugin.process_content_type_file(tmp.name)
+
+                with open(tmp.name, "r") as f:
+                    content = f.read()
+
+                self.assertIn(":_mod-docs-content-type: PROCEDURE", content)
+                # Should print that it detected from filename
+                mock_print.assert_any_call("  💡 Detected from filename: \033[0;36mPROCEDURE\033[0m")
+            finally:
+                os.unlink(tmp.name)
+
+    def test_deprecated_attribute_conversion(self):
+        """Test conversion of deprecated content type attributes."""
+        with tempfile.NamedTemporaryFile(mode="w+", suffix=".adoc", delete=False) as tmp:
+            tmp.write(":_content-type: CONCEPT\n= Test Document\n\nContent here.\n")
+            tmp.flush()
+
+            try:
+                with patch("builtins.print") as mock_print:
+                    self.plugin.process_content_type_file(tmp.name)
+
+                with open(tmp.name, "r") as f:
+                    content = f.read()
+
+                # Should have the new format
+                self.assertIn(":_mod-docs-content-type: CONCEPT", content)
+                # Should not have the old format
+                self.assertNotIn(":_content-type: CONCEPT", content)
+                # Should print conversion message
+                mock_print.assert_any_call("  ⚠️  Deprecated attribute detected: \033[0;31m:_content-type: CONCEPT\033[0m")
             finally:
                 os.unlink(tmp.name)
 

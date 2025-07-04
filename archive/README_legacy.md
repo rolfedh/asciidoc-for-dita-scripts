@@ -4,31 +4,29 @@
 [![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Command-line toolkit for technical writers to review and fix AsciiDoc content for DITA-based publishing workflows.
+Scripts to review and fix AsciiDoc content for DITA-based publishing workflows, based on rules from the [asciidoctor-dita-vale](https://github.com/jhradilek/asciidoctor-dita-vale) project.
 
-## 🚀 Quick Start
+## 🚀 Resources
 
-**PyPI installation:**
-```sh
-pip install asciidoc-dita-toolkit
-adt --help                    # CLI interface
-```
+- [PyPI: asciidoc-dita-toolkit](https://pypi.org/project/asciidoc-dita-toolkit/)
+- [GitHub repository](https://github.com/rolfedh/asciidoc-dita-toolkit)
+- [Documentation](https://github.com/rolfedh/asciidoc-dita-toolkit/blob/main/docs/)
+- [Contributing Guide](https://github.com/rolfedh/asciidoc-dita-toolkit/blob/main/docs/CONTRIBUTING.md)
 
-**Container usage:**
-```sh
-docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit-prod:latest --help
-```
+## 📖 What is this?
 
-## 📖 What does it do?
+The AsciiDoc DITA Toolkit is a command-line tool for technical writers and editors. It helps you:
 
-- **Fix common issues** in `.adoc` files before publishing
-- **Apply automated checks** and transformations via plugins
+- **Find and fix** common issues in `.adoc` files before publishing
+- **Apply automated checks** and transformations using a plugin system
 - **Ensure consistency** across large documentation projects
-- **Integrate** with existing documentation workflows
+- **Integrate** with your existing documentation workflow
 
 ## 📦 Installation
 
 ### Option 1: Container (No Python Required)
+
+Use Docker containers if you prefer not to install Python dependencies locally, or need consistent environments across teams:
 
 ```sh
 # Standard container image (includes dev tools)
@@ -54,6 +52,9 @@ python3 -m pip install asciidoc-dita-toolkit
 
 # Test the installation
 adt --help¹
+
+# Launch the GUI (recommended for new users)
+adg¹
 ```
 
 ### Upgrading
@@ -80,6 +81,32 @@ python3 -m pip install --upgrade asciidoc-dita-toolkit
 - No external dependencies (uses only Python standard library)
 
 ## 🔧 Usage
+
+### GUI Interface (Recommended for New Users)
+
+For an intuitive, dialog-based interface, use the GUI:
+
+```sh
+adg¹
+```
+
+The GUI provides:
+- **Plugin selection** - Choose from available plugins with descriptions
+- **Easy configuration** - Browse for files/directories, set options with checkboxes
+- **Multiple modes** - Review, Interactive, Auto, and Guided modes (when supported)
+- **Real-time results** - See output and progress in an integrated results panel
+- **Test file management** - Load sample test files to experiment with
+
+**Benefits of the GUI:**
+- No need to remember command-line syntax
+- Visual feedback and error messages
+- Perfect for learning how the tools work
+- Test files included for experimentation
+
+**System Requirements for GUI:**
+- Python with tkinter support (included with most Python installations)
+- On Linux: may need to install `python3-tk` package
+- Works on Windows, macOS, and Linux
 
 ### Command Line Interface
 
@@ -137,6 +164,8 @@ adt ContentType docs/ -nr¹
 
 ### Container Usage
 
+If using the container version, all commands work the same but are prefixed with the Docker run command:
+
 ```sh
 # List plugins
 docker run --rm rolfedh/asciidoc-dita-toolkit-prod:latest --list-plugins
@@ -146,7 +175,17 @@ docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit-prod:latest E
 
 # Add content type labels to a specific file
 docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit-prod:latest ContentType docs/myfile.adoc
+
+# Interactive shell for development (use dev image)
+docker run --rm -it -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit:latest /bin/bash
 ```
+
+**Container command breakdown:**
+
+- `docker run --rm` - Run and automatically remove container when done
+- `-v $(pwd):/workspace` - Mount current directory as `/workspace` in container
+- `rolfedh/asciidoc-dita-toolkit-prod:latest` - The production container image (recommended)
+- Everything after the image name works exactly like the PyPI version
 
 **Tip:** Create a shell alias to simplify container usage:
 
@@ -158,10 +197,10 @@ Then use it exactly like the PyPI version:
 
 ```sh
 adt --list-plugins
-adt EntityReference .
+adt EntityReference
 ```
 
-## 🔌 Available Plugins
+### 🔌 Available Plugins
 
 | Plugin | Description | Example Usage |
 |--------|-------------|---------------|
@@ -170,19 +209,17 @@ adt EntityReference .
 
 > **📋 Technical Details**: For plugin internals and supported entity mappings, see [docs/asciidoc-dita-toolkit.md](docs/asciidoc-dita-toolkit.md).
 
+---
+
 ## 🔍 Troubleshooting
 
 - **Python Version**: Make sure you are using Python 3.7 or newer
 - **Installation Issues**: Try upgrading pip: `python3 -m pip install --upgrade pip`
 - **Development Setup**: If you need to use a local clone, see the [contributor guide](docs/CONTRIBUTING.md)
 
-## 📚 Resources
+## 📚 Related Resources
 
-- [PyPI: asciidoc-dita-toolkit](https://pypi.org/project/asciidoc-dita-toolkit/)
-- [GitHub repository](https://github.com/rolfedh/asciidoc-dita-toolkit)
-- [Documentation](https://github.com/rolfedh/asciidoc-dita-toolkit/blob/main/docs/)
-- [Contributing Guide](https://github.com/rolfedh/asciidoc-dita-toolkit/blob/main/docs/CONTRIBUTING.md)
-- [asciidoctor-dita-vale](https://github.com/jhradilek/asciidoctor-dita-vale): Vale style rules and test fixtures
+- **[`asciidoctor-dita-vale`](https://github.com/jhradilek/asciidoctor-dita-vale)**: Vale style rules and test fixtures for validating AsciiDoc content
 
 ## 🤝 Contributing
 
@@ -199,4 +236,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-¹ The command `adt` is a convenient alias for the full command `asciidoc-dita-toolkit`.
+¹ The commands `adt` and `adg` are convenient aliases for the full commands `asciidoc-dita-toolkit` and `asciidoc-dita-toolkit-gui` respectively. Both sets of commands work identically.

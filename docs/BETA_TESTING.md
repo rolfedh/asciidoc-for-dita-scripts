@@ -30,11 +30,13 @@ When `adt` is released, you'll typically create a new working branch in your rep
 Install the beta version via PyPI:
 
 ```bash
-pip install asciidoc-dita-toolkit==0.1.9b2
+pip install asciidoc-dita-toolkit==0.1.9b3
 adt --version
 ```
 
 > **💡 Need to upgrade or having issues?** See [Upgrading and Troubleshooting](#-upgrading-and-troubleshooting)
+
+> **💡 Reset test files:** The toolkit modifies files during testing. To get fresh test files for another round, simply copy them again: `adt-test-files copy ./test_files_fresh`
 
 ## 🧪 Testing the ContentType Plugin
 
@@ -96,7 +98,6 @@ cd ../test_files_3
 
 Please share your thoughts with us by
 [creating a beta testing feedback issue in GitHub](https://github.com/rolfedh/asciidoc-dita-toolkit/issues/new?template=beta-testing-feedback.md).
-
 We especially appreciate your feedback on:
 
 1. **Interactive prompts** - Are the content type options clear?
@@ -157,7 +158,7 @@ The test files cover all ContentType plugin scenarios:
 If you already have an earlier version installed, upgrade to the latest beta:
 
 ```bash
-pip install --upgrade asciidoc-dita-toolkit==0.1.9b2
+pip install --upgrade asciidoc-dita-toolkit==0.1.9b3
 adt --version
 ```
 
@@ -170,7 +171,7 @@ If the upgrade fails or you're having issues, try a clean reinstall:
 pip uninstall asciidoc-dita-toolkit
 
 # Install the beta version fresh
-pip install asciidoc-dita-toolkit==0.1.9b2
+pip install asciidoc-dita-toolkit==0.1.9b3
 adt --version
 ```
 

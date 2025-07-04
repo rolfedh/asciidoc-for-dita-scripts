@@ -76,67 +76,31 @@ make format-check
 make check
 ```
 
-### Building and Publishing
+### Building
+
+Manual building is rarely needed since the `make release` command handles building automatically:
 
 ```sh
-# Clean build artifacts from previous builds (important!)
-make clean
-
-# Build distribution packages
-make build
-
-# Publish to PyPI (MAINTAINERS ONLY - requires PYPI_API_TOKEN)
-make publish
+# Clean and build (if needed manually)
+make clean && make build
 ```
-
-**Important**: Always run `make clean` before building to remove any obsolete build artifacts from previous versions. This prevents packaging outdated files that could cause version conflicts.
 
 ### Container Development
 
-The project supports containerized development and distribution with automated builds:
+For containerized development and testing:
 
 ```sh
-# Build development container (includes dev tools)
-make container-build
+# Development workflow
+make container-build      # Build development container
+make container-test       # Run tests in container
+make container-shell      # Interactive debugging
 
-# Build production container (optimized)
-make container-build-prod
-
-# Run tests in container
-make container-test
-
-# Start interactive container shell for debugging
-make container-shell
-
-# Validate all container configurations
-make container-validate
-
-# Push containers to registry (maintainers only)
-make container-push
-make container-push-prod
-
-# Clean up local container images
-make container-clean
+# Production (maintainers only)
+make container-build-prod # Build optimized container
+make container-push-prod  # Publish to registries
 ```
 
-**Container Features:**
-
-- **Development image** (`rolfedh/asciidoc-dita-toolkit:latest`): Includes dev dependencies and tools
-- **Production image** (`rolfedh/asciidoc-dita-toolkit-prod:latest`): Optimized multi-stage build
-- **Automated CI/CD**: GitHub Actions builds and publishes containers on releases
-- **Multi-platform**: Supports linux/amd64 and linux/arm64 architectures
-- **Registry publishing**: Pushes to both Docker Hub and GitHub Container Registry
-
-**Manual container usage:**
-
-```sh
-# Test your changes in a clean container environment
-./scripts/container.sh build
-./scripts/container.sh test
-./scripts/container.sh shell
-```
-
-See `docs/CONTAINER_DISTRIBUTION.md` for complete container documentation.
+Multi-platform containers (linux/amd64, linux/arm64) with automated CI/CD. See `docs/CONTAINER_DISTRIBUTION.md` for details.
 
 ### Installation
 
@@ -150,24 +114,22 @@ make install-dev
 
 Run `make help` to see all available commands.
 
-## Branch Protection Rules
+## Workflow Overview
 
-We've enabled branch protections on the `main` branch to help maintain a clean and stable codebase:
+Standard GitHub workflow with branch protection on `main`:
 
-- **Pull requests are now required**: All changes must come through a PR—no direct commits to `main`.
-- **PRs do not require approval**: No reviews are required before merging. However, there should be no outstanding change requests.
-- **Status checks must pass**: Any required checks (like CI tests) must succeed before a PR can be merged.
-- **Linear history enforced**: We'll be using rebase or squash merges to avoid merge commits in `main`.
-- **No bypassing**: These rules apply to everyone, including admins.
+- **Pull requests required** - All changes go through PRs
+- **CI must pass** - Tests and quality checks must succeed  
+- **Linear history** - Uses rebase/squash merges
 
-If you have any questions or run into issues with these protections, please reach out to the maintainers.
+**Standard workflow:** Fork → Branch → Develop → Test → PR → Review → Merge
 
 ## Adding Plugins
 
-- Add new plugins to `asciidoc_dita_toolkit/plugins/` (e.g., `MyPlugin.py`).
-- Each plugin must have a `register_subcommand` function and a clear `__description__`.
-- Follow the structure and docstring conventions used in `EntityReference.py`.
-- Plugins are automatically discovered as CLI subcommands.
+- Add new plugins to `asciidoc_dita_toolkit/plugins/` (e.g., `MyPlugin.py`)
+- Each plugin must have a `register_subcommand` function and `__description__`
+- Follow structure and conventions used in `EntityReference.py`
+- Plugins are automatically discovered as CLI subcommands
 
 ## Testing Guide
 
@@ -213,6 +175,51 @@ Our test suite covers:
 - ✅ File processing with proper mocking
 - ✅ Graceful handling of missing test fixtures
 
+## Test Files and Manual Testing
+
+For manual testing and development of plugins (especially the ContentType plugin), the project includes a comprehensive test files directory with backup and restore functionality.
+
+### Test Files Directory
+
+The `test_files/` directory contains carefully crafted AsciiDoc files that cover all plugin scenarios:
+
+- Files with correct content type attributes
+- Files with empty or missing content type attributes  
+- Files with deprecated content type formats
+- Files with detectable filename prefixes (`assembly_`, `proc_`, `con_`, `ref_`, `snip_`)
+- Files requiring interactive user prompts
+- Edge cases like commented-out attributes
+
+**Complete documentation**: See [`test_files/README.md`](../test_files/README.md) for detailed descriptions of each test file and expected plugin behaviors.
+
+### Backup and Restore System
+
+Since manual testing modifies test files, a backup system ensures you can always return to a clean state:
+
+**Key components:**
+- `test_files_backup/` - Clean backup of all test files
+- `restore_test_files.sh` - One-command script to restore clean state
+- `test_files/README.md` - Complete reference guide
+
+**Usage workflow:**
+```sh
+# 1. Run manual tests (files get modified by plugins)
+adt ContentType test_files/
+
+# 2. Restore clean state with one command  
+./restore_test_files.sh
+
+# 3. Ready for next test run
+```
+
+**Benefits:**
+- ✅ No need to manually reset 14+ test files after each test
+- ✅ Guaranteed pristine state for consistent testing
+- ✅ Complete documentation of expected plugin behaviors
+- ✅ Efficient development and debugging workflow
+
+This system is especially valuable when developing or debugging the ContentType plugin, which modifies file content based on various detection and conversion rules.
+
 ### Writing New Tests
 
 **For CLI changes:**
@@ -244,137 +251,86 @@ All PRs must pass the test suite:
 - Tests run automatically on GitHub Actions
 - 20/20 tests must pass for PR approval
 - Missing test fixtures show warnings but don't fail tests
-- Expected files (`.expected`) are stored alongside input files (`.adoc`) in fixture directories
 
 ## Fixture Management
 
-> **Note:** Fixture updates are now automated via GitHub Actions using `.github/workflows/fetch-fixtures.yml`. The local `fetch-fixtures.sh` script is archived and no longer required for routine use.
+> **Note:** Fixture updates are automated via GitHub Actions. The local `fetch-fixtures.sh` script is archived and no longer required for routine use.
 
-To manually update fixtures (rarely needed), you may run the archived script:
+For manual fixture updates (rarely needed):
 
 ```sh
 ./archive/fetch-fixtures.sh
 ```
 
-- **Recommended:** Rely on the automated workflow, which runs daily and creates a pull request if fixtures change.
+- **Recommended:** Use the automated workflow, which runs daily and creates PRs if fixtures change
 - Downloads latest `.adoc` test files from `asciidoctor-dita-vale`
 - Preserves existing `.expected` files during updates
-- Creates backup and restore process for safety
 
 ## CI Integration
 
-- Ensure `.github/workflows/ci.yml` runs all tests and downloads fixtures if needed.
-- All pull requests must pass CI before merging.
+- `.github/workflows/ci.yml` runs all tests and downloads fixtures if needed
+- All pull requests must pass CI before merging
 
 ## Review and Merge
 
-- Open a pull request for your changes.
-- Request review from maintainers.
-- Address feedback, ensure CI passes, and merge when approved.
+- Open a pull request for your changes
+- Request review from maintainers  
+- Address feedback, ensure CI passes, and merge when approved
 
 ## Publishing a New Release to PyPI
 
 > **Note:** Only project maintainers can publish new releases to PyPI. Contributors with forks can help with development but cannot create official releases.
 
-**Recommended Approach - Automated Release (Maintainers Only):**
+### Automated Release Process (Recommended)
 
-Use the new `make release` command for a complete automated workflow:
+The project now includes a fully automated release workflow via the `make release` command:
+
+**Prerequisites:**
+- GitHub CLI (`gh`) installed and authenticated
+- `GITHUB_TOKEN` environment variable set
+- `PYPI_API_TOKEN` environment variable set
+- Clean working directory on main/master branch
+
+**Usage:**
 
 ```sh
-# Automated patch version bump and release
+# Automated patch version bump (e.g., 0.1.9b3 → 0.2.0)
 make release
 
-# Or specify a custom version
-make release VERSION=0.2.0
+# Specify a custom version
+make release VERSION=1.2.3
+
+# Force without confirmations (for CI/CD)
+make release FORCE=1 VERSION=1.2.3
 ```
 
-This will handle version bumping, changelog generation, commits, tagging, and pushing automatically. GitHub Actions will then build and upload the package to PyPI using the `PYPI_API_TOKEN` secret.
+**What the automated process does:**
 
-**Manual Approach (Maintainers Only):**
+1. **🧪 Runs all tests** - Executes comprehensive quality checks (format, lint, test)
+2. **🧹 Cleans** - Removes old build artifacts
+3. **📈 Bumps version** - Auto-increments patch or uses specified version
+4. **📝 Generates changelog** - Creates changelog entry if script exists
+5. **📦 Builds** - Creates distribution packages
+6. **💾 Commits** - Commits version and changelog changes
+7. **🏷️ Tags & Pushes** - Creates version tag and pushes to remote
+8. **📤 Publishes** - Uploads to PyPI
+9. **🎉 GitHub Release** - Creates GitHub release with changelog
+10. **✅ Success** - Shows summary with PyPI and GitHub links
 
-To manually have the GitHub Actions workflow build and upload the package to PyPI:
+**The entire process is atomic** - if any step fails, the release stops to prevent partial releases.
 
-1. **Ensure your main branch is up to date:**
+### Manual Release Process (Legacy)
 
-   ```sh
-   git checkout main
-   git pull origin main
-   ```
-
-2. **Create a release preparation branch:**
-
-   ```sh
-   git checkout -b release/v<new-version>  # Example: release/v0.1.8
-   ```
-
-3. **Update the version** in `pyproject.toml`.
-
-4. **Commit your changes and push the branch:**
-
-   ```sh
-   git add pyproject.toml
-   git commit -m "Bump version to <new-version>"
-   git push origin release/v<new-version>
-   ```
-
-5. **Create and merge a Pull Request:**
-   - Open a PR from `release/v<new-version>` to `main`
-   - Title: "Release v\<new-version\>"
-   - Once CI passes, merge the PR (this will update main with the version bump)
-
-6. **Create and push the release tag from main:**
-
-   ```sh
-   git checkout main
-   git pull origin main
-   git tag v<new-version>  # Example: v0.1.8
-   git push origin v<new-version>
-   ```
-
-7. GitHub Actions will build and upload the package to PyPI automatically when the tag is pushed.
-
-**Important:** Due to branch protection rules on `main`, all changes (including version bumps) must go through a Pull Request. The tag must be created from the merged commit on `main` to ensure the PyPI release reflects the actual state of the main branch.
-
-## Troubleshooting if the tagging gets ahead of the version
-
-   ```sh
-   git tag -d v0.1.3
-   git tag v0.1.3
-   git push --force origin v0.1.3
-   ```
-
-**Manual publishing (alternative):**
-
-1. Clean previous build artifacts:
-
-   ```sh
-   # Remove any obsolete build files that could cause version conflicts
-   rm -rf dist/ build/ *.egg-info/
-   ```
-
-2. Build the package:
-
-   ```sh
-   python3 -m pip install --upgrade build twine
-   python3 -m build
-   ```
-
-3. Upload to PyPI:
-
-   ```sh
-   python3 -m twine upload dist/*
-   ```
-
-See the main README for more details.
+For reference, the legacy manual process is documented in `archive/CONTRIBUTING_legacy.md`. The automated process above is now the recommended approach.
 
 ## Toolkit Components Overview
 
-- **`asciidoc_toolkit.py`**: CLI entry point, discovers and runs plugins.
-- **`plugins/`**: Individual plugin scripts for transformations/validations.
-- **`file_utils.py`**: Shared file/argument utilities.
-- **`tests/`**: Automated tests and fixtures.
-- **`requirements.txt`**: Python dependencies for development.
-- **`README.md`**: End-user setup, usage, and project overview.
+- **`asciidoc_toolkit.py`**: CLI entry point, discovers and runs plugins
+- **`plugins/`**: Individual plugin scripts for transformations/validations
+- **`file_utils.py`**: Shared file/argument utilities
+- **`tests/`**: Automated tests and fixtures
+- **`requirements.txt`**: Python dependencies for development
+- **`README.md`**: End-user setup, usage, and project overview
 
 ## Why contribute?
 
@@ -384,7 +340,7 @@ See the main README for more details.
 
 ## Pre-commit Hooks for Code Quality
 
-This project uses [pre-commit](https://pre-commit.com/) to automate code formatting, linting, and basic checks before every commit. This ensures code quality and consistency across all contributors.
+This project uses [pre-commit](https://pre-commit.com/) to automate code formatting, linting, and basic checks before every commit.
 
 ### Setup Instructions
 
@@ -400,8 +356,6 @@ This project uses [pre-commit](https://pre-commit.com/) to automate code formatt
    pre-commit install
    ```
 
-   This will automatically run the configured checks every time you commit.
-
 3. **(Optional) Run all hooks on all files:**
 
    ```sh
@@ -410,18 +364,12 @@ This project uses [pre-commit](https://pre-commit.com/) to automate code formatt
 
 ### What gets checked automatically?
 
-- **Black**: Formats Python code to a consistent style ([psf/black](https://github.com/psf/black))
-- **isort**: Sorts and organizes Python imports ([PyCQA/isort](https://github.com/PyCQA/isort))
-- **Ruff**: Fast Python linter for code quality and style ([charliermarsh/ruff](https://github.com/charliermarsh/ruff))
-- **markdownlint**: Lints and enforces style in Markdown files ([igorshubovych/markdownlint-cli](https://github.com/igorshubovych/markdownlint-cli))
-- **Trailing whitespace**: Removes trailing whitespace from all files
-- **End-of-file fixer**: Ensures files end with a single newline
-- **YAML syntax check**: Validates YAML file syntax
-- **TOML syntax check**: Validates TOML file syntax
-- **Large file check**: Prevents accidentally committing large files
-- **Merge conflict check**: Prevents committing unresolved merge conflict markers
-- **Debug statement check**: Prevents committing Python debug statements (e.g., `pdb.set_trace()`)
-- **Docstring placement check**: Ensures Python docstrings are placed before code
+- **Black**: Formats Python code to a consistent style
+- **isort**: Sorts and organizes Python imports
+- **Ruff**: Fast Python linter for code quality and style
+- **markdownlint**: Lints and enforces style in Markdown files
+- **Basic checks**: Trailing whitespace, end-of-file fixing, YAML/TOML syntax validation
+- **Safety checks**: Large file prevention, merge conflict detection, debug statement detection
 
 If any check fails, the commit will be blocked until the issue is fixed. Black and isort will auto-format your code; just re-stage the changes and commit again.
 
@@ -429,122 +377,16 @@ See `.pre-commit-config.yaml` for details.
 
 ## Changelog Management
 
-The project uses automated changelog generation based on GitHub releases and PR labels to reduce maintenance overhead while ensuring consistency.
+The project uses automated changelog generation as part of the `make release` process. Changelog entries are generated from commit messages and GitHub release information.
 
-### Setup Requirements
-
-**GitHub Repository Labels**: Create these labels in your GitHub repository for automatic categorization:
-
-- `enhancement` - New features and improvements
-- `bug` - Bug fixes  
-- `documentation` - Documentation updates
-- `dependencies` - Dependency updates
-- `breaking` - Breaking changes
-- `internal` - Internal/maintenance changes (won't appear in changelog)
-
-**To create labels**: Go to GitHub repo → Issues → Labels → "New label" for each one above.
-
-### How the Automation Works
-
-**Automatic Generation** (when you create a release):
-
-1. Create a GitHub release (manually or via GitHub CLI)
-2. The workflow automatically runs via `.github/workflows/changelog.yml`
-3. It generates changelog entries from:
-   - Release notes and descriptions
-   - PR titles with their labels for categorization
-   - Semantic version information
-4. Commits the updated `CHANGELOG.md` back to main branch
-
-**Manual Generation** (for testing/development):
-
-```sh
-# Install GitHub CLI (one-time setup)
-# Ubuntu/Debian: sudo apt install gh
-# macOS: brew install gh
-# Authenticate: gh auth login
-
-# Generate changelog manually
-make changelog-generate
-# Or run script directly
-./scripts/generate-changelog.sh [version]
-```
-
-### PR Labeling Guidelines
-
-For better changelog generation, use descriptive PR titles and apply appropriate labels:
-
-**PR Title Format:**
-
-```text
-feat: add new plugin for XYZ conversion
-fix: resolve entity replacement edge case  
-docs: update installation instructions
-refactor: improve CLI error handling
-```
-
-**Label Usage:**
-
-- `enhancement`: New features, improvements, performance enhancements
-- `bug`: Bug fixes, error corrections, edge case handling
-- `documentation`: README updates, guide improvements, API docs
-- `dependencies`: Package updates, security patches
-- `breaking`: API changes, removed features, compatibility breaks
-- `internal`: Refactoring, code cleanup, test improvements (excluded from changelog)
-
-### Release Workflow
-
-**Automated Release Process (Recommended):**
-
-Use the new Makefile `release` target for a fully automated release:
-
-```sh
-# Automated patch version bump (0.1.7 → 0.1.8)
-make release
-
-# Specify custom version
-make release VERSION=0.2.0
-```
-
-**The `make release` command will:**
-
-1. **Validate environment**: Check you're on main/master branch with clean working directory
-2. **Run quality checks**: Execute `make check` (format, lint, test)
-3. **Version management**: Auto-bump patch version or use your specified VERSION
-4. **Update files**: Modify `pyproject.toml` and generate changelog entry
-5. **Git operations**: Create release branch, commit changes, push branch
-6. **Next steps**: Display instructions for creating PR and completing release
-
-**Manual Release Process (Alternative):**
-
-1. **Development**: Create PRs with descriptive titles and proper labels
-2. **Pre-Release**: Ensure all tests pass and documentation is updated
-3. **Release**: Create GitHub release - changelog updates automatically
-4. **Verification**: Check generated changelog for accuracy
-
-**Example Manual Release Creation:**
-
-```sh
-# Using GitHub CLI
-gh release create v0.1.7 \
-  --title "Release 0.1.7: Enhanced Plugin System" \
-  --notes "This release adds new plugin capabilities and fixes several bugs."
-
-# Using GitHub web interface
-# Go to Releases → "Create a new release" → Fill in tag, title, and notes
-```
-
-### Manual Changelog Commands
-
-Available Makefile commands for changelog management:
+**Manual changelog generation** (for development/testing):
 
 ```sh
 # Generate changelog entry for latest version
-make changelog-generate
+make changelog
 
-# Update changelog with current changes  
-make changelog-update
-
-# View all changelog-related commands
-make help | grep changelog
+# Generate changelog for specific version
+make changelog-version VERSION=1.2.3
 ```
+
+For more advanced changelog management, see the legacy documentation in `archive/CONTRIBUTING_legacy.md`.

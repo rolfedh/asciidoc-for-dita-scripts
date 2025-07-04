@@ -56,7 +56,7 @@ docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit:beta \
 pip install asciidoc-dita-toolkit==0.1.7b1
 
 # Verify installation
-asciidoc-dita-toolkit --version
+adt --version
 ```
 
 ## 🧪 Testing Instructions
@@ -66,7 +66,7 @@ asciidoc-dita-toolkit --version
 First, check the available options:
 ```bash
 # See all available options
-asciidoc-dita-toolkit ContentType --help
+adt ContentType --help
 
 # Available modes: auto, review, interactive, guided
 # File options: --file FILE or --directory DIRECTORY
@@ -79,22 +79,22 @@ Test the different interaction modes on your AsciiDoc files:
 
 ```bash
 # 1. Review mode - See what issues are detected (no changes made)
-asciidoc-dita-toolkit ContentType --mode review --file your_file.adoc
+adt ContentType --mode review --file your_file.adoc
 
 # 2. Interactive mode - Approve each fix individually
-asciidoc-dita-toolkit ContentType --mode interactive --file your_file.adoc
+adt ContentType --mode interactive --file your_file.adoc
 
 # 3. Auto mode - Automatically apply all recommended fixes
-asciidoc-dita-toolkit ContentType --mode auto --file your_file.adoc
+adt ContentType --mode auto --file your_file.adoc
 
 # 4. Guided mode - Get detailed explanations
-asciidoc-dita-toolkit ContentType --mode guided --file your_file.adoc
+adt ContentType --mode guided --file your_file.adoc
 
 # 5. Process entire directory recursively
-asciidoc-dita-toolkit ContentType --mode auto --directory . --recursive
+adt ContentType --mode auto --directory . --recursive
 
 # 6. Dry run - See what would be changed without making changes
-asciidoc-dita-toolkit ContentType --mode auto --file your_file.adoc --dry-run
+adt ContentType --mode auto --file your_file.adoc --dry-run
 ```
 
 ### Test Scenarios
