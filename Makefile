@@ -4,21 +4,26 @@
 help:
 	@echo "Available targets:"
 	@echo "  help       - Show this help message"
+	@echo "  venv       - Create a Python virtual environment in .venv"
 	@echo "  test       - Run all tests"
+	@echo "  test-coverage - Run tests with coverage report and HTML output"
 	@echo "  lint       - Run code linting with flake8"
 	@echo "  format     - Format code with black"
+	@echo "  format-check - Check code formatting with black (no changes made)"
 	@echo "  clean      - Clean build artifacts"
 	@echo "  install    - Install package in development mode"
 	@echo "  install-dev - Install package with development dependencies"
 	@echo "  build      - Build distribution packages"
 	@echo "  publish    - Publish to PyPI (MAINTAINERS ONLY - requires PYPI_API_TOKEN)"
-	@echo "  check      - Run comprehensive quality checks"
+	@echo "  check      - Run comprehensive quality checks (format, lint, test)"
 	@echo "  changelog  - Generate changelog entry for latest version"
 	@echo "  changelog-version - Generate changelog for specific version (VERSION=x.y.z)"
 	@echo "  release    - Automated release: bump patch version, commit, tag, push (MAINTAINERS ONLY) (VERSION=x.y.z to override)"
+	@echo "  test-cli   - Test CLI functionality (plugin listing)"
+	@echo "  dev        - Install dev dependencies, format, lint, test (dev setup)"
 	@echo ""
 	@echo "Container targets:"
-	@echo "  container-build     - Build development container"
+	@echo "  container-build      - Build development container"
 	@echo "  container-build-prod - Build production container"
 	@echo "  container-test      - Run tests in container"
 	@echo "  container-shell     - Start interactive container shell"
@@ -26,6 +31,9 @@ help:
 	@echo "  container-push-prod - Push production container to registry"
 	@echo "  container-clean     - Clean up container images"
 	@echo "  container-validate  - Validate all container configurations"
+	@echo ""
+	@echo "NOTE: To use the 'adt' command, activate the virtual environment first:"
+	@echo "      source .venv/bin/activate"
 
 # Test targets
 test:
@@ -54,12 +62,12 @@ format-check:
 # Installation targets
 install:
 	@echo "Installing package in development mode..."
-	python3 -m pip install -e .
+	.venv/bin/pip install -e .
 
 install-dev:
 	@echo "Installing development dependencies..."
-	python3 -m pip install -r requirements-dev.txt
-	python3 -m pip install -e .
+	.venv/bin/pip install -r requirements-dev.txt
+	.venv/bin/pip install -e .
 
 # Build and distribution targets
 clean:
@@ -276,4 +284,11 @@ release:
 	echo "🔗 Links:"; \
 	echo "   PyPI: https://pypi.org/project/asciidoc-dita-toolkit/$$new_version/"; \
 	echo "   GitHub: https://github.com/rolfedh/asciidoc-dita-toolkit/releases/tag/v$$new_version"
+
+venv:
+	@echo "Creating Python virtual environment in .venv..."
+	python3 -m venv .venv
+	@echo "To activate: source .venv/bin/activate"
+	@echo "Activating virtual environment..."
+	. .venv/bin/activate || echo 'Run: source .venv/bin/activate to activate in your shell.'
 
