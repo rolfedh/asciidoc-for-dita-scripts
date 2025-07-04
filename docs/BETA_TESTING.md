@@ -6,7 +6,7 @@ We need your feedback to make this toolkit better before its full release. As a 
 
 ## What is this toolkit?
 
-The AsciiDoc DITA Toolkit (`adt`) helps you prepare your AsciiDoc files for eventual migration to DITA. It finds and fixes syntax issues so the migration goes smoothly. It automates as much of the work as possible, but prompts you when it needs your input.
+The AsciiDoc DITA Toolkit (`adt`) helps you prepare your AsciiDoc files for eventual migration to DITA. It identifies and resolves syntax issues to ensure a smooth migration. It automates as much of the work as possible, but prompts you when it needs your input.
 
 When `adt` is released, you'll typically create a new working branch in your repo, run the command line tool, and respond to the prompts. When finished, you'll review and make any additional edits to your files before committing and pushing them.
 
@@ -16,7 +16,7 @@ When `adt` is released, you'll typically create a new working branch in your rep
 2. **Converts deprecated attributes** - Updates old format attributes (`:_content-type:`, `:_module-type:`) to current standards
 3. **Auto-detects from filename** - Analyzes filename prefixes (`proc_`, `con_`, `assembly_`, etc.) to determine content type
 4. **Smart content analysis** - Examines file content patterns (headings, structure, keywords) to suggest appropriate content type
-5. **Interactive prompts** - When auto-detection fails, guides you through manual content type selection
+5. **Interactive prompts** - When auto-detection fails, it guides you through manual content type selection
 
 ## 📋 Quick Start
 
@@ -30,11 +30,13 @@ When `adt` is released, you'll typically create a new working branch in your rep
 Install the beta version via PyPI:
 
 ```bash
-pip install asciidoc-dita-toolkit==0.1.9b2
+pip install asciidoc-dita-toolkit==0.1.9b3
 adt --version
 ```
 
 > **💡 Need to upgrade or having issues?** See [Upgrading and Troubleshooting](#-upgrading-and-troubleshooting)
+
+> **💡 Reset test files:** The toolkit modifies files during testing. To get fresh test files for another round, simply copy them again: `adt-test-files copy ./test_files_fresh`
 
 ## 🧪 Testing the ContentType Plugin
 
@@ -62,7 +64,7 @@ adt ContentType .
 ### Quick Test Workflow
 
 ```bash
-# 1. Create test directory and copy test files
+# 1. Create a test directory and copy the test files
 mkdir ~/adt-beta-test
 cd ~/adt-beta-test
 adt-test-files copy ./test_files_1
@@ -96,6 +98,7 @@ cd ../test_files_3
 
 Please share your thoughts with us by
 [creating a beta testing feedback issue in GitHub](https://github.com/rolfedh/asciidoc-dita-toolkit/issues/new?template=beta-testing-feedback.md).
+Please also check out [the list of open and closed user feedback issues](https://github.com/rolfedh/asciidoc-dita-toolkit/issues?q=is%3Aissue%20label%3A%22user%20feedback%22). 
 
 We especially appreciate your feedback on:
 
@@ -157,7 +160,7 @@ The test files cover all ContentType plugin scenarios:
 If you already have an earlier version installed, upgrade to the latest beta:
 
 ```bash
-pip install --upgrade asciidoc-dita-toolkit==0.1.9b2
+pip install --upgrade asciidoc-dita-toolkit==0.1.9b3
 adt --version
 ```
 
@@ -170,7 +173,7 @@ If the upgrade fails or you're having issues, try a clean reinstall:
 pip uninstall asciidoc-dita-toolkit
 
 # Install the beta version fresh
-pip install asciidoc-dita-toolkit==0.1.9b2
+pip install asciidoc-dita-toolkit==0.1.9b3
 adt --version
 ```
 
