@@ -30,7 +30,7 @@ When `adt` is released, you'll typically create a new working branch in your rep
 Install the beta version via PyPI:
 
 ```bash
-pip install asciidoc-dita-toolkit==0.1.9b2
+pip install asciidoc-dita-toolkit==0.1.9b3
 adt --version
 ```
 
@@ -158,7 +158,7 @@ The test files cover all ContentType plugin scenarios:
 If you already have an earlier version installed, upgrade to the latest beta:
 
 ```bash
-pip install --upgrade asciidoc-dita-toolkit==0.1.9b2
+pip install --upgrade asciidoc-dita-toolkit==0.1.9b3
 adt --version
 ```
 
@@ -171,7 +171,7 @@ If the upgrade fails or you're having issues, try a clean reinstall:
 pip uninstall asciidoc-dita-toolkit
 
 # Install the beta version fresh
-pip install asciidoc-dita-toolkit==0.1.9b2
+pip install asciidoc-dita-toolkit==0.1.9b3
 adt --version
 ```
 
