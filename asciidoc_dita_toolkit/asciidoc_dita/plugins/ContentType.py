@@ -120,36 +120,37 @@ def prompt_user_for_content_type(suggested_type=None):
     for i, option in enumerate(options, 1):
         if i == suggested_index:
             print(f"[{i}] ✓ {Highlighter(option).highlight()} (recommended)")
+        elif option == "TBD" and not suggested_index:
+            print(f"[{i}] ✓ {Highlighter(option).highlight()} (type not detected)")
         else:
             print(f"[{i}]   {option}")
     print("[7] Skip this file")
-    
+    print("[8] Quit")
     # Set default choice message
     default_choice = suggested_index if suggested_index else ""
-    prompt_msg = f"Choice (1-7) [{suggested_index}]: " if suggested_index else "Choice (1-7): "
-    
+    prompt_msg = f"Choice (1-8) [{suggested_index}]: " if suggested_index else "Choice (1-8): "
     while True:
         try:
             choice = input(prompt_msg).strip()
-            
             # Use suggested default if user just presses Enter
             if choice == "" and suggested_index:
                 choice = str(suggested_index)
-            
+            elif choice == "":
+                # No suggestion, default to 6 (TBD)
+                choice = "6"
             if choice == "7":
                 return None
-            
+            if choice == "8":
+                print("Exiting at user request.")
+                sys.exit(0)
             choice_num = int(choice)
             if 1 <= choice_num <= 6:
                 return options[choice_num - 1]
             else:
-                print("Please enter a number between 1 and 7.")
-        except (ValueError, KeyboardInterrupt):
-            print("\nOperation cancelled.")
-            sys.exit(0)
-        except EOFError:
-            print("\nOperation cancelled.")
-            sys.exit(0)
+                print("Please enter a number between 1 and 8.")
+        except (ValueError, KeyboardInterrupt, EOFError):
+            print("\nDefaulting to " + Highlighter("TBD").highlight() + " (type not detected).")
+            return "TBD"
 
 
 def analyze_title_style(title):
