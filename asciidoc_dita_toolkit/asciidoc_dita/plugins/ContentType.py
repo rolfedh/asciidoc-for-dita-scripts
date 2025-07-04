@@ -299,80 +299,47 @@ def ensure_blank_line_below(lines, index):
 def process_content_type_file(filepath):
     """
     Process a single file for content type attributes.
-
-    Args:
-        filepath: Path to the .adoc file to process
+    Overhauled: Only one :_mod-docs-content-type: attribute is allowed, always updated in-place.
     """
     filename = os.path.basename(filepath)
     print(f"\nChecking {Highlighter(filename).bold()}...")
 
     try:
         lines = read_text_preserve_endings(filepath)
-        # --- New logic: Uncomment commented-out content type attribute ---
-        for i, (text, ending) in enumerate(lines):
-            stripped = text.strip()
-            if stripped.startswith("//:_mod-docs-content-type:"):
-                uncommented = text.replace("//:_mod-docs-content-type:", ":_mod-docs-content-type:", 1)
-                lines[i] = (uncommented, ending)
-                lines = ensure_blank_line_below(lines, i)
-                write_text_preserve_endings(filepath, lines)
-                print(f"  ✓ Uncommented commented-out content type attribute.")
-                print("=" * 40)
-                return
+        # Find all content type attribute lines (including commented and empty)
+        ct_indices = [i for i, (text, _) in enumerate(lines)
+                      if text.strip().startswith(":_mod-docs-content-type:") or text.strip().startswith("//:_mod-docs-content-type:")]
         
-        content_type, line_index, attr_type = detect_existing_content_type(lines)
-        
-        # Handle existing content types
-        if content_type:
-            if attr_type == 'current':
-                if content_type:
-                    print(f"  ✓ Content type already set: {Highlighter(content_type).success()}")
-                    lines = ensure_blank_line_below(lines, line_index)
-                    write_text_preserve_endings(filepath, lines)
-                else:
-                    print(f"  ⚠️  Empty content type attribute found")
-                    # Try smart content analysis for empty attributes
-                    title = get_document_title(lines)
-                    full_content = '\n'.join([text for text, _ in lines])
-                    title_suggestion = analyze_title_style(title) if title else None
-                    content_suggestion = analyze_content_patterns(full_content)
-                    suggested_type = content_suggestion or title_suggestion
-                    content_type = prompt_user_for_content_type(suggested_type)
-                    if content_type:
-                        # Replace empty attribute
-                        lines[line_index] = (f":_mod-docs-content-type: {content_type}", lines[line_index][1])
-                        lines = ensure_blank_line_below(lines, line_index)
-                        write_text_preserve_endings(filepath, lines)
-                        print(f"  ✓ Updated to: {Highlighter(content_type).success()}")
-                print("=" * 40)
-                return
-                
-            elif attr_type in ['deprecated_content', 'deprecated_module']:
-                old_attr = ":_content-type:" if attr_type == 'deprecated_content' else ":_module-type:"
-                print(f"  ⚠️  Deprecated attribute detected: {Highlighter(f'{old_attr} {content_type}').warn()}")
-                
-                if content_type:
-                    # Replace deprecated attribute
-                    lines[line_index] = (f":_mod-docs-content-type: {content_type}", lines[line_index][1])
-                    lines = ensure_blank_line_below(lines, line_index)
-                    write_text_preserve_endings(filepath, lines)
-                    print(f"  ✓ Converted to: {Highlighter(f':_mod-docs-content-type: {content_type}').success()}")
-                else:
-                    print(f"  ⚠️  Empty deprecated attribute found")
-                    # Try smart content analysis for empty deprecated attributes
-                    title = get_document_title(lines)
-                    full_content = '\n'.join([text for text, _ in lines])
-                    title_suggestion = analyze_title_style(title) if title else None
-                    content_suggestion = analyze_content_patterns(full_content)
-                    suggested_type = content_suggestion or title_suggestion
-                    content_type = prompt_user_for_content_type(suggested_type)
-                    if content_type:
-                        lines[line_index] = (f":_mod-docs-content-type: {content_type}", lines[line_index][1])
-                        lines = ensure_blank_line_below(lines, line_index)
-                        write_text_preserve_endings(filepath, lines)
-                        print(f"  ✓ Updated to: {Highlighter(content_type).success()}")
-                print("=" * 40)
-                return
+        # If any exist, update the first, remove the rest
+        if ct_indices:
+            # Uncomment if needed
+            i = ct_indices[0]
+            text, ending = lines[i]
+            if text.strip().startswith("//:_mod-docs-content-type:"):
+                text = text.replace("//:_mod-docs-content-type:", ":_mod-docs-content-type:", 1)
+            # Prompt for value if empty
+            value = text.split(":_mod-docs-content-type:",1)[-1].strip()
+            if not value:
+                title = get_document_title(lines)
+                full_content = '\n'.join([t for t, _ in lines])
+                title_suggestion = analyze_title_style(title) if title else None
+                content_suggestion = analyze_content_patterns(full_content)
+                suggested_type = content_suggestion or title_suggestion
+                value = prompt_user_for_content_type(suggested_type)
+                if not value:
+                    print(f"  → Skipped")
+                    print("=" * 40)
+                    return
+            lines[i] = (f":_mod-docs-content-type: {value}", ending)
+            # Remove all other content type lines
+            for j in sorted(ct_indices[1:], reverse=True):
+                del lines[j]
+            # Ensure blank line after
+            lines = ensure_blank_line_below(lines, i)
+            write_text_preserve_endings(filepath, lines)
+            print(f"  ✓ Updated in-place: {Highlighter(value).success()}")
+            print("=" * 40)
+            return
         
         # Try filename-based detection
         filename_content_type = get_content_type_from_filename(filename)
