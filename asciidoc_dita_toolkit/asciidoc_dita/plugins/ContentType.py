@@ -287,9 +287,20 @@ def process_content_type_file(filepath):
     """
     filename = os.path.basename(filepath)
     print(f"\nChecking {Highlighter(filename).bold()}...")
-    
+
     try:
         lines = read_text_preserve_endings(filepath)
+        # --- New logic: Uncomment commented-out content type attribute ---
+        for i, (text, ending) in enumerate(lines):
+            stripped = text.strip()
+            if stripped.startswith("//:_mod-docs-content-type:"):
+                uncommented = text.replace("//:_mod-docs-content-type:", ":_mod-docs-content-type:", 1)
+                lines[i] = (uncommented, ending)
+                write_text_preserve_endings(filepath, lines)
+                print(f"  ✓ Uncommented commented-out content type attribute.")
+                print("=" * 40)
+                return
+        
         content_type, line_index, attr_type = detect_existing_content_type(lines)
         
         # Handle existing content types
