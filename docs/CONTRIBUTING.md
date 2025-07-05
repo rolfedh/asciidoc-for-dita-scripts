@@ -176,16 +176,55 @@ If you have any questions or run into issues with these protections, please reac
 Our comprehensive test suite ensures code quality and functionality:
 
 - **`tests/test_cli.py`**: CLI interface and plugin discovery tests (13 tests)
-- **`tests/test_EntityReference.py`**: Plugin-specific functionality tests (7 tests)
+- **`tests/test_EntityReference.py`**: EntityReference plugin functionality tests (7 tests)
+- **`tests/test_DirectoryConfig.py`**: DirectoryConfig plugin and utilities tests (14 tests)
 - **`tests/asciidoc_testkit.py`**: Shared testing utilities and fixture discovery
 - **`tests/fixtures/`**: Test input files (`.adoc`) and expected outputs (`.expected`) organized by plugin name
+
+### Test Organization
+
+**Module Tests**: Each plugin or major component has its own test file following the pattern `test_<ModuleName>.py`:
+- Test files are located in `/tests/` at the project root
+- Each test file contains multiple test classes for different aspects of functionality
+- Test methods follow the `test_<functionality>` naming convention
+
+**Test Fixtures**: Plugin-specific test data is organized in `/tests/fixtures/<PluginName>/`:
+- Input files use `.adoc` extension (e.g., `simple_test.adoc`)
+- Expected output files use `.expected` extension (e.g., `simple_test.expected`)
+- Configuration files and other test data as needed (e.g., `sample_config.json`)
+
+**Example Structure**:
+```
+tests/
+├── test_EntityReference.py          # Unit tests for EntityReference plugin
+├── test_DirectoryConfig.py          # Unit tests for DirectoryConfig plugin  
+├── test_cli.py                      # CLI and integration tests
+├── asciidoc_testkit.py              # Shared test utilities
+└── fixtures/                       # Test data organized by plugin
+    ├── EntityReference/
+    │   ├── simple_entities.adoc
+    │   ├── simple_entities.expected
+    │   └── ...
+    ├── DirectoryConfig/
+    │   ├── sample_config.json
+    │   ├── test_with_entities.adoc
+    │   └── test_with_entities.expected
+    └── ContentType/
+        ├── ignore_content_type.adoc
+        ├── ignore_content_type.expected
+        └── ...
+```
 
 ### Running Tests
 
 **Run all tests (recommended):**
 
 ```sh
+# Using unittest discovery
 python3 -m unittest discover -s tests -v
+
+# Using pytest (if available)
+python3 -m pytest tests/ -v
 ```
 
 **Run specific test modules:**
@@ -193,6 +232,10 @@ python3 -m unittest discover -s tests -v
 ```sh
 python3 -m unittest tests.test_cli -v
 python3 -m unittest tests.test_EntityReference -v
+python3 -m unittest tests.test_DirectoryConfig -v
+
+# Or with pytest
+python3 -m pytest tests/test_DirectoryConfig.py -v
 ```
 
 **Run individual test cases:**
@@ -210,6 +253,9 @@ Our test suite covers:
 - ✅ Error handling for broken plugins
 - ✅ Help message functionality
 - ✅ Entity replacement and content type detection
+- ✅ Directory configuration management and filtering
+- ✅ Configuration file loading/saving and validation
+- ✅ Plugin enablement checking and environment variable handling
 - ✅ File processing with proper mocking
 - ✅ Graceful handling of missing test fixtures
 
@@ -242,7 +288,7 @@ Our test suite covers:
 All PRs must pass the test suite:
 
 - Tests run automatically on GitHub Actions
-- 20/20 tests must pass for PR approval
+- All tests (34+ total) must pass for PR approval
 - Missing test fixtures show warnings but don't fail tests
 - Expected files (`.expected`) are stored alongside input files (`.adoc`) in fixture directories
 

@@ -1,0 +1,27 @@
+{
+  "adt_directory_config": {
+    "version": "1.0",
+    "plugins": {
+      "EntityReference": {
+        "enabled": true,
+        "entity_definitions": {
+          "PRODUCT": "Red Hat Enterprise Linux",
+          "VERSION": "9.0"
+        }
+      },
+      "ContentType": {
+        "enabled": true,
+        "enforce_content_type": true
+      }
+    },
+    "file_filters": {
+      "include_patterns": [
+        "**/*.adoc"
+      ],
+      "exclude_patterns": [
+        "**/draft_*.adoc",
+        "**/temp*.adoc"
+      ]
+    }
+  }
+}
