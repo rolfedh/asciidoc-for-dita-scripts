@@ -16,7 +16,7 @@ import os
 import sys
 from datetime import datetime
 
-from ..file_utils import save_config_file, load_config_file, is_plugin_enabled, validate_directory_path, sanitize_directory_path
+from ..file_utils import save_config_file, load_config_file, is_plugin_enabled, validate_directory_path
 
 # Constants
 CONFIG_VERSION = "1.0"
