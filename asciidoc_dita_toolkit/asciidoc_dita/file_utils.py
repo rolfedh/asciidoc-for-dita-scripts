@@ -34,13 +34,10 @@ def find_adoc_files(root, recursive):
     """
     adoc_files = []
 
-    # Validate root directory exists and is accessible
-    if not os.path.exists(root):
-        print(f"Warning: Directory does not exist: {root}")
-        return adoc_files
-    
-    if not os.path.isdir(root):
-        print(f"Warning: Path is not a directory: {root}")
+    # Validate root directory using consolidated validation
+    is_valid, result = validate_directory_path(root, require_exists=True)
+    if not is_valid:
+        print(f"Warning: {result}")
         return adoc_files
 
     try:
@@ -412,3 +409,79 @@ def get_filtered_adoc_files(directory_path, config):
             unique_files.append(file_path)
     
     return unique_files
+
+# Directory validation utilities
+def sanitize_directory_path(directory_path):
+    """
+    Sanitize directory path to prevent directory traversal attacks.
+    
+    Args:
+        directory_path: Directory path to sanitize
+    
+    Returns:
+        Sanitized path or None if path is dangerous
+    """
+    if not directory_path:
+        return None
+    
+    # Remove dangerous patterns
+    dangerous_patterns = ["../", "..\\", "~/../", "./../"]
+    sanitized = directory_path.strip()
+    
+    for pattern in dangerous_patterns:
+        if pattern in sanitized:
+            return None
+    
+    # Normalize path separators
+    sanitized = os.path.normpath(sanitized)
+    
+    # Reject absolute paths that try to escape outside reasonable bounds
+    if os.path.isabs(sanitized) and not sanitized.startswith(("/home", "/usr", "/opt", "/var")):
+        return None
+    
+    return sanitized
+
+
+def validate_directory_path(directory_path, base_path=None, require_exists=True):
+    """
+    Validate that a directory path is safe and optionally exists.
+    
+    Args:
+        directory_path: Directory path to validate
+        base_path: Base directory for relative paths (optional)
+        require_exists: Whether the directory must exist
+    
+    Returns:
+        Tuple of (is_valid: bool, result: str) where result is either the validated path or error message
+    """
+    if not directory_path:
+        return False, "Directory path cannot be empty"
+    
+    # Sanitize input first
+    sanitized_path = sanitize_directory_path(directory_path)
+    if sanitized_path is None:
+        return False, f"Invalid directory path (security check failed): {directory_path}"
+    
+    # Convert to absolute path relative to base_path if provided
+    if base_path and not os.path.isabs(sanitized_path):
+        full_path = os.path.join(base_path, sanitized_path)
+    else:
+        full_path = sanitized_path
+    
+    # Normalize and resolve the path
+    full_path = os.path.realpath(full_path)
+    
+    # Security check: ensure the resolved path is within base_path if provided
+    if base_path:
+        base_path = os.path.realpath(base_path)
+        if not full_path.startswith(base_path + os.sep) and full_path != base_path:
+            return False, f"Directory must be within base path: {full_path}"
+    
+    if require_exists:
+        if not os.path.exists(full_path):
+            return False, f"Directory does not exist: {full_path}"
+        
+        if not os.path.isdir(full_path):
+            return False, f"Path is not a directory: {full_path}"
+    
+    return True, full_path

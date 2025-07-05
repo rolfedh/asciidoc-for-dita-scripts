@@ -16,7 +16,12 @@ import os
 import sys
 from datetime import datetime
 
-from ..file_utils import save_config_file, load_config_file, is_plugin_enabled
+from ..file_utils import save_config_file, load_config_file, is_plugin_enabled, validate_directory_path, sanitize_directory_path
+
+# Constants
+CONFIG_VERSION = "1.0"
+LOCAL_CHOICE = "1"
+HOME_CHOICE = "2"
 
 
 class DirectoryConfigManager:
@@ -30,32 +35,42 @@ class DirectoryConfigManager:
         if repo_root is None:
             repo_root = os.getcwd()
         
-        return {
-            "version": "1.0",
+        config = {
+            "version": CONFIG_VERSION,
             "repoRoot": os.path.abspath(repo_root),
             "includeDirs": [],
             "excludeDirs": [],
             "lastUpdated": datetime.now().isoformat()
         }
+        
+        # Validate schema
+        if not self._validate_config_schema(config):
+            raise ValueError("Invalid configuration schema")
+        
+        return config
+    
+    def _validate_config_schema(self, config):
+        """Validate configuration schema structure."""
+        required_fields = ["version", "repoRoot", "includeDirs", "excludeDirs", "lastUpdated"]
+        
+        if not isinstance(config, dict):
+            return False
+        
+        for field in required_fields:
+            if field not in config:
+                return False
+        
+        # Type validation
+        if not isinstance(config["includeDirs"], list):
+            return False
+        if not isinstance(config["excludeDirs"], list):
+            return False
+        
+        return True
     
     def validate_directory(self, directory_path, base_path):
         """Validate that a directory exists and is within the repository root."""
-        if not directory_path:
-            return False, "Directory path cannot be empty"
-        
-        # Convert to absolute path relative to base_path
-        if not os.path.isabs(directory_path):
-            full_path = os.path.join(base_path, directory_path)
-        else:
-            full_path = directory_path
-        
-        if not os.path.exists(full_path):
-            return False, f"Directory does not exist: {full_path}"
-        
-        if not os.path.isdir(full_path):
-            return False, f"Path is not a directory: {full_path}"
-        
-        return True, full_path
+        return validate_directory_path(directory_path, base_path, require_exists=True)
     
     def prompt_for_repository_root(self):
         """Prompt user for repository root directory."""
@@ -63,17 +78,25 @@ class DirectoryConfigManager:
         print(f"\nRepository Root Configuration")
         print(f"Current directory: {current_dir}")
         
-        while True:
-            repo_root = input(f"Enter repository root path [{current_dir}]: ").strip()
-            if not repo_root:
-                repo_root = current_dir
-            
-            repo_root = os.path.abspath(os.path.expanduser(repo_root))
-            
-            if os.path.exists(repo_root) and os.path.isdir(repo_root):
-                return repo_root
-            else:
-                print(f"Error: Directory does not exist: {repo_root}")
+        try:
+            while True:
+                repo_root = input(f"Enter repository root path [{current_dir}]: ").strip()
+                if not repo_root:
+                    repo_root = current_dir
+                
+                if repo_root.lower() in ['quit', 'exit', 'q']:
+                    print("Setup cancelled by user.")
+                    sys.exit(0)
+                
+                repo_root = os.path.abspath(os.path.expanduser(repo_root))
+                
+                if os.path.exists(repo_root) and os.path.isdir(repo_root):
+                    return repo_root
+                else:
+                    print(f"Error: Directory does not exist: {repo_root}")
+        except KeyboardInterrupt:
+            print("\n\nSetup cancelled by user (Ctrl+C).")
+            sys.exit(0)
     
     def prompt_for_directories(self, prompt_text, repo_root, existing_dirs=None):
         """Prompt user for directory list with validation."""
@@ -82,29 +105,37 @@ class DirectoryConfigManager:
         
         print(f"\n{prompt_text}")
         print("Enter directory paths relative to repository root, one per line.")
-        print("Press Enter on empty line to finish.")
+        print("Press Enter on empty line to finish, or 'quit' to exit.")
         
         if existing_dirs:
             print(f"Current directories: {', '.join(existing_dirs)}")
         
         directories = []
-        while True:
-            dir_input = input("Directory: ").strip()
-            if not dir_input:
-                break
-            
-            # Validate directory
-            is_valid, result = self.validate_directory(dir_input, repo_root)
-            if is_valid:
-                # Convert to relative path for storage
-                rel_path = os.path.relpath(result, repo_root)
-                if rel_path not in directories:
-                    directories.append(rel_path)
-                    print(f"  ✓ Added: {rel_path}")
+        try:
+            while True:
+                dir_input = input("Directory: ").strip()
+                if not dir_input:
+                    break
+                
+                if dir_input.lower() in ['quit', 'exit', 'q']:
+                    print("Setup cancelled by user.")
+                    sys.exit(0)
+                
+                # Validate directory
+                is_valid, result = self.validate_directory(dir_input, repo_root)
+                if is_valid:
+                    # Convert to relative path for storage
+                    rel_path = os.path.relpath(result, repo_root)
+                    if rel_path not in directories:
+                        directories.append(rel_path)
+                        print(f"  ✓ Added: {rel_path}")
+                    else:
+                        print(f"  ! Already added: {rel_path}")
                 else:
-                    print(f"  ! Already added: {rel_path}")
-            else:
-                print(f"  ✗ {result}")
+                    print(f"  ✗ {result}")
+        except KeyboardInterrupt:
+            print("\n\nSetup cancelled by user (Ctrl+C).")
+            sys.exit(0)
         
         return directories
     
@@ -138,56 +169,89 @@ class DirectoryConfigManager:
     
     def interactive_setup(self):
         """Run interactive setup wizard for directory configuration."""
-        print("ADT Directory Configuration Setup")
-        print("=" * 40)
-        
-        # Step 1: Repository root
-        repo_root = self.prompt_for_repository_root()
-        
-        # Step 2: Include directories
-        include_dirs = self.prompt_for_directories(
-            "Include Directories (leave empty to include all)", 
-            repo_root
-        )
-        
-        # Step 3: Exclude directories  
-        exclude_dirs = self.prompt_for_directories(
-            "Exclude Directories (leave empty to exclude none)", 
-            repo_root
-        )
-        
-        # Step 4: Create configuration
-        config = self.create_default_config(repo_root)
-        config['includeDirs'] = include_dirs
-        config['excludeDirs'] = exclude_dirs
-        
-        # Step 5: Choose where to save
-        print("\nWhere would you like to save the configuration?")
-        print("[1] Current directory (./.adtconfig.json) - Project-specific")
-        print("[2] Home directory (~/.adtconfig.json) - Global default")
-        
-        while True:
-            choice = input("Select location [1]: ").strip()
-            if not choice:
-                choice = "1"
+        try:
+            print("ADT Directory Configuration Setup")
+            print("=" * 40)
             
-            if choice == "1":
-                config_path = "./.adtconfig.json"
-                break
-            elif choice == "2":
-                config_path = "~/.adtconfig.json"
-                break
-            else:
-                print("Please enter 1 or 2")
-        
-        # Step 6: Save configuration
-        if save_config_file(config_path, config):
-            print(f"\n✓ Configuration saved to {config_path}")
-            self.display_configuration(config, config_path)
-            return True
-        else:
-            print(f"\n✗ Failed to save configuration to {config_path}")
+            # Step 1: Repository root
+            repo_root = self.prompt_for_repository_root()
+            
+            # Step 2: Include directories
+            include_dirs = self.prompt_for_directories(
+                "Include Directories (leave empty to include all)", 
+                repo_root
+            )
+            
+            # Step 3: Exclude directories  
+            exclude_dirs = self.prompt_for_directories(
+                "Exclude Directories (leave empty to exclude none)", 
+                repo_root
+            )
+            
+            # Step 4: Create configuration
+            config = self.create_default_config(repo_root)
+            config['includeDirs'] = include_dirs
+            config['excludeDirs'] = exclude_dirs
+            
+            # Step 5: Choose where to save
+            config_path = self._prompt_for_save_location()
+            
+            # Step 6: Save configuration with retry
+            return self._save_config_with_retry(config_path, config)
+            
+        except KeyboardInterrupt:
+            print("\n\nSetup cancelled by user (Ctrl+C).")
             return False
+        except Exception as e:
+            print(f"\nUnexpected error during setup: {e}")
+            return False
+    
+    def _prompt_for_save_location(self):
+        """Prompt user for configuration save location."""
+        print("\nWhere would you like to save the configuration?")
+        print(f"[{LOCAL_CHOICE}] Current directory (./.adtconfig.json) - Project-specific")
+        print(f"[{HOME_CHOICE}] Home directory (~/.adtconfig.json) - Global default")
+        
+        try:
+            while True:
+                choice = input(f"Select location [{LOCAL_CHOICE}]: ").strip()
+                if not choice:
+                    choice = LOCAL_CHOICE
+                
+                if choice == LOCAL_CHOICE:
+                    return "./.adtconfig.json"
+                elif choice == HOME_CHOICE:
+                    return "~/.adtconfig.json"
+                else:
+                    print(f"Please enter {LOCAL_CHOICE} or {HOME_CHOICE}")
+        except KeyboardInterrupt:
+            print("\n\nSetup cancelled by user (Ctrl+C).")
+            sys.exit(0)
+    
+    def _save_config_with_retry(self, config_path, config, max_retries=3):
+        """Save configuration with retry logic."""
+        for attempt in range(max_retries):
+            if save_config_file(config_path, config):
+                print(f"\n✓ Configuration saved to {config_path}")
+                self.display_configuration(config, config_path)
+                return True
+            else:
+                if attempt < max_retries - 1:
+                    print(f"\n✗ Failed to save configuration to {config_path}")
+                    retry = input("Would you like to try again? (y/n): ").strip().lower()
+                    if retry != 'y':
+                        # Offer alternative location
+                        alt_path = "~/.adtconfig.json" if config_path.startswith("./") else "./.adtconfig.json"
+                        try_alt = input(f"Try saving to {alt_path} instead? (y/n): ").strip().lower()
+                        if try_alt == 'y':
+                            config_path = alt_path
+                            continue
+                        else:
+                            break
+                else:
+                    print(f"\n✗ Failed to save configuration after {max_retries} attempts")
+        
+        return False
     
     def show_current_config(self):
         """Display the current active configuration."""
