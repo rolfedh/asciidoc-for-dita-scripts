@@ -27,9 +27,6 @@ HOME_CHOICE = "2"
 class DirectoryConfigManager:
     """Manages directory configuration for AsciiDoc processing."""
     
-    def __init__(self):
-        self.config_filename = ".adtconfig.json"
-    
     def create_default_config(self, repo_root=None):
         """Create a default configuration structure."""
         if repo_root is None:
