@@ -34,19 +34,35 @@ def find_adoc_files(root, recursive):
     """
     adoc_files = []
 
-    if recursive:
-        for dirpath, dirnames, filenames in os.walk(root):
-            for filename in filenames:
+    # Validate root directory exists and is accessible
+    if not os.path.exists(root):
+        print(f"Warning: Directory does not exist: {root}")
+        return adoc_files
+    
+    if not os.path.isdir(root):
+        print(f"Warning: Path is not a directory: {root}")
+        return adoc_files
+
+    try:
+        if recursive:
+            for dirpath, dirnames, filenames in os.walk(root):
+                for filename in filenames:
+                    if filename.endswith(".adoc"):
+                        fullpath = os.path.join(dirpath, filename)
+                        if not os.path.islink(fullpath):
+                            adoc_files.append(fullpath)
+        else:
+            for filename in os.listdir(root):
                 if filename.endswith(".adoc"):
-                    fullpath = os.path.join(dirpath, filename)
+                    fullpath = os.path.join(root, filename)
                     if not os.path.islink(fullpath):
                         adoc_files.append(fullpath)
-    else:
-        for filename in os.listdir(root):
-            if filename.endswith(".adoc"):
-                fullpath = os.path.join(root, filename)
-                if not os.path.islink(fullpath):
-                    adoc_files.append(fullpath)
+    except PermissionError as e:
+        print(f"Warning: Permission denied accessing directory '{root}': {e}")
+    except OSError as e:
+        print(f"Warning: Could not access directory '{root}': {e}")
+    except Exception as e:
+        print(f"Warning: Unexpected error processing directory '{root}': {e}")
 
     return adoc_files
 
