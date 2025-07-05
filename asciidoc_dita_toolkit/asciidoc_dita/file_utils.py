@@ -12,10 +12,17 @@ Intended for use by all scripts in this repository to avoid code duplication and
 """
 
 import argparse
+import logging
 import os
 import re
 import json
 from datetime import datetime
+
+# Configure logging (implements improvement #4 from issue #87)
+logger = logging.getLogger(__name__)
+
+# Environment variable for non-interactive config selection (improvement #1 from issue #87)
+ADT_CONFIG_CHOICE_ENV = "ADT_CONFIG_CHOICE"
 
 # Regex to split lines and preserve their original line endings
 LINE_SPLITTER = re.compile(rb"(.*?)(\r\n|\r|\n|$)")
@@ -37,7 +44,7 @@ def find_adoc_files(root, recursive):
     # Validate root directory using consolidated validation
     is_valid, result = validate_directory_path(root, require_exists=True)
     if not is_valid:
-        print(f"Warning: {result}")
+        logger.warning(f"Directory validation failed: {result}")
         return adoc_files
 
     try:
@@ -55,11 +62,11 @@ def find_adoc_files(root, recursive):
                     if not os.path.islink(fullpath):
                         adoc_files.append(fullpath)
     except PermissionError as e:
-        print(f"Warning: Permission denied accessing directory '{root}': {e}")
+        logger.warning(f"Permission denied accessing directory '{root}': {e}")
     except OSError as e:
-        print(f"Warning: Could not access directory '{root}': {e}")
+        logger.warning(f"Could not access directory '{root}': {e}")
     except Exception as e:
-        print(f"Warning: Unexpected error processing directory '{root}': {e}")
+        logger.warning(f"Unexpected error processing directory '{root}': {e}")
 
     return adoc_files
 
@@ -156,7 +163,7 @@ def process_adoc_files(args, process_file_func):
         if is_valid_adoc_file(args.file):
             process_file_func(args.file)
         else:
-            print(f"Error: {args.file} is not a valid .adoc file or is a symlink.")
+            logger.error(f"{args.file} is not a valid .adoc file or is a symlink.")
     else:
         # Try to load directory configuration
         config = load_directory_config()
@@ -164,16 +171,16 @@ def process_adoc_files(args, process_file_func):
         
         if config:
             # Use configuration-aware file discovery
-            print(f"✓ Using directory configuration")
+            logger.info("Using directory configuration")
             adoc_files = get_filtered_adoc_files(directory_path, config)
             if adoc_files:
                 directories = apply_directory_filters(directory_path, config)
                 excluded_count = len(config.get('excludeDirs', []))
-                print(f"✓ Processing {len(directories)} director{'y' if len(directories) == 1 else 'ies'}" + 
-                      (f", excluding {excluded_count}" if excluded_count > 0 else ""))
-                print(f"✓ Found {len(adoc_files)} .adoc file{'s' if len(adoc_files) != 1 else ''} to process")
+                logger.info(f"Processing {len(directories)} director{'y' if len(directories) == 1 else 'ies'}" + 
+                           (f", excluding {excluded_count}" if excluded_count > 0 else ""))
+                logger.info(f"Found {len(adoc_files)} .adoc file{'s' if len(adoc_files) != 1 else ''} to process")
             else:
-                print("Warning: No .adoc files found in configured directories")
+                logger.warning("No .adoc files found in configured directories")
         else:
             # Legacy behavior: process all files in directory
             adoc_files = find_adoc_files(
@@ -204,7 +211,7 @@ def is_plugin_enabled(plugin_name):
 
 def load_config_file(config_path):
     """
-    Load configuration from a JSON file.
+    Load configuration from a JSON file with enhanced validation (improvement #3 from issue #87).
     
     Args:
         config_path: Path to the configuration file
@@ -220,16 +227,50 @@ def load_config_file(config_path):
         with open(expanded_path, 'r', encoding='utf-8') as f:
             config = json.load(f)
         
-        # Validate configuration structure
-        required_fields = ['version', 'repoRoot', 'includeDirs', 'excludeDirs', 'lastUpdated']
-        if not all(field in config for field in required_fields):
-            print(f"Warning: Invalid configuration file format in {expanded_path}")
+        # Enhanced validation (improvement #3 from issue #87)
+        if not _validate_config_structure(config):
+            logger.warning(f"Invalid configuration file format in {expanded_path}")
             return None
         
         return config
     except (json.JSONDecodeError, IOError) as e:
-        print(f"Warning: Could not load configuration from {expanded_path}: {e}")
+        logger.warning(f"Could not load configuration from {expanded_path}: {e}")
         return None
+
+
+def _validate_config_structure(config):
+    """
+    Enhanced configuration validation with type checking (improvement #3 from issue #87).
+    
+    Args:
+        config: Configuration dictionary to validate
+    
+    Returns:
+        True if configuration is valid, False otherwise
+    """
+    if not isinstance(config, dict):
+        return False
+    
+    required_fields = ['version', 'repoRoot', 'includeDirs', 'excludeDirs', 'lastUpdated']
+    if not all(field in config for field in required_fields):
+        return False
+    
+    # Type validation (improvement #3 from issue #87)
+    if not isinstance(config.get('includeDirs'), list):
+        return False
+    if not isinstance(config.get('excludeDirs'), list):
+        return False
+    if not isinstance(config.get('repoRoot'), str):
+        return False
+    if not isinstance(config.get('version'), str):
+        return False
+    
+    # Validate directory paths in lists
+    for dir_list in [config['includeDirs'], config['excludeDirs']]:
+        if not all(isinstance(d, str) for d in dir_list):
+            return False
+    
+    return True
 
 
 def save_config_file(config_path, config_data):
@@ -255,13 +296,14 @@ def save_config_file(config_path, config_data):
         
         return True
     except (IOError, OSError) as e:
-        print(f"Error: Could not save configuration to {expanded_path}: {e}")
+        logger.error(f"Could not save configuration to {expanded_path}: {e}")
         return False
 
 
 def prompt_user_to_choose_config(local_config, home_config):
     """
     Prompt user to choose between local and home configuration files.
+    Supports non-interactive mode via environment variable (improvement #1 from issue #87).
     
     Args:
         local_config: Configuration data from local .adtconfig.json
@@ -270,7 +312,20 @@ def prompt_user_to_choose_config(local_config, home_config):
     Returns:
         Selected configuration data
     """
-    print("\nMultiple configuration files found:")
+    # Non-interactive mode for CI/automation (improvement #1 from issue #87)
+    env_choice = os.environ.get(ADT_CONFIG_CHOICE_ENV)
+    if env_choice:
+        if env_choice == "1" or env_choice.lower() == "local":
+            logger.info("Using local configuration (set via ADT_CONFIG_CHOICE)")
+            return local_config
+        elif env_choice == "2" or env_choice.lower() == "home":
+            logger.info("Using home configuration (set via ADT_CONFIG_CHOICE)")
+            return home_config
+        else:
+            logger.warning(f"Invalid ADT_CONFIG_CHOICE value: {env_choice}, falling back to interactive mode")
+    
+    # Interactive mode
+    logger.info("Multiple configuration files found:")
     print(f"[1] Local:  ./.adtconfig.json (last updated: {local_config.get('lastUpdated', 'unknown')})")
     print(f"[2] Home:   ~/.adtconfig.json (last updated: {home_config.get('lastUpdated', 'unknown')})")
     
@@ -353,7 +408,7 @@ def apply_directory_filters(base_path, config):
             dirs_to_process = intersecting_dirs
         else:
             # No intersection - warn but still process the requested directory
-            print(f"Warning: Specified directory '{base_path}' is not in included directories")
+            logger.warning(f"Specified directory '{base_path}' is not in included directories")
     
     # Filter out excluded directories
     if exclude_dirs:
@@ -364,7 +419,7 @@ def apply_directory_filters(base_path, config):
                 full_exclude_path = os.path.abspath(os.path.join(repo_root, exclude_dir))
                 if dir_path.startswith(full_exclude_path):
                     excluded = True
-                    print(f"Warning: Directory '{dir_path}' is excluded by configuration")
+                    logger.warning(f"Directory '{dir_path}' is excluded by configuration")
                     break
             if not excluded:
                 filtered_dirs.append(dir_path)
@@ -377,7 +432,7 @@ def apply_directory_filters(base_path, config):
     missing_dirs = set(dirs_to_process) - set(existing_dirs)
     if missing_dirs:
         for missing_dir in missing_dirs:
-            print(f"Warning: Configured directory does not exist: {missing_dir}")
+            logger.warning(f"Configured directory does not exist: {missing_dir}")
     
     return existing_dirs if existing_dirs else [base_path]
 
@@ -385,6 +440,7 @@ def apply_directory_filters(base_path, config):
 def get_filtered_adoc_files(directory_path, config):
     """
     Get .adoc files with directory configuration filtering applied.
+    Uses optimized duplicate removal (improvement #2 from issue #87).
     
     Args:
         directory_path: Base directory to search
@@ -400,15 +456,8 @@ def get_filtered_adoc_files(directory_path, config):
         files = find_adoc_files(directory, recursive=True)  # Always recursive for configured directories
         all_files.extend(files)
     
-    # Remove duplicates while preserving order
-    seen = set()
-    unique_files = []
-    for file_path in all_files:
-        if file_path not in seen:
-            seen.add(file_path)
-            unique_files.append(file_path)
-    
-    return unique_files
+    # Optimized duplicate removal (improvement #2 from issue #87)
+    return list(dict.fromkeys(all_files))
 
 # Directory validation utilities
 def sanitize_directory_path(directory_path):

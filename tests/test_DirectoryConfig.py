@@ -119,10 +119,11 @@ class TestFileUtilityFunctions(unittest.TestCase):
             tmp.flush()
             
             try:
-                with patch('builtins.print') as mock_print:
+                # Test that logger.warning is called instead of print (improvement #4 from issue #87)
+                with patch('asciidoc_dita_toolkit.asciidoc_dita.file_utils.logger.warning') as mock_warning:
                     config = load_config_file(tmp.name)
                     self.assertIsNone(config)
-                    mock_print.assert_called()
+                    mock_warning.assert_called()
             finally:
                 os.unlink(tmp.name)
 
@@ -215,13 +216,14 @@ class TestDirectoryFiltering(unittest.TestCase):
             self.assertIn(good_dir, filtered_dirs)
             
             # Test that the drafts directory would be excluded
-            with patch('builtins.print') as mock_print:
+            # Test that logger.warning is called instead of print (improvement #4 from issue #87)
+            with patch('asciidoc_dita_toolkit.asciidoc_dita.file_utils.logger.warning') as mock_warning:
                 filtered_dirs = apply_directory_filters(drafts_dir, config)
                 # The function will warn about exclusion but still return the base path
                 # since there's no alternative
-                mock_print.assert_called()
-                # Check that warning was printed
-                warning_calls = [call for call in mock_print.call_args_list 
+                mock_warning.assert_called()
+                # Check that warning was called with exclusion message
+                warning_calls = [call for call in mock_warning.call_args_list 
                                if 'excluded by configuration' in str(call)]
                 self.assertGreater(len(warning_calls), 0)
 
