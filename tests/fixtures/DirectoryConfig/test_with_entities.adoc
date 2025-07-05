@@ -1,0 +1,5 @@
+= Test Document with Entity
+
+Welcome to {PRODUCT} version {VERSION}.
+
+This is a test procedure for installation.
