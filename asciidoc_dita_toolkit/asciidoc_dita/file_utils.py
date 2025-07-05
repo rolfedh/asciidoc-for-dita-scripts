@@ -16,7 +16,6 @@ import os
 import re
 import json
 from datetime import datetime
-from pathlib import Path
 
 # Regex to split lines and preserve their original line endings
 LINE_SPLITTER = re.compile(rb"(.*?)(\r\n|\r|\n|$)")

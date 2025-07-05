@@ -15,7 +15,6 @@ import json
 import os
 import sys
 from datetime import datetime
-from pathlib import Path
 
 from ..file_utils import save_config_file, load_config_file, is_plugin_enabled
 
