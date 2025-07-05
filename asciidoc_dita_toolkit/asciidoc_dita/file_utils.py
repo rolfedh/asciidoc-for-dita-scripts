@@ -327,7 +327,7 @@ def prompt_user_to_choose_config(local_config, home_config):
             logger.warning(f"Invalid ADT_CONFIG_CHOICE value: {env_choice}, falling back to interactive mode")
     
     # Interactive mode
-    logger.info("Multiple configuration files found:")
+    print("Multiple configuration files found:")
     print(f"[1] Local:  ./.adtconfig.json (last updated: {local_config.get('lastUpdated', 'unknown')})")
     print(f"[2] Home:   ~/.adtconfig.json (last updated: {home_config.get('lastUpdated', 'unknown')})")
     
