@@ -264,6 +264,8 @@ def _validate_config_structure(config):
         return False
     if not isinstance(config.get('version'), str):
         return False
+    if not isinstance(config.get('lastUpdated'), str):
+        return False
     
     # Validate directory paths in lists
     for dir_list in [config['includeDirs'], config['excludeDirs']]:
