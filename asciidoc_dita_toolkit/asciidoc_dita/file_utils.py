@@ -12,10 +12,10 @@ Intended for use by all scripts in this repository to avoid code duplication and
 """
 
 import argparse
+import json
 import logging
 import os
 import re
-import json
 from datetime import datetime
 
 # Configure logging (implements improvement #4 from issue #87)
