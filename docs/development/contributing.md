@@ -4,7 +4,7 @@ Thank you for your interest in contributing! This guide is for developers and ma
 
 ## Project Structure
 
-For the complete package structure, see [asciidoc-dita-toolkit.md](asciidoc-dita-toolkit.md).
+For the complete package structure, see [Architecture Overview](../reference/architecture.md).
 
 **Key directories for developers:**
 

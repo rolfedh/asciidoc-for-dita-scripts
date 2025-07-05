@@ -1,0 +1,47 @@
+title: AsciiDoc DITA Toolkit
+description: Scripts to review and fix AsciiDoc content for DITA-based publishing workflows
+url: "https://rolfedh.github.io"
+baseurl: "/asciidoc-dita-toolkit"
+
+# Theme
+theme: minima
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+# Navigation
+header_pages:
+  - user-guides/installation.md
+  - user-guides/getting-started.md
+  - development/contributing.md
+  - reference/plugins.md
+
+# Markdown settings
+markdown: kramdown
+highlighter: rouge
+kramdown:
+  input: GFM
+  hard_wrap: false
+
+# Exclude from processing
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - LICENSE
+  - vendor/
+
+# SEO
+twitter:
+  username: rolfedh
+  card: summary
+
+author:
+  name: Rolfe Dlugy-Hegwer
+  
+social:
+  - https://github.com/rolfedh/asciidoc-dita-toolkit
+
+# Show excerpts on homepage
+show_excerpts: true

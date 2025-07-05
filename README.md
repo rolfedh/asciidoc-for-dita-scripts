@@ -10,8 +10,9 @@ Scripts to review and fix AsciiDoc content for DITA-based publishing workflows, 
 
 - [PyPI: asciidoc-dita-toolkit](https://pypi.org/project/asciidoc-dita-toolkit/)
 - [GitHub repository](https://github.com/rolfedh/asciidoc-dita-toolkit)
-- [Documentation](https://github.com/rolfedh/asciidoc-dita-toolkit/blob/main/docs/)
-- [Contributing Guide](https://github.com/rolfedh/asciidoc-dita-toolkit/blob/main/docs/CONTRIBUTING.md)
+- [📚 Documentation](https://rolfedh.github.io/asciidoc-dita-toolkit/) - Complete user and developer guides
+- [🚀 Getting Started](https://rolfedh.github.io/asciidoc-dita-toolkit/user-guides/getting-started/) - Quick start guide
+- [🤝 Contributing](https://rolfedh.github.io/asciidoc-dita-toolkit/development/contributing/) - How to contribute
 
 ## 📖 What is this?
 
@@ -162,19 +163,30 @@ asciidoc-dita-toolkit EntityReference -r
 
 ### 🔌 Available Plugins
 
-| Plugin | Description | Example Usage |
+| Plugin | Description | Documentation |
 |--------|-------------|---------------|
-| `EntityReference` | Replace unsupported HTML character entity references with AsciiDoc attribute references | `asciidoc-dita-toolkit EntityReference -f file.adoc` |
-| `ContentType` | Add `:_mod-docs-content-type:` labels where missing, based on filename | `asciidoc-dita-toolkit ContentType -r` |
+| `EntityReference` | Replace HTML entity references with AsciiDoc attributes | [Plugin Reference](https://rolfedh.github.io/asciidoc-dita-toolkit/reference/plugins/#entityreference) |
+| `ContentType` | Add DITA content type attributes based on content analysis | [Plugin Reference](https://rolfedh.github.io/asciidoc-dita-toolkit/reference/plugins/#contenttype) |
+| `DirectoryConfig` | Directory-scoped configuration (optional preview feature) | [Plugin Reference](https://rolfedh.github.io/asciidoc-dita-toolkit/reference/plugins/#directoryconfig-optional) |
 
-> **📋 Technical Details**: For plugin internals and supported entity mappings, see [docs/asciidoc-dita-toolkit.md](docs/asciidoc-dita-toolkit.md).
+> **📋 Complete Details**: For comprehensive plugin documentation, see the [Plugin Reference](https://rolfedh.github.io/asciidoc-dita-toolkit/reference/plugins/).
 
 ## 🔍 Troubleshooting
 
 - **Python Version**: Make sure you are using Python 3.7 or newer
 - **Installation Issues**: Try upgrading pip: `python3 -m pip install --upgrade pip`
-- **Development Setup**: If you need to use a local clone, see the [contributor guide](docs/CONTRIBUTING.md)
-- **Plugin Errors**: Use `-v` or `--verbose` flag for detailed error information
+- **Development Setup**: See the [Contributing Guide](https://rolfedh.github.io/asciidoc-dita-toolkit/development/contributing/)
+- **Plugin Errors**: Use `--verbose` flag for detailed error information
+- **Common Issues**: Check the [Troubleshooting Guide](https://rolfedh.github.io/asciidoc-dita-toolkit/user-guides/troubleshooting/)
+
+## 📚 Documentation
+
+Our documentation is organized for easy navigation:
+
+- **[📖 User Guides](https://rolfedh.github.io/asciidoc-dita-toolkit/user-guides/)** - Installation, getting started, CLI reference, containers, troubleshooting
+- **[👨‍💻 Development](https://rolfedh.github.io/asciidoc-dita-toolkit/development/)** - Contributing, plugin development, testing, release process
+- **[📋 Reference](https://rolfedh.github.io/asciidoc-dita-toolkit/reference/)** - Plugin details, architecture, configuration
+- **[🎨 Design](https://rolfedh.github.io/asciidoc-dita-toolkit/design/)** - Technical specifications and patterns
 
 ## 📚 Related Resources
 
@@ -184,8 +196,8 @@ asciidoc-dita-toolkit EntityReference -r
 
 Want to add new plugins or help improve the toolkit?
 
-- Read our [Contributing Guide](docs/CONTRIBUTING.md)
-- Follow the [Plugin Development Pattern](docs/PLUGIN_DEVELOPMENT_PATTERN.md) for new plugins
+- Read our [Contributing Guide](https://rolfedh.github.io/asciidoc-dita-toolkit/development/contributing/)
+- Follow the [Plugin Development Guide](https://rolfedh.github.io/asciidoc-dita-toolkit/development/plugin-development/) for new plugins
 - Check out [open issues](https://github.com/rolfedh/asciidoc-dita-toolkit/issues)
 - See our [Security Policy](SECURITY.md) for reporting vulnerabilities
 
