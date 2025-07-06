@@ -3,6 +3,7 @@ Test suite for the CLI interface of the AsciiDoc DITA toolkit.
 """
 
 import os
+import re
 import sys
 import unittest
 from io import StringIO
@@ -90,13 +91,31 @@ class TestCLI(unittest.TestCase):
 
     def test_plugin_help(self):
         """Test that plugin help works correctly."""
-        # Get available plugins first
-        plugins = toolkit.discover_plugins()
-        if not plugins:
-            self.skipTest("No plugins available to test help functionality")
+        # Get available plugins from the CLI help output dynamically
+        with patch("sys.argv", ["toolkit", "--help"]):
+            with patch("sys.stdout", new_callable=StringIO) as mock_stdout:
+                try:
+                    toolkit.main()
+                except SystemExit:
+                    pass  # argparse calls sys.exit after showing help
+        
+        help_output = mock_stdout.getvalue()
+        
+        # Extract available subcommands from help output using regex
+        import re
+        # Look for the subcommands section in argparse help output
+        subcommand_match = re.search(r'\{([^}]+)\}', help_output)
+        if not subcommand_match:
+            self.skipTest("No subcommands found in CLI help to test help functionality")
+        
+        # Parse available plugins from the subcommands list
+        available_plugins = [plugin.strip() for plugin in subcommand_match.group(1).split(',')]
+        
+        if not available_plugins:
+            self.skipTest("No plugins available in CLI to test help functionality")
         
         # Test with the first available plugin
-        test_plugin = plugins[0]
+        test_plugin = available_plugins[0]
         with patch("sys.argv", ["toolkit", test_plugin, "--help"]):
             with patch("sys.stdout", new_callable=StringIO) as mock_stdout:
                 with self.assertRaises(SystemExit) as cm:
