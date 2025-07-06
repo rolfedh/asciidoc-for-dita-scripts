@@ -48,6 +48,7 @@ class TestContentTypePlugin(unittest.TestCase):
             ([("text", "\n"), (":_mod-docs-content-type: CONCEPT", "\n")], ("CONCEPT", 1, "current")),
             ([("text", "\n"), (":_content-type: PROCEDURE", "\n")], ("PROCEDURE", 1, "deprecated_content")),
             ([("text", "\n"), (":_module-type: REFERENCE", "\n")], ("REFERENCE", 1, "deprecated_module")),
+            ([("text", "\n"), ("//:_mod-docs-content-type: ASSEMBLY", "\n")], ("ASSEMBLY", 1, "commented")),
             ([("text", "\n"), ("no content type", "\n")], (None, None, None)),
         ]
         

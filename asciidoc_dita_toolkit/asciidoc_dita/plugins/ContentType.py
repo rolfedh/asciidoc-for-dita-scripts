@@ -65,7 +65,7 @@ def detect_existing_content_type(lines):
 
     Returns:
         tuple: (content_type, line_index, attribute_type) or (None, None, None)
-        attribute_type: 'current', 'deprecated_content', 'deprecated_module'
+        attribute_type: 'current', 'deprecated_content', 'deprecated_module', 'commented'
     """
     for i, (text, _) in enumerate(lines):
         stripped = text.strip()
@@ -74,6 +74,11 @@ def detect_existing_content_type(lines):
         if stripped.startswith(":_mod-docs-content-type:"):
             value = stripped.split(":", 2)[-1].strip()
             return (value, i, 'current')
+        
+        # Commented-out current format
+        if stripped.startswith("//:_mod-docs-content-type:"):
+            value = stripped.split(":", 2)[-1].strip()
+            return (value, i, 'commented')
         
         # Deprecated formats
         if stripped.startswith(":_content-type:"):
@@ -330,7 +335,7 @@ def process_content_type_file(filepath):
                       if text.strip().startswith(":_mod-docs-content-type:") or 
                          text.strip().startswith("//:_mod-docs-content-type:")]
         
-        # Handle existing attributes (current or deprecated)
+        # Handle existing attributes (current, deprecated, or commented)
         if existing_content_type is not None:
             i = existing_index
             text, ending = lines[i]
@@ -340,8 +345,11 @@ def process_content_type_file(filepath):
                 text = text.replace(":_content-type:", ":_mod-docs-content-type:", 1)
             elif attr_type == 'deprecated_module':
                 text = text.replace(":_module-type:", ":_mod-docs-content-type:", 1)
+            elif attr_type == 'commented':
+                # Uncomment the line
+                text = text.replace("//:_mod-docs-content-type:", ":_mod-docs-content-type:", 1)
             elif text.strip().startswith("//:_mod-docs-content-type:"):
-                # Uncomment if needed
+                # Fallback: uncomment if somehow not caught by detection
                 text = text.replace("//:_mod-docs-content-type:", ":_mod-docs-content-type:", 1)
             
             # Check if value is empty and prompt if needed
@@ -373,7 +381,8 @@ def process_content_type_file(filepath):
             attr_type_labels = {
                 'current': 'current format',
                 'deprecated_content': 'deprecated content type',
-                'deprecated_module': 'deprecated module type'
+                'deprecated_module': 'deprecated module type',
+                'commented': 'commented out content type'
             }
             user_friendly_attr_type = attr_type_labels.get(attr_type, attr_type)
             action = "Updated" if attr_type == 'current' else f"Converted from {user_friendly_attr_type}"
