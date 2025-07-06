@@ -370,7 +370,13 @@ def process_content_type_file(filepath):
             lines = ensure_blank_line_below(lines, i)
             write_text_preserve_endings(filepath, lines)
             
-            action = "Updated" if attr_type == 'current' else f"Converted from {attr_type}"
+            attr_type_labels = {
+                'current': 'current format',
+                'deprecated_content': 'deprecated content type',
+                'deprecated_module': 'deprecated module type'
+            }
+            user_friendly_attr_type = attr_type_labels.get(attr_type, attr_type)
+            action = "Updated" if attr_type == 'current' else f"Converted from {user_friendly_attr_type}"
             print(f"  ✓ {action}: {Highlighter(value).success()}")
             print("=" * 40)
             return
