@@ -11,6 +11,8 @@ import importlib.metadata
 import os
 import sys
 
+from .plugin_manager import is_plugin_enabled
+
 PLUGIN_DIR = os.path.join(os.path.dirname(__file__), "plugins")
 
 
@@ -35,8 +37,6 @@ def discover_plugins():
 
 def print_plugin_list():
     """Print a list of all available plugins with their descriptions."""
-    from .plugin_manager import is_plugin_enabled
-    
     print("Available plugins:")
     plugins = discover_plugins()
 
@@ -58,8 +58,6 @@ def print_plugin_list():
 
 def main():
     """Main entry point for the AsciiDoc DITA toolkit."""
-    from .plugin_manager import is_plugin_enabled
-    
     parser = argparse.ArgumentParser(
         description="AsciiDoc DITA Toolkit - Process and validate AsciiDoc files for DITA publishing"
     )
