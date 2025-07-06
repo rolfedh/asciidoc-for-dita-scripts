@@ -135,7 +135,7 @@ def is_valid_adoc_file(filepath):
 # =============================================================================
 # These functions are deprecated and will be removed in a future version.
 # They are maintained for backward compatibility and delegate to new modules.
-#
+# 
 # Migration Guide:
 # - CLI functions → cli_utils.py
 # - Security functions → security_utils.py
