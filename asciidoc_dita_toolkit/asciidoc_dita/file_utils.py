@@ -24,6 +24,9 @@ logger = logging.getLogger(__name__)
 # Environment variable for non-interactive config selection (improvement #1 from issue #87)
 ADT_CONFIG_CHOICE_ENV = "ADT_CONFIG_CHOICE"
 
+# Default timestamp for missing lastUpdated fields
+DEFAULT_TIMESTAMP = "1970-01-01T00:00:00Z"
+
 # Regex to split lines and preserve their original line endings
 LINE_SPLITTER = re.compile(rb"(.*?)(\r\n|\r|\n|$)")
 
@@ -164,31 +167,63 @@ def process_adoc_files(args, process_file_func):
             process_file_func(args.file)
         else:
             logger.error(f"{args.file} is not a valid .adoc file or is a symlink.")
-    else:
-        # Try to load directory configuration
-        config = load_directory_config()
-        directory_path = getattr(args, "directory", ".")
-        
-        if config:
-            # Use configuration-aware file discovery
-            logger.info("Using directory configuration")
-            adoc_files = get_filtered_adoc_files(directory_path, config)
-            if adoc_files:
-                directories = apply_directory_filters(directory_path, config)
-                excluded_count = len(config.get('excludeDirs', []))
-                logger.info(f"Processing {len(directories)} director{'y' if len(directories) == 1 else 'ies'}" + 
-                           (f", excluding {excluded_count}" if excluded_count > 0 else ""))
-                logger.info(f"Found {len(adoc_files)} .adoc file{'s' if len(adoc_files) != 1 else ''} to process")
-            else:
-                logger.warning("No .adoc files found in configured directories")
+        return
+    
+    # Initialize adoc_files to avoid UnboundLocalError
+    adoc_files = []
+    
+    # Try to load directory configuration
+    config = load_directory_config()
+    directory_path = getattr(args, "directory", ".")
+    
+    if config:
+        # Use configuration-aware file discovery
+        logger.info("Using directory configuration")
+        adoc_files = get_filtered_adoc_files(directory_path, config)
+        if adoc_files:
+            directories = apply_directory_filters(directory_path, config)
+            excluded_count = len(config.get('excludeDirs', []))
+            dir_text = "directory" if len(directories) == 1 else "directories"
+            exclude_text = f", excluding {excluded_count}" if excluded_count > 0 else ""
+            logger.info(f"Processing {len(directories)} {dir_text}{exclude_text}")
+            logger.info(f"Found {len(adoc_files)} .adoc file{'s' if len(adoc_files) != 1 else ''} to process")
         else:
-            # Legacy behavior: process all files in directory
-            adoc_files = find_adoc_files(
-                directory_path, getattr(args, "recursive", False)
-            )
+            logger.warning("No .adoc files found in configured directories")
+            # Fall back to legacy behavior when no files found in config
+            adoc_files = find_adoc_files(directory_path, getattr(args, "recursive", False))
+    else:
+        # Legacy behavior: process all files in directory
+        adoc_files = find_adoc_files(directory_path, getattr(args, "recursive", False))
+    
+    for filepath in adoc_files:
+        process_file_func(filepath)
+
+# Helper functions for path operations
+def _is_subpath(child_path, parent_path):
+    """
+    Check if child_path is a subpath of parent_path.
+    
+    Args:
+        child_path: Path that might be a child
+        parent_path: Path that might be the parent
+    
+    Returns:
+        True if child_path is under parent_path, False otherwise
+    """
+    try:
+        child_path = os.path.abspath(child_path)
+        parent_path = os.path.abspath(parent_path)
         
-        for filepath in adoc_files:
-            process_file_func(filepath)
+        # Use os.path.commonpath for safer comparison
+        try:
+            common = os.path.commonpath([child_path, parent_path])
+            return common == parent_path
+        except ValueError:
+            # Paths are on different drives (Windows) or other issues
+            return False
+    except (OSError, ValueError):
+        return False
+
 
 # Directory Configuration Support
 def is_plugin_enabled(plugin_name):
@@ -203,9 +238,11 @@ def is_plugin_enabled(plugin_name):
         True if plugin is enabled, False otherwise
     """
     # TODO: Implement actual plugin configuration system
-    # For MVP, DirectoryConfig is disabled by default (preview stage)
+    # For MVP, DirectoryConfig and ContentType are disabled by default (preview stage)
     if plugin_name == "DirectoryConfig":
         return os.environ.get("ADT_ENABLE_DIRECTORY_CONFIG", "false").lower() == "true"
+    if plugin_name == "ContentType":
+        return os.environ.get("ADT_ENABLE_CONTENT_TYPE", "false").lower() == "true"
     return True
 
 
@@ -332,8 +369,8 @@ def prompt_user_to_choose_config(local_config, home_config):
     print(f"[2] Home:   ~/.adtconfig.json (last updated: {home_config.get('lastUpdated', 'unknown')})")
     
     # Preselect most recent
-    local_time = local_config.get('lastUpdated', '1970-01-01T00:00:00Z')
-    home_time = home_config.get('lastUpdated', '1970-01-01T00:00:00Z')
+    local_time = local_config.get('lastUpdated', DEFAULT_TIMESTAMP)
+    home_time = home_config.get('lastUpdated', DEFAULT_TIMESTAMP)
     default_choice = "1" if local_time >= home_time else "2"
     
     while True:
@@ -400,9 +437,9 @@ def apply_directory_filters(base_path, config):
         intersecting_dirs = []
         for include_dir in include_dirs:
             full_include_path = os.path.abspath(os.path.join(repo_root, include_dir))
-            # Check if paths overlap
-            if (full_include_path.startswith(base_path) or 
-                base_path.startswith(full_include_path) or
+            # Check if paths overlap (using proper path comparison)
+            if (_is_subpath(full_include_path, base_path) or 
+                _is_subpath(base_path, full_include_path) or
                 base_path == full_include_path):
                 intersecting_dirs.append(full_include_path)
         
@@ -419,7 +456,7 @@ def apply_directory_filters(base_path, config):
             excluded = False
             for exclude_dir in exclude_dirs:
                 full_exclude_path = os.path.abspath(os.path.join(repo_root, exclude_dir))
-                if dir_path.startswith(full_exclude_path):
+                if _is_subpath(dir_path, full_exclude_path):
                     excluded = True
                     logger.warning(f"Directory '{dir_path}' is excluded by configuration")
                     break
@@ -462,35 +499,52 @@ def get_filtered_adoc_files(directory_path, config):
     return list(dict.fromkeys(all_files))
 
 # Directory validation utilities
-def sanitize_directory_path(directory_path):
+def sanitize_directory_path(directory_path, base_path=None):
     """
-    Sanitize directory path to prevent directory traversal attacks.
+    Sanitize directory path to prevent directory traversal attacks using robust realpath-based validation.
     
     Args:
         directory_path: Directory path to sanitize
+        base_path: Optional base directory to constrain paths within (defaults to current working directory)
     
     Returns:
-        Sanitized path or None if path is dangerous
+        Sanitized absolute path or None if path is dangerous
     """
     if not directory_path:
         return None
     
-    # Remove dangerous patterns
-    dangerous_patterns = ["../", "..\\", "~/../", "./../"]
     sanitized = directory_path.strip()
     
-    for pattern in dangerous_patterns:
-        if pattern in sanitized:
-            return None
-    
-    # Normalize path separators
-    sanitized = os.path.normpath(sanitized)
-    
-    # Reject absolute paths that try to escape outside reasonable bounds
-    if os.path.isabs(sanitized) and not sanitized.startswith(("/home", "/usr", "/opt", "/var")):
+    # Check for null bytes or other control characters
+    if '\x00' in sanitized or any(ord(c) < 32 for c in sanitized if c not in '\t\n\r'):
         return None
     
-    return sanitized
+    # Set default base path to current working directory if not provided
+    if base_path is None:
+        base_path = os.getcwd()
+    
+    try:
+        # Resolve the base path to its canonical form
+        base_real = os.path.realpath(base_path)
+        
+        # Convert relative paths to absolute by joining with base_path
+        if not os.path.isabs(sanitized):
+            candidate_path = os.path.join(base_path, sanitized)
+        else:
+            candidate_path = sanitized
+        
+        # Resolve to canonical path (follows symlinks and normalizes)
+        resolved_path = os.path.realpath(candidate_path)
+        
+        # Verify the resolved path is within the base directory
+        if not _is_subpath(resolved_path, base_real) and resolved_path != base_real:
+            return None
+        
+        return resolved_path
+        
+    except (OSError, ValueError):
+        # Path resolution failed - treat as dangerous
+        return None
 
 
 def validate_directory_path(directory_path, base_path=None, require_exists=True):
@@ -499,7 +553,7 @@ def validate_directory_path(directory_path, base_path=None, require_exists=True)
     
     Args:
         directory_path: Directory path to validate
-        base_path: Base directory for relative paths (optional)
+        base_path: Base directory for relative paths (optional, defaults to current working directory)
         require_exists: Whether the directory must exist
     
     Returns:
@@ -508,31 +562,16 @@ def validate_directory_path(directory_path, base_path=None, require_exists=True)
     if not directory_path:
         return False, "Directory path cannot be empty"
     
-    # Sanitize input first
-    sanitized_path = sanitize_directory_path(directory_path)
-    if sanitized_path is None:
+    # Sanitize input using robust realpath-based validation
+    validated_path = sanitize_directory_path(directory_path, base_path)
+    if validated_path is None:
         return False, f"Invalid directory path (security check failed): {directory_path}"
     
-    # Convert to absolute path relative to base_path if provided
-    if base_path and not os.path.isabs(sanitized_path):
-        full_path = os.path.join(base_path, sanitized_path)
-    else:
-        full_path = sanitized_path
-    
-    # Normalize and resolve the path
-    full_path = os.path.realpath(full_path)
-    
-    # Security check: ensure the resolved path is within base_path if provided
-    if base_path:
-        base_path = os.path.realpath(base_path)
-        if not full_path.startswith(base_path + os.sep) and full_path != base_path:
-            return False, f"Directory must be within base path: {full_path}"
-    
     if require_exists:
-        if not os.path.exists(full_path):
-            return False, f"Directory does not exist: {full_path}"
+        if not os.path.exists(validated_path):
+            return False, f"Directory does not exist: {validated_path}"
         
-        if not os.path.isdir(full_path):
-            return False, f"Path is not a directory: {full_path}"
+        if not os.path.isdir(validated_path):
+            return False, f"Path is not a directory: {validated_path}"
     
-    return True, full_path
+    return True, validated_path

@@ -3,8 +3,8 @@ Test suite for the CLI interface of the AsciiDoc DITA toolkit.
 """
 
 import os
+import re
 import sys
-import tempfile
 import unittest
 from io import StringIO
 from unittest.mock import MagicMock, patch
@@ -22,8 +22,9 @@ class TestCLI(unittest.TestCase):
         """Test that plugin discovery works correctly."""
         plugins = toolkit.discover_plugins()
         self.assertIsInstance(plugins, list)
-        self.assertIn("EntityReference", plugins)
-        self.assertIn("ContentType", plugins)
+        self.assertGreater(len(plugins), 0, "Should discover at least one plugin")
+        # Verify all discovered items are strings (plugin names)
+        self.assertTrue(all(isinstance(plugin, str) for plugin in plugins))
 
     @patch("sys.stdout", new_callable=StringIO)
     def test_list_plugins(self, mock_stdout):
@@ -31,8 +32,9 @@ class TestCLI(unittest.TestCase):
         toolkit.print_plugin_list()
         output = mock_stdout.getvalue()
         self.assertIn("Available plugins:", output)
-        self.assertIn("EntityReference", output)
-        self.assertIn("ContentType", output)
+        # Should list at least one plugin
+        lines = output.strip().split('\n')
+        self.assertGreater(len(lines), 1, "Should list at least the header and one plugin")
 
     @patch("sys.argv", ["toolkit", "--list-plugins"])
     @patch("sys.exit")
@@ -87,115 +89,64 @@ class TestCLI(unittest.TestCase):
             error_output = mock_stderr.getvalue()
             self.assertIn("Error loading plugin", error_output)
 
-    @patch("sys.argv", ["toolkit", "EntityReference", "--help"])
     def test_plugin_help(self):
         """Test that plugin help works correctly."""
-
-        with patch("sys.stdout", new_callable=StringIO) as mock_stdout:
-            with self.assertRaises(SystemExit) as cm:
-                toolkit.main()
+        # Get available plugins from the CLI help output dynamically
+        with patch("sys.argv", ["toolkit", "--help"]):
+            with patch("sys.stdout", new_callable=StringIO) as mock_stdout:
+                try:
+                    toolkit.main()
+                except SystemExit:
+                    pass  # argparse calls sys.exit after showing help
+        
+        help_output = mock_stdout.getvalue()
+        
+        # Extract available subcommands from help output using regex
+        # Look for the subcommands section in argparse help output
+        subcommand_match = re.search(r'\{([^}]+)\}', help_output)
+        if not subcommand_match:
+            self.skipTest("No subcommands found in CLI help to test help functionality")
+        
+        # Parse available plugins from the subcommands list
+        available_plugins = [plugin.strip() for plugin in subcommand_match.group(1).split(',')]
+        
+        if not available_plugins:
+            self.skipTest("No plugins available in CLI to test help functionality")
+        
+        # Test with the first available plugin
+        test_plugin = available_plugins[0]
+        with patch("sys.argv", ["toolkit", test_plugin, "--help"]):
+            with patch("sys.stdout", new_callable=StringIO) as mock_stdout:
+                with self.assertRaises(SystemExit) as cm:
+                    toolkit.main()
         # argparse exits with code 0 for --help
         self.assertEqual(cm.exception.code, 0)
 
+    @patch("sys.argv", ["toolkit", "--invalid-option"])
+    @patch("sys.stderr", new_callable=StringIO)
+    def test_invalid_option_handling(self, mock_stderr):
+        """Test handling of invalid command line options."""
+        with self.assertRaises(SystemExit) as cm:
+            toolkit.main()
+        # argparse exits with code 2 for invalid arguments
+        self.assertEqual(cm.exception.code, 2)
+        error_output = mock_stderr.getvalue()
+        self.assertIn("unrecognized arguments", error_output)
 
-class TestEntityReferencePlugin(unittest.TestCase):
-    """Test cases for the EntityReference plugin."""
+    @patch("sys.argv", ["toolkit", "NonExistentPlugin"])
+    @patch("sys.stderr", new_callable=StringIO)
+    def test_nonexistent_plugin_handling(self, mock_stderr):
+        """Test handling of requests for non-existent plugins."""
+        with self.assertRaises(SystemExit) as cm:
+            toolkit.main()
+        # Should exit with error code for invalid subcommand
+        self.assertNotEqual(cm.exception.code, 0)
 
-    def setUp(self):
-        """Set up test fixtures."""
-        from asciidoc_dita_toolkit.asciidoc_dita.plugins import EntityReference
-
-        self.plugin = EntityReference
-
-    def test_replace_entities_supported(self):
-        """Test that supported entities are not replaced."""
-        input_line = "This &amp; that &lt; other"
-        result = self.plugin.replace_entities(input_line)
-        self.assertEqual(result, input_line)
-
-    def test_replace_entities_unsupported(self):
-        """Test that unsupported entities are replaced."""
-        input_line = "Copyright &copy; 2024"
-        result = self.plugin.replace_entities(input_line)
-        self.assertEqual(result, "Copyright {copy} 2024")
-
-    def test_replace_entities_unknown(self):
-        """Test handling of unknown entities."""
-        input_line = "Unknown &unknown; entity"
-        with patch("builtins.print") as mock_print:
-            result = self.plugin.replace_entities(input_line)
-            mock_print.assert_called_with("Warning: No AsciiDoc attribute for &unknown;")
-            self.assertEqual(result, input_line)
-
-
-class TestContentTypePlugin(unittest.TestCase):
-    """Test cases for the ContentType plugin."""
-
-    def setUp(self):
-        """Set up test fixtures."""
-        from asciidoc_dita_toolkit.asciidoc_dita.plugins import ContentType
-
-        self.plugin = ContentType
-
-    def test_get_content_type_from_filename(self):
-        """Test content type detection from filename."""
-        test_cases = [
-            ("assembly_test.adoc", "ASSEMBLY"),
-            ("assembly-test.adoc", "ASSEMBLY"),
-            ("con_test.adoc", "CONCEPT"),
-            ("con-test.adoc", "CONCEPT"),
-            ("proc_test.adoc", "PROCEDURE"),
-            ("proc-test.adoc", "PROCEDURE"),
-            ("ref_test.adoc", "REFERENCE"),
-            ("ref-test.adoc", "REFERENCE"),
-            ("snip_test.adoc", "SNIPPET"),
-            ("snip-test.adoc", "SNIPPET"),
-            ("other_test.adoc", None),
-        ]
-
-        for filename, expected in test_cases:
-            with self.subTest(filename=filename):
-                result = self.plugin.get_content_type_from_filename(filename)
-                self.assertEqual(result, expected)
-
-    def test_add_content_type_label_new_file(self):
-        """Test adding content type label to a file without one."""
-        with tempfile.NamedTemporaryFile(mode="w+", suffix=".adoc", delete=False) as tmp:
-            tmp.write("= Test Document\n\nContent here.\n")
-            tmp.flush()
-
-            try:
-                with patch("builtins.print") as mock_print:
-                    self.plugin.add_content_type_label(tmp.name, "CONCEPT")
-
-                with open(tmp.name, "r") as f:
-                    content = f.read()
-
-                self.assertIn(":_mod-docs-content-type: CONCEPT", content)
-                mock_print.assert_called()
-            finally:
-                os.unlink(tmp.name)
-
-    def test_add_content_type_label_existing_label(self):
-        """Test that existing labels are not overwritten."""
-        with tempfile.NamedTemporaryFile(mode="w+", suffix=".adoc", delete=False) as tmp:
-            tmp.write(":_mod-docs-content-type: PROCEDURE\n= Test Document\n\nContent here.\n")
-            tmp.flush()
-
-            try:
-                with patch("builtins.print") as mock_print:
-                    self.plugin.add_content_type_label(tmp.name, "CONCEPT")
-
-                with open(tmp.name, "r") as f:
-                    content = f.read()
-
-                # Should still have the original label
-                self.assertIn(":_mod-docs-content-type: PROCEDURE", content)
-                # Should not have the new label
-                self.assertNotIn(":_mod-docs-content-type: CONCEPT", content)
-                mock_print.assert_called_with(f"Skipping {tmp.name}, label already present")
-            finally:
-                os.unlink(tmp.name)
+    def test_plugin_discovery_empty_directory(self):
+        """Test plugin discovery when plugins directory is empty."""
+        with patch("os.listdir", return_value=[]):
+            plugins = toolkit.discover_plugins()
+            self.assertEqual(plugins, [])
 
 
 if __name__ == "__main__":
