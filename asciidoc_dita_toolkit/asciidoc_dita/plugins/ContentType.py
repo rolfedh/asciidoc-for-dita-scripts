@@ -16,25 +16,6 @@ from ..plugin_manager import is_plugin_enabled
 from ..workflow_utils import process_adoc_files
 
 
-class Highlighter:
-    """Simple text highlighter for console output."""
-
-    def __init__(self, text):
-        self.text = text
-
-    def warn(self):
-        return f"\033[0;31m{self.text}\033[0m"
-
-    def bold(self):
-        return f"\033[1m{self.text}\033[0m"
-
-    def highlight(self):
-        return f"\033[0;36m{self.text}\033[0m"
-
-    def success(self):
-        return f"\033[0;32m{self.text}\033[0m"
-
-
 def get_content_type_from_filename(filename):
     """
     Determine content type based on filename prefix.
@@ -146,16 +127,13 @@ def prompt_user_for_content_type(suggested_type=None):
                 choice = "6"
             if choice == "7":
                 return None
-            if choice == "8":
-                print("Exiting at user request.")
-                sys.exit(0)
             choice_num = int(choice)
             if 1 <= choice_num <= 6:
                 return options[choice_num - 1]
             else:
                 print("Please enter a number between 1 and 7.")
         except (ValueError, KeyboardInterrupt, EOFError):
-            print("\nDefaulting to " + Highlighter("TBD").highlight() + " (type not detected).")
+            print("\nDefaulting to \033[0;36mTBD\033[0m (type not detected).")
             return "TBD"
 
 
