@@ -19,6 +19,21 @@ Usage Examples:
 """
 
 import os
+import re
+
+
+def _camelcase_to_upper_snake(name: str) -> str:
+    """
+    Convert camelCase to UPPER_SNAKE_CASE for environment variables.
+    
+    Examples:
+        DirectoryConfig -> DIRECTORY_CONFIG
+        ContentType -> CONTENT_TYPE
+        EntityReference -> ENTITY_REFERENCE
+    """
+    # Insert underscore before uppercase letters that follow lowercase letters
+    s1 = re.sub('([a-z0-9])([A-Z])', r'\1_\2', name)
+    return s1.upper()
 
 # Plugin configuration constants
 PREVIEW_PLUGINS = {"DirectoryConfig", "ContentType"}
@@ -58,7 +73,7 @@ def is_plugin_enabled(plugin_name: str) -> bool:
     
     # Preview plugins require explicit enablement via environment variables
     if plugin_name in PREVIEW_PLUGINS:
-        env_var = f"{ENV_VAR_PREFIX}{plugin_name.upper()}"
+        env_var = f"{ENV_VAR_PREFIX}{_camelcase_to_upper_snake(plugin_name)}"
         return os.environ.get(env_var, "false").lower() == "true"
     
     # All other plugins are enabled by default
