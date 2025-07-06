@@ -102,7 +102,6 @@ class TestCLI(unittest.TestCase):
         help_output = mock_stdout.getvalue()
         
         # Extract available subcommands from help output using regex
-        import re
         # Look for the subcommands section in argparse help output
         subcommand_match = re.search(r'\{([^}]+)\}', help_output)
         if not subcommand_match:
