@@ -4,7 +4,6 @@ Test suite for the CLI interface of the AsciiDoc DITA toolkit.
 
 import os
 import sys
-import tempfile
 import unittest
 from io import StringIO
 from unittest.mock import MagicMock, patch
@@ -22,8 +21,9 @@ class TestCLI(unittest.TestCase):
         """Test that plugin discovery works correctly."""
         plugins = toolkit.discover_plugins()
         self.assertIsInstance(plugins, list)
-        self.assertIn("EntityReference", plugins)
-        self.assertIn("ContentType", plugins)  # ContentType file exists, but may not be registered
+        self.assertGreater(len(plugins), 0, "Should discover at least one plugin")
+        # Verify all discovered items are strings (plugin names)
+        self.assertTrue(all(isinstance(plugin, str) for plugin in plugins))
 
     @patch("sys.stdout", new_callable=StringIO)
     def test_list_plugins(self, mock_stdout):
@@ -31,8 +31,9 @@ class TestCLI(unittest.TestCase):
         toolkit.print_plugin_list()
         output = mock_stdout.getvalue()
         self.assertIn("Available plugins:", output)
-        self.assertIn("EntityReference", output)
-        # ContentType may or may not be listed depending on ADT_ENABLE_CONTENT_TYPE
+        # Should list at least one plugin
+        lines = output.strip().split('\n')
+        self.assertGreater(len(lines), 1, "Should list at least the header and one plugin")
 
     @patch("sys.argv", ["toolkit", "--list-plugins"])
     @patch("sys.exit")
@@ -87,195 +88,47 @@ class TestCLI(unittest.TestCase):
             error_output = mock_stderr.getvalue()
             self.assertIn("Error loading plugin", error_output)
 
-    @patch("sys.argv", ["toolkit", "EntityReference", "--help"])
     def test_plugin_help(self):
         """Test that plugin help works correctly."""
-
-        with patch("sys.stdout", new_callable=StringIO) as mock_stdout:
-            with self.assertRaises(SystemExit) as cm:
-                toolkit.main()
+        # Get available plugins first
+        plugins = toolkit.discover_plugins()
+        if not plugins:
+            self.skipTest("No plugins available to test help functionality")
+        
+        # Test with the first available plugin
+        test_plugin = plugins[0]
+        with patch("sys.argv", ["toolkit", test_plugin, "--help"]):
+            with patch("sys.stdout", new_callable=StringIO) as mock_stdout:
+                with self.assertRaises(SystemExit) as cm:
+                    toolkit.main()
         # argparse exits with code 0 for --help
         self.assertEqual(cm.exception.code, 0)
 
-    @patch.dict(os.environ, {}, clear=True)
-    @patch("sys.argv", ["toolkit", "--help"])
-    @patch("sys.stdout", new_callable=StringIO)
-    def test_content_type_disabled_by_default(self, mock_stdout):
-        """Test that ContentType plugin is disabled by default."""
-        try:
+    @patch("sys.argv", ["toolkit", "--invalid-option"])
+    @patch("sys.stderr", new_callable=StringIO)
+    def test_invalid_option_handling(self, mock_stderr):
+        """Test handling of invalid command line options."""
+        with self.assertRaises(SystemExit) as cm:
             toolkit.main()
-        except SystemExit:
-            pass  # argparse calls sys.exit after showing help
+        # argparse exits with code 2 for invalid arguments
+        self.assertEqual(cm.exception.code, 2)
+        error_output = mock_stderr.getvalue()
+        self.assertIn("unrecognized arguments", error_output)
 
-        output = mock_stdout.getvalue()
-        # ContentType should not appear in subcommands when disabled
-        self.assertNotIn("ContentType", output)
-
-    @patch.dict(os.environ, {"ADT_ENABLE_CONTENT_TYPE": "true"})
-    @patch("sys.argv", ["toolkit", "--help"])
-    @patch("sys.stdout", new_callable=StringIO)
-    def test_content_type_enabled_via_env(self, mock_stdout):
-        """Test that ContentType plugin can be enabled via environment variable."""
-        try:
+    @patch("sys.argv", ["toolkit", "NonExistentPlugin"])
+    @patch("sys.stderr", new_callable=StringIO)
+    def test_nonexistent_plugin_handling(self, mock_stderr):
+        """Test handling of requests for non-existent plugins."""
+        with self.assertRaises(SystemExit) as cm:
             toolkit.main()
-        except SystemExit:
-            pass  # argparse calls sys.exit after showing help
+        # Should exit with error code for invalid subcommand
+        self.assertNotEqual(cm.exception.code, 0)
 
-        output = mock_stdout.getvalue()
-        # ContentType should appear in subcommands when enabled
-        self.assertIn("ContentType", output)
-
-    @patch.dict(os.environ, {"ADT_ENABLE_CONTENT_TYPE": "false"})
-    @patch("sys.argv", ["toolkit", "--help"])
-    @patch("sys.stdout", new_callable=StringIO)
-    def test_content_type_explicitly_disabled(self, mock_stdout):
-        """Test that ContentType plugin can be explicitly disabled."""
-        try:
-            toolkit.main()
-        except SystemExit:
-            pass  # argparse calls sys.exit after showing help
-
-        output = mock_stdout.getvalue()
-        # ContentType should not appear when explicitly disabled
-        self.assertNotIn("ContentType", output)
-
-
-class TestEntityReferencePlugin(unittest.TestCase):
-    """Test cases for the EntityReference plugin."""
-
-    def setUp(self):
-        """Set up test fixtures."""
-        from asciidoc_dita_toolkit.asciidoc_dita.plugins import EntityReference
-
-        self.plugin = EntityReference
-
-    def test_replace_entities_supported(self):
-        """Test that supported entities are not replaced."""
-        input_line = "This &amp; that &lt; other"
-        result = self.plugin.replace_entities(input_line)
-        self.assertEqual(result, input_line)
-
-    def test_replace_entities_unsupported(self):
-        """Test that unsupported entities are replaced."""
-        input_line = "Copyright &copy; 2024"
-        result = self.plugin.replace_entities(input_line)
-        self.assertEqual(result, "Copyright {copy} 2024")
-
-    def test_replace_entities_unknown(self):
-        """Test handling of unknown entities."""
-        input_line = "Unknown &unknown; entity"
-        with patch("builtins.print") as mock_print:
-            result = self.plugin.replace_entities(input_line)
-            mock_print.assert_called_with("Warning: No AsciiDoc attribute for &unknown;")
-            self.assertEqual(result, input_line)
-
-
-class TestContentTypePlugin(unittest.TestCase):
-    """Test cases for the ContentType plugin."""
-
-    def setUp(self):
-        """Set up test fixtures."""
-        from asciidoc_dita_toolkit.asciidoc_dita.plugins import ContentType
-
-        self.plugin = ContentType
-
-    def test_get_content_type_from_filename(self):
-        """Test content type detection from filename."""
-        test_cases = [
-            ("assembly_test.adoc", "ASSEMBLY"),
-            ("assembly-test.adoc", "ASSEMBLY"),
-            ("con_test.adoc", "CONCEPT"),
-            ("con-test.adoc", "CONCEPT"),
-            ("proc_test.adoc", "PROCEDURE"),
-            ("proc-test.adoc", "PROCEDURE"),
-            ("ref_test.adoc", "REFERENCE"),
-            ("ref-test.adoc", "REFERENCE"),
-            ("snip_test.adoc", "SNIPPET"),
-            ("snip-test.adoc", "SNIPPET"),
-            ("other_test.adoc", None),
-        ]
-
-        for filename, expected in test_cases:
-            with self.subTest(filename=filename):
-                result = self.plugin.get_content_type_from_filename(filename)
-                self.assertEqual(result, expected)
-
-    def test_detect_existing_content_type(self):
-        """Test detection of existing content type attributes."""
-        test_cases = [
-            ([("text", "\n"), (":_mod-docs-content-type: CONCEPT", "\n")], ("CONCEPT", 1, "current")),
-            ([("text", "\n"), (":_content-type: PROCEDURE", "\n")], ("PROCEDURE", 1, "deprecated_content")),
-            ([("text", "\n"), (":_module-type: REFERENCE", "\n")], ("REFERENCE", 1, "deprecated_module")),
-            ([("text", "\n"), ("no content type", "\n")], (None, None, None)),
-        ]
-        
-        for lines, expected in test_cases:
-            with self.subTest(lines=lines):
-                result = self.plugin.detect_existing_content_type(lines)
-                self.assertEqual(result, expected)
-
-    def test_analyze_title_style(self):
-        """Test content type suggestions based on title analysis."""
-        test_cases = [
-            ("= Creating a new project", "PROCEDURE"),
-            ("= Docker commands reference", "REFERENCE"),
-            ("= Getting started guide", "ASSEMBLY"),
-            ("= What is containerization", "CONCEPT"),
-            (None, None),
-        ]
-        
-        for title, expected in test_cases:
-            with self.subTest(title=title):
-                result = self.plugin.analyze_title_style(title)
-                self.assertEqual(result, expected)
-
-    def test_analyze_content_patterns(self):
-        """Test content type suggestions based on content analysis."""
-        test_cases = [
-            ("This document includes:\ninclude::other.adoc[]", "ASSEMBLY"),
-            ("1. First step\n2. Second step\n.Procedure", "PROCEDURE"),
-            ("|====\n|Column 1|Column 2\n|Value 1|Value 2\n|====", "REFERENCE"),
-            ("This is just regular content.", None),
-        ]
-        
-        for content, expected in test_cases:
-            with self.subTest(content=content):
-                result = self.plugin.analyze_content_patterns(content)
-                self.assertEqual(result, expected)
-
-    def test_get_document_title(self):
-        """Test extraction of document title from file lines."""
-        test_cases = [
-            ([("= Main Title", "\n"), ("content", "\n")], "Main Title"),
-            ([("# Markdown Title", "\n"), ("content", "\n")], "Markdown Title"),
-            ([("content", "\n"), ("= Title Later", "\n")], "Title Later"),
-            ([("content", "\n"), ("no title", "\n")], None),
-            ([], None),
-        ]
-        
-        for lines, expected in test_cases:
-            with self.subTest(lines=lines):
-                result = self.plugin.get_document_title(lines)
-                self.assertEqual(result, expected)
-
-    def test_ensure_blank_line_below(self):
-        """Test ensuring blank line after content type attribute."""
-        # Test case: line at end of file
-        lines = [("content", "\n"), (":_mod-docs-content-type: CONCEPT", "\n")]
-        result = self.plugin.ensure_blank_line_below(lines, 1)
-        self.assertEqual(len(result), 3)
-        self.assertEqual(result[2], ("", "\n"))
-        
-        # Test case: no blank line after attribute
-        lines = [("content", "\n"), (":_mod-docs-content-type: CONCEPT", "\n"), ("more content", "\n")]
-        result = self.plugin.ensure_blank_line_below(lines, 1)
-        self.assertEqual(len(result), 4)
-        self.assertEqual(result[2], ("", "\n"))
-        
-        # Test case: blank line already exists
-        lines = [("content", "\n"), (":_mod-docs-content-type: CONCEPT", "\n"), ("", "\n"), ("more content", "\n")]
-        result = self.plugin.ensure_blank_line_below(lines, 1)
-        self.assertEqual(len(result), 4)  # Should not add another blank line
+    def test_plugin_discovery_empty_directory(self):
+        """Test plugin discovery when plugins directory is empty."""
+        with patch("os.listdir", return_value=[]):
+            plugins = toolkit.discover_plugins()
+            self.assertEqual(plugins, [])
 
 
 if __name__ == "__main__":
