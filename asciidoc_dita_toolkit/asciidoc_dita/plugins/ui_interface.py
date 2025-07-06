@@ -136,26 +136,27 @@ class ConsoleUI(UIInterface):
         options_display = []
         for i, option in enumerate(self.content_type_options, 1):
             if i == suggested_index:
-                options_display.append(f"{Highlighter(f'{i} {option}').bold()}💡")
+                options_display.append(f"{i} {option} 💡")
             else:
                 options_display.append(f"{i} {option}")
         options_display.append("7 Skip")
         
-        print(f"\nContent Type: {', '.join(options_display)}")
+        print(f"\nType: {', '.join(options_display)}")
         
-        # Set prompt message
+        # Show suggestion line
         if suggested_index:
-            prompt_msg = f"Press 1-7 or *Enter* to accept suggestion: "
+            suggested_option = self.content_type_options[suggested_index - 1]
+            print(f"💡 Suggestion: {suggested_index} — Press Enter to accept, 1–7 to choose, or Ctrl+C to quit")
+            prompt_msg = ""
         else:
-            prompt_msg = "Press 1-7: "
+            print("Press 1–7 to choose, or Ctrl+C to quit")
+            prompt_msg = ""
         
         while True:
             try:
                 import sys
                 import tty
                 import termios
-                
-                print(prompt_msg, end='', flush=True)
                 
                 # Get single character input without requiring Enter
                 fd = sys.stdin.fileno()
@@ -165,8 +166,6 @@ class ConsoleUI(UIInterface):
                     choice = sys.stdin.read(1)
                 finally:
                     termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-                
-                print()  # New line after input
                 
                 # Handle Enter key (accept suggestion)
                 if choice == '\r' or choice == '\n':
@@ -187,6 +186,7 @@ class ConsoleUI(UIInterface):
                     choice_num = int(choice)
                     if 1 <= choice_num <= 6:
                         selected_type = self.content_type_options[choice_num - 1]
+                        print(f"✅ {Highlighter(selected_type).bold()} chosen")
                         logger.info("User selected content type: %s", selected_type)
                         return selected_type
                     elif choice_num == 7:
@@ -218,7 +218,10 @@ class ConsoleUI(UIInterface):
         Returns:
             Selected content type string or None if skipped
         """
-        prompt_msg = f"Choice (1-7) [{suggested_index}]: " if suggested_index else "Choice (1-7): "
+        if suggested_index:
+            prompt_msg = f"[{suggested_index}]: "
+        else:
+            prompt_msg = "Choice: "
         
         while True:
             try:
@@ -237,6 +240,7 @@ class ConsoleUI(UIInterface):
                 choice_num = int(choice)
                 if 1 <= choice_num <= 6:
                     selected_type = self.content_type_options[choice_num - 1]
+                    print(f"✅ {Highlighter(selected_type).bold()} chosen")
                     logger.info("User selected content type: %s", selected_type)
                     return selected_type
                 elif choice_num == 7:
