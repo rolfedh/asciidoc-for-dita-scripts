@@ -5,7 +5,6 @@ This module provides an abstraction layer for user interaction, making it easier
 to test and potentially support different UI modes (CLI, GUI, batch).
 """
 
-import sys
 import logging
 from abc import ABC, abstractmethod
 from typing import Optional, List

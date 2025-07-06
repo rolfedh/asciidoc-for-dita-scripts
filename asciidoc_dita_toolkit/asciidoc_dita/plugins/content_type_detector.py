@@ -6,7 +6,7 @@ This module contains the core detection algorithms separated from UI and I/O con
 
 import re
 import logging
-from typing import Optional, List, Tuple, Dict, Any
+from typing import Optional, List, Tuple, Dict
 from dataclasses import dataclass
 
 
