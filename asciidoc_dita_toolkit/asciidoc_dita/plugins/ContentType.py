@@ -119,26 +119,25 @@ def prompt_user_for_content_type(suggested_type=None):
     if suggested_type and suggested_type in options:
         suggested_index = options.index(suggested_type) + 1
     
-    if suggested_type:
-        print(f"\nContent type not specified. Based on analysis, this appears to be a {Highlighter(suggested_type).highlight()}.")
-        print("\nSelect content type:")
-    else:
-        print("\nNo content type detected. Please select:")
-    
+    # Create the compact format with colored/bold digits
+    option_parts = []
     for i, option in enumerate(options, 1):
+        colored_digit = f"\033[1;36m{i}\033[0m"  # Bold cyan for numbers
         if i == suggested_index:
-            print(f"[{i}] ✓ {Highlighter(option).highlight()} (recommended)")
-        elif option == "TBD" and not suggested_index:
-            print(f"[{i}] ✓ {Highlighter(option).highlight()} (type not detected)")
+            option_parts.append(f"{colored_digit}. {option}💡")
         else:
-            print(f"[{i}]   {option}")
-    print("[7] Skip this file")
-    print("[8] Quit")
-    # Set default choice message
-    prompt_msg = f"Choice (1-8) [{suggested_index}]: " if suggested_index else "Choice (1-8): "
+            option_parts.append(f"{colored_digit}. {option}")
+    
+    # Add skip option
+    option_parts.append(f"\033[1;36m7\033[0m. Skip")
+    
+    # Display the compact format
+    print(f"❓ Check!  " + "  ".join(option_parts))
+    print("Enter 1-7:")
+    
     while True:
         try:
-            choice = input(prompt_msg).strip()
+            choice = input("").strip()
             # Use suggested default if user just presses Enter
             if choice == "" and suggested_index:
                 choice = str(suggested_index)
@@ -154,7 +153,7 @@ def prompt_user_for_content_type(suggested_type=None):
             if 1 <= choice_num <= 6:
                 return options[choice_num - 1]
             else:
-                print("Please enter a number between 1 and 8.")
+                print("Please enter a number between 1 and 7.")
         except (ValueError, KeyboardInterrupt, EOFError):
             print("\nDefaulting to " + Highlighter("TBD").highlight() + " (type not detected).")
             return "TBD"
@@ -310,23 +309,20 @@ def process_content_type_file(filepath):
     Overhauled: Only one :_mod-docs-content-type: attribute is allowed, always updated in-place.
     """
     filename = os.path.basename(filepath)
-    print(f"\nChecking {Highlighter(filename).bold()}...")
+    print(f"🔍 {filename}")
 
     try:
         if not os.path.exists(filepath):
             print(f"  ❌ Error: File not found: {filepath}")
-            print("=" * 40)
             return
         
         if not os.access(filepath, os.R_OK):
             print(f"  ❌ Error: Cannot read file: {filepath}")
-            print("=" * 40)
             return
             
         lines = read_text_preserve_endings(filepath)
         if not lines:
             print(f"  ⚠️  Warning: File is empty: {filepath}")
-            print("=" * 40)
             return
             
         # Detect existing content type attributes (including deprecated formats)
@@ -365,7 +361,6 @@ def process_content_type_file(filepath):
                 value = prompt_user_for_content_type(suggested_type)
                 if not value:
                     print(f"  → Skipped")
-                    print("=" * 40)
                     return
             
             # Update the line with current format
@@ -380,32 +375,20 @@ def process_content_type_file(filepath):
             lines = ensure_blank_line_below(lines, i)
             write_text_preserve_endings(filepath, lines)
             
-            attr_type_labels = {
-                'current': 'current format',
-                'deprecated_content': 'deprecated content type',
-                'deprecated_module': 'deprecated module type',
-                'commented': 'commented out content type'
-            }
-            user_friendly_attr_type = attr_type_labels.get(attr_type, attr_type)
-            action = "Updated" if attr_type == 'current' else f"Converted from {user_friendly_attr_type}"
-            print(f"  ✓ {action}: {Highlighter(value).success()}")
-            print("=" * 40)
+            print(f"✓ {value}")
             return
         
         # Try filename-based detection
         filename_content_type = get_content_type_from_filename(filename)
         if filename_content_type:
-            print(f"  💡 Detected from filename: {Highlighter(filename_content_type).highlight()}")
             # Add content type at the beginning
             lines.insert(0, (f":_mod-docs-content-type: {filename_content_type}", "\n"))
             lines = ensure_blank_line_below(lines, 0)
             write_text_preserve_endings(filepath, lines)
-            print(f"  ✓ Added content type: {Highlighter(filename_content_type).success()}")
-            print("=" * 40)
+            print(f"✓ {filename_content_type}")
             return
         
         # Try smart content analysis
-        print("  🔍 Analyzing file content...")
         # Get document title and full content for analysis
         title = get_document_title(lines)
         full_content = '\n'.join([text for text, _ in lines])
@@ -414,30 +397,23 @@ def process_content_type_file(filepath):
         content_suggestion = analyze_content_patterns(full_content)
         # Choose the most specific suggestion
         suggested_type = content_suggestion or title_suggestion
-        if suggested_type:
-            print(f"  💭 Analysis suggests: {Highlighter(suggested_type).highlight()}")
-            if title:
-                print(f"     Based on title: '{title[:50]}{'...' if len(title) > 50 else ''}'")
+        
         # Prompt user with smart pre-selection
         content_type = prompt_user_for_content_type(suggested_type)
         if content_type:
             lines.insert(0, (f":_mod-docs-content-type: {content_type}", "\n"))
             lines = ensure_blank_line_below(lines, 0)
             write_text_preserve_endings(filepath, lines)
-            print(f"  ✓ Added content type: {Highlighter(content_type).success()}")
+            print(f"✓ {content_type}")
         else:
             print(f"  → Skipped")
-        print("=" * 40)
 
     except PermissionError:
         print(f"  ❌ Error: Permission denied: {filepath}")
-        print("=" * 40)
     except UnicodeDecodeError:
         print(f"  ❌ Error: Cannot decode file (not UTF-8): {filepath}")
-        print("=" * 40)
     except Exception as e:
         print(f"  ❌ Error: {e}")
-        print("=" * 40)
 
 
 def main(args):
