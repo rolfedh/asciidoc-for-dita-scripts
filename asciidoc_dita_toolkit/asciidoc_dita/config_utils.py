@@ -51,7 +51,9 @@ def save_json_config(config_path, config_data, update_timestamp=True):
     """
     try:
         expanded_path = os.path.expanduser(config_path)
-        os.makedirs(os.path.dirname(expanded_path), exist_ok=True)
+        dir_name = os.path.dirname(expanded_path)
+        if dir_name:  # Ensure the directory name is non-empty
+            os.makedirs(dir_name, exist_ok=True)
         
         # Update timestamp if requested
         if update_timestamp:

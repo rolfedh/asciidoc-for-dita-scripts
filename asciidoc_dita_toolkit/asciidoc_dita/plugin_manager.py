@@ -9,7 +9,7 @@ import os
 
 def is_plugin_enabled(plugin_name):
     """
-    Check if a plugin is enabled. For now, all plugins are enabled by default.
+    Check if a plugin is enabled. Some plugins are enabled by default.
     This is a placeholder for future plugin configurator implementation.
     
     Args:

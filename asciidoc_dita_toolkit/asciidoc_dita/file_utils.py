@@ -27,8 +27,8 @@ from .cli_utils import common_arg_parser
 from .config_utils import load_json_config as load_config_file, save_json_config as save_config_file
 from .plugin_manager import is_plugin_enabled
 from .security_utils import sanitize_directory_path, validate_directory_path, _is_subpath
-from .user_interface import prompt_user_to_choose_config, DEFAULT_TIMESTAMP, ADT_CONFIG_CHOICE_ENV
-from .workflow_utils import process_adoc_files
+from .user_interface import DEFAULT_TIMESTAMP, ADT_CONFIG_CHOICE_ENV
+# Note: workflow_utils import moved to avoid circular dependency
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -195,3 +195,12 @@ def get_filtered_adoc_files(directory_path, config):
         return get_filtered_files(directory_path, config, find_adoc_files)
     except ImportError:
         return find_adoc_files(directory_path, True)
+
+
+def process_adoc_files(args, process_file_func):
+    """Deprecated: Use workflow_utils.process_adoc_files instead."""
+    import warnings
+    warnings.warn("process_adoc_files is deprecated. Use workflow_utils.process_adoc_files instead.", 
+                  DeprecationWarning, stacklevel=2)
+    from .workflow_utils import process_adoc_files as process_files
+    return process_files(args, process_file_func)
