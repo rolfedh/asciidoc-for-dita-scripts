@@ -6,7 +6,16 @@ This module provides core file operations for:
 - Reading and writing text files while preserving original line endings for each line.
 - Validating .adoc files (extension, file type, not a symlink).
 
-Intended for use by all scripts in this repository to avoid code duplication and ensure consistent file handling.
+After modularization (Issue #92), this module focuses solely on file operations.
+Other concerns have been moved to specialized modules:
+- CLI parsing → cli_utils.py
+- Security validation → security_utils.py  
+- Configuration management → config_utils.py
+- Plugin management → plugin_manager.py
+- User interaction → user_interface.py
+- High-level workflows → workflow_utils.py
+
+Legacy imports are maintained for backward compatibility with deprecation warnings.
 """
 
 import logging
@@ -121,10 +130,20 @@ def is_valid_adoc_file(filepath):
     return os.path.isfile(filepath) and filepath.endswith(".adoc") and not os.path.islink(filepath)
 
 
-# Backward compatibility - these functions are now deprecated and will be removed
-# Import them from their new modules instead
-
-# Legacy imports - deprecated, use from specific modules instead
+# =============================================================================
+# BACKWARD COMPATIBILITY LAYER
+# =============================================================================
+# These functions are deprecated and will be removed in a future version.
+# They are maintained for backward compatibility and delegate to new modules.
+# 
+# Migration Guide:
+# - CLI functions → cli_utils.py
+# - Security functions → security_utils.py  
+# - Configuration functions → config_utils.py
+# - Plugin functions → plugin_manager.py
+# - UI functions → user_interface.py
+# - Workflow functions → workflow_utils.py
+# =============================================================================
 def _validate_config_structure(config):
     """Deprecated: Use config_utils.validate_config_structure instead."""
     import warnings
