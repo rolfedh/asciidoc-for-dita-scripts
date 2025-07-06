@@ -12,9 +12,11 @@ export ADT_ENABLE_DIRECTORY_CONFIG=true
 __description__ = "Configure directory scoping for AsciiDoc processing (preview)"
 
 import json
+import logging
 import os
 import sys
 from datetime import datetime
+from typing import List, Optional, Set, Tuple, Union
 
 from ..config_utils import save_json_config as save_config_file, load_json_config as load_config_file
 from ..plugin_manager import is_plugin_enabled
@@ -25,198 +27,360 @@ CONFIG_VERSION = "1.0"
 LOCAL_CHOICE = "1"
 HOME_CHOICE = "2"
 
+# Set up logging
+logger = logging.getLogger(__name__)
 
-class DirectoryConfigManager:
-    """Manages directory configuration for AsciiDoc processing."""
 
-    def create_default_config(self, repo_root=None):
+# Helper functions for path handling
+def _normalize_path(path: str, base_path: Optional[str] = None) -> str:
+    """
+    Normalize and resolve a path relative to base_path.
+    
+    Args:
+        path: The path to normalize
+        base_path: Optional base path to resolve relative paths against
+        
+    Returns:
+        Normalized absolute path
+    """
+    if not path:
+        raise ValueError("Path cannot be empty")
+    
+    # Expand user home directory
+    expanded_path = os.path.expanduser(path)
+    
+    # If base_path is provided and path is relative, join them
+    if base_path and not os.path.isabs(expanded_path):
+        expanded_path = os.path.join(base_path, expanded_path)
+    
+    # Return normalized absolute path
+    return os.path.abspath(expanded_path)
+
+
+def _is_path_under_directory(file_path: str, dir_path: str) -> bool:
+    """
+    Check if file_path is under dir_path.
+    
+    Args:
+        file_path: Path to check
+        dir_path: Directory path to check against
+        
+    Returns:
+        True if file_path is under dir_path, False otherwise
+    """
+    try:
+        # Normalize both paths
+        normalized_file = _normalize_path(file_path)
+        normalized_dir = _normalize_path(dir_path)
+        
+        # Check if they share a common path and the directory is the parent
+        common_path = os.path.commonpath([normalized_file, normalized_dir])
+        return common_path == normalized_dir
+    except (ValueError, OSError) as e:
+        logger.debug(f"Error checking path relationship between {file_path} and {dir_path}: {e}")
+        return False
+
+
+def _validate_path_list(paths: List[str], base_path: str, description: str) -> List[str]:
+    """
+    Validate and normalize a list of paths.
+    
+    Args:
+        paths: List of paths to validate
+        base_path: Base path for relative path resolution
+        description: Description for logging purposes
+        
+    Returns:
+        List of validated and normalized paths
+    """
+    validated_paths = []
+    
+    for path in paths:
+        try:
+            normalized = _normalize_path(path, base_path)
+            validated_paths.append(os.path.relpath(normalized, base_path))
+            logger.debug(f"Validated {description} path: {path} -> {validated_paths[-1]}")
+        except (ValueError, OSError) as e:
+            logger.warning(f"Invalid {description} path '{path}': {e}")
+            continue
+    
+    return validated_paths
+
+
+def _detect_path_conflicts(include_dirs: List[str], exclude_dirs: List[str], 
+                          repo_root: str) -> List[str]:
+    """
+    Detect conflicts between include and exclude directories.
+    
+    Args:
+        include_dirs: List of include directory paths
+        exclude_dirs: List of exclude directory paths
+        repo_root: Repository root path
+        
+    Returns:
+        List of conflict messages
+    """
+    conflicts = []
+    
+    # Check for overlapping include/exclude directories
+    for include_dir in include_dirs:
+        include_path = _normalize_path(include_dir, repo_root)
+        
+        for exclude_dir in exclude_dirs:
+            exclude_path = _normalize_path(exclude_dir, repo_root)
+            
+            # Check if include directory is under exclude directory
+            if _is_path_under_directory(include_path, exclude_path):
+                conflicts.append(f"Include directory '{include_dir}' is under exclude directory '{exclude_dir}'")
+            
+            # Check if exclude directory is under include directory
+            elif _is_path_under_directory(exclude_path, include_path):
+                conflicts.append(f"Exclude directory '{exclude_dir}' is under include directory '{include_dir}'")
+    
+    # Check for duplicate paths in same list
+    include_set = set(include_dirs)
+    if len(include_set) != len(include_dirs):
+        conflicts.append("Duplicate paths found in include directories")
+    
+    exclude_set = set(exclude_dirs)
+    if len(exclude_set) != len(exclude_dirs):
+        conflicts.append("Duplicate paths found in exclude directories")
+    
+    return conflicts
+
+
+class DirectoryConfigCore:
+    """Core business logic for directory configuration (separated from user interaction)."""
+    
+    def __init__(self):
+        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+    
+    def create_default_config(self, repo_root: Optional[str] = None) -> dict:
         """Create a default configuration structure."""
         if repo_root is None:
             repo_root = os.getcwd()
-
+        
+        normalized_repo_root = _normalize_path(repo_root)
+        
         config = {
             "version": CONFIG_VERSION,
-            "repoRoot": os.path.abspath(repo_root),
+            "repoRoot": normalized_repo_root,
             "includeDirs": [],
             "excludeDirs": [],
             "lastUpdated": datetime.now().isoformat()
         }
-
+        
+        self.logger.debug(f"Created default config with repo root: {normalized_repo_root}")
+        
         # Validate schema
         if not self._validate_config_schema(config):
             raise ValueError("Invalid configuration schema")
-
+        
         return config
-
-    def _validate_config_schema(self, config):
+    
+    def _validate_config_schema(self, config: dict) -> bool:
         """Validate configuration schema structure."""
         required_fields = ["version", "repoRoot", "includeDirs", "excludeDirs", "lastUpdated"]
-
+        
         if not isinstance(config, dict):
+            self.logger.error("Configuration must be a dictionary")
             return False
-
+        
         for field in required_fields:
             if field not in config:
+                self.logger.error(f"Missing required field: {field}")
                 return False
-
+        
         # Type validation
         if not isinstance(config["includeDirs"], list):
+            self.logger.error("includeDirs must be a list")
             return False
         if not isinstance(config["excludeDirs"], list):
+            self.logger.error("excludeDirs must be a list")
             return False
-
+        
+        # Check for conflicts
+        conflicts = _detect_path_conflicts(
+            config["includeDirs"], 
+            config["excludeDirs"], 
+            config["repoRoot"]
+        )
+        
+        if conflicts:
+            self.logger.warning(f"Configuration conflicts detected: {'; '.join(conflicts)}")
+            # Don't fail validation, just warn
+        
+        self.logger.debug("Configuration schema validation passed")
         return True
-
-    def validate_directory(self, directory_path, base_path):
+    
+    def validate_directory(self, directory_path: str, base_path: str) -> Tuple[bool, str]:
         """Validate that a directory exists and is within the repository root."""
-        return validate_directory_path(directory_path, base_path, require_exists=True)
+        try:
+            normalized_path = _normalize_path(directory_path, base_path)
+            self.logger.debug(f"Validating directory: {directory_path} -> {normalized_path}")
+            
+            result = validate_directory_path(normalized_path, base_path, require_exists=True)
+            
+            if result[0]:
+                self.logger.debug(f"Directory validation successful: {directory_path}")
+            else:
+                self.logger.debug(f"Directory validation failed: {directory_path} - {result[1]}")
+            
+            return result
+        except Exception as e:
+            error_msg = f"Error validating directory '{directory_path}': {e}"
+            self.logger.error(error_msg)
+            return False, error_msg
+    
+    def update_config_paths(self, config: dict, include_dirs: List[str], 
+                           exclude_dirs: List[str]) -> dict:
+        """Update configuration with validated paths."""
+        repo_root = config["repoRoot"]
+        
+        # Validate and normalize paths
+        validated_includes = _validate_path_list(include_dirs, repo_root, "include")
+        validated_excludes = _validate_path_list(exclude_dirs, repo_root, "exclude")
+        
+        # Update configuration
+        config["includeDirs"] = validated_includes
+        config["excludeDirs"] = validated_excludes
+        config["lastUpdated"] = datetime.now().isoformat()
+        
+        # Check for conflicts
+        conflicts = _detect_path_conflicts(validated_includes, validated_excludes, repo_root)
+        if conflicts:
+            self.logger.warning(f"Configuration conflicts: {'; '.join(conflicts)}")
+        
+        self.logger.info(f"Updated configuration with {len(validated_includes)} include dirs, "
+                        f"{len(validated_excludes)} exclude dirs")
+        
+        return config
 
-    def prompt_for_repository_root(self):
+
+class DirectoryConfigUI:
+    """User interface layer for directory configuration."""
+    
+    def __init__(self, core: DirectoryConfigCore):
+        self.core = core
+        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+    
+    def prompt_for_repository_root(self) -> str:
         """Prompt user for repository root directory."""
         current_dir = os.getcwd()
         print(f"\nRepository Root Configuration")
         print(f"Current directory: {current_dir}")
-
+        
         try:
             while True:
                 repo_root = input(f"Enter repository root path [{current_dir}]: ").strip()
                 if not repo_root:
                     repo_root = current_dir
-
+                
                 if repo_root.lower() in ['quit', 'exit', 'q']:
                     print("Setup cancelled by user.")
                     sys.exit(0)
-
-                repo_root = os.path.abspath(os.path.expanduser(repo_root))
-
-                if os.path.exists(repo_root) and os.path.isdir(repo_root):
-                    return repo_root
-                else:
-                    print(f"Error: Directory does not exist: {repo_root}")
+                
+                try:
+                    normalized_root = _normalize_path(repo_root)
+                    
+                    if os.path.exists(normalized_root) and os.path.isdir(normalized_root):
+                        self.logger.debug(f"Repository root selected: {normalized_root}")
+                        return normalized_root
+                    else:
+                        print(f"Error: Directory does not exist: {normalized_root}")
+                        self.logger.debug(f"Invalid repository root: {normalized_root}")
+                except Exception as e:
+                    print(f"Error: Invalid path: {e}")
+                    self.logger.debug(f"Path normalization error: {e}")
         except KeyboardInterrupt:
             print("\n\nSetup cancelled by user (Ctrl+C).")
             sys.exit(0)
-
-    def prompt_for_directories(self, prompt_text, repo_root, existing_dirs=None):
+    
+    def prompt_for_directories(self, prompt_text: str, repo_root: str, 
+                             existing_dirs: Optional[List[str]] = None) -> List[str]:
         """Prompt user for directory list with validation."""
         if existing_dirs is None:
             existing_dirs = []
-
+        
         print(f"\n{prompt_text}")
         print("Enter directory paths relative to repository root, one per line.")
         print("Press Enter on empty line to finish, or 'quit' to exit.")
-
+        
         if existing_dirs:
             print(f"Current directories: {', '.join(existing_dirs)}")
-
+        
         directories = []
         try:
             while True:
                 dir_input = input("Directory: ").strip()
                 if not dir_input:
                     break
-
+                
                 if dir_input.lower() in ['quit', 'exit', 'q']:
                     print("Setup cancelled by user.")
                     sys.exit(0)
-
+                
                 # Validate directory
-                is_valid, result = self.validate_directory(dir_input, repo_root)
+                is_valid, result = self.core.validate_directory(dir_input, repo_root)
                 if is_valid:
                     # Convert to relative path for storage
                     rel_path = os.path.relpath(result, repo_root)
                     if rel_path not in directories:
                         directories.append(rel_path)
                         print(f"  ✓ Added: {rel_path}")
+                        self.logger.debug(f"Added directory: {rel_path}")
                     else:
                         print(f"  ! Already added: {rel_path}")
+                        self.logger.debug(f"Duplicate directory ignored: {rel_path}")
                 else:
                     print(f"  ✗ {result}")
+                    self.logger.debug(f"Invalid directory rejected: {dir_input} - {result}")
         except KeyboardInterrupt:
             print("\n\nSetup cancelled by user (Ctrl+C).")
             sys.exit(0)
-
+        
         return directories
-
-    def display_configuration(self, config, config_path=None):
+    
+    def display_configuration(self, config: dict, config_path: Optional[str] = None) -> None:
         """Display current configuration in a user-friendly format."""
         print("\n" + "="*50)
         print("Directory Configuration")
         print("="*50)
-
+        
         if config_path:
             print(f"Configuration file: {config_path}")
-
+        
         print(f"Repository root: {config['repoRoot']}")
         print(f"Last updated: {config['lastUpdated']}")
-
+        
         if config['includeDirs']:
             print(f"\nInclude directories ({len(config['includeDirs'])}):")
             for dir_name in config['includeDirs']:
                 print(f"  + {dir_name}")
         else:
             print(f"\nInclude directories: All directories (no restrictions)")
-
+        
         if config['excludeDirs']:
             print(f"\nExclude directories ({len(config['excludeDirs'])}):")
             for dir_name in config['excludeDirs']:
                 print(f"  - {dir_name}")
         else:
             print(f"\nExclude directories: None")
-
+        
         print("="*50)
-
-    def interactive_setup(self):
-        """Run interactive setup wizard for directory configuration."""
-        try:
-            print("ADT Directory Configuration Setup")
-            print("=" * 40)
-
-            # Step 1: Repository root
-            repo_root = self.prompt_for_repository_root()
-
-            # Step 2: Include directories
-            include_dirs = self.prompt_for_directories(
-                "Include Directories (leave empty to include all)",
-                repo_root
-            )
-
-            # Step 3: Exclude directories
-            exclude_dirs = self.prompt_for_directories(
-                "Exclude Directories (leave empty to exclude none)",
-                repo_root
-            )
-
-            # Step 4: Create configuration
-            config = self.create_default_config(repo_root)
-            config['includeDirs'] = include_dirs
-            config['excludeDirs'] = exclude_dirs
-
-            # Step 5: Choose where to save
-            config_path = self._prompt_for_save_location()
-
-            # Step 6: Save configuration with retry
-            return self._save_config_with_retry(config_path, config)
-
-        except KeyboardInterrupt:
-            print("\n\nSetup cancelled by user (Ctrl+C).")
-            return False
-        except Exception as e:
-            print(f"\nUnexpected error during setup: {e}")
-            return False
-
-    def _prompt_for_save_location(self):
+    
+    def _prompt_for_save_location(self) -> str:
         """Prompt user for configuration save location."""
         print("\nWhere would you like to save the configuration?")
         print(f"[{LOCAL_CHOICE}] Current directory (./.adtconfig.json) - Project-specific")
         print(f"[{HOME_CHOICE}] Home directory (~/.adtconfig.json) - Global default")
-
+        
         try:
             while True:
                 choice = input(f"Select location [{LOCAL_CHOICE}]: ").strip()
                 if not choice:
                     choice = LOCAL_CHOICE
-
+                
                 if choice == LOCAL_CHOICE:
                     return "./.adtconfig.json"
                 elif choice == HOME_CHOICE:
@@ -226,200 +390,319 @@ class DirectoryConfigManager:
         except KeyboardInterrupt:
             print("\n\nSetup cancelled by user (Ctrl+C).")
             sys.exit(0)
-
-    def _save_config_with_retry(self, config_path, config, max_retries=3):
+    
+    def _save_config_with_retry(self, config_path: str, config: dict, 
+                               max_retries: int = 3) -> bool:
         """Save configuration with retry logic."""
         for attempt in range(max_retries):
-            if save_config_file(config_path, config):
-                print(f"\n✓ Configuration saved to {config_path}")
-                self.display_configuration(config, config_path)
-                return True
-            else:
-                if attempt < max_retries - 1:
-                    print(f"\n✗ Failed to save configuration to {config_path}")
-                    retry = input("Would you like to try again? (y/n): ").strip().lower()
-                    if retry != 'y':
-                        # Offer alternative location
-                        alt_path = "~/.adtconfig.json" if config_path.startswith("./") else "./.adtconfig.json"
-                        try_alt = input(f"Try saving to {alt_path} instead? (y/n): ").strip().lower()
-                        if try_alt == 'y':
-                            config_path = alt_path
-                            continue
-                        else:
-                            break
+            try:
+                if save_config_file(config_path, config):
+                    print(f"\n✓ Configuration saved to {config_path}")
+                    self.display_configuration(config, config_path)
+                    self.logger.info(f"Configuration saved successfully to {config_path}")
+                    return True
                 else:
-                    print(f"\n✗ Failed to save configuration after {max_retries} attempts")
-
+                    if attempt < max_retries - 1:
+                        print(f"\n✗ Failed to save configuration to {config_path}")
+                        self.logger.warning(f"Failed to save configuration to {config_path}, attempt {attempt + 1}")
+                        retry = input("Would you like to try again? (y/n): ").strip().lower()
+                        if retry != 'y':
+                            # Offer alternative location
+                            alt_path = "~/.adtconfig.json" if config_path.startswith("./") else "./.adtconfig.json"
+                            try_alt = input(f"Try saving to {alt_path} instead? (y/n): ").strip().lower()
+                            if try_alt == 'y':
+                                config_path = alt_path
+                                continue
+                            else:
+                                break
+                    else:
+                        print(f"\n✗ Failed to save configuration after {max_retries} attempts")
+                        self.logger.error(f"Failed to save configuration after {max_retries} attempts")
+            except Exception as e:
+                self.logger.error(f"Error saving configuration: {e}")
+                if attempt == max_retries - 1:
+                    print(f"\n✗ Error saving configuration: {e}")
+                    return False
+        
         return False
 
-    def show_current_config(self):
+
+class DirectoryConfigManager:
+    """Manages directory configuration for AsciiDoc processing."""
+    
+    def __init__(self):
+        self.core = DirectoryConfigCore()
+        self.ui = DirectoryConfigUI(self.core)
+        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+    
+    def create_default_config(self, repo_root: Optional[str] = None) -> dict:
+        """Create a default configuration structure."""
+        return self.core.create_default_config(repo_root)
+    
+    def _validate_config_schema(self, config: dict) -> bool:
+        """Validate configuration schema structure."""
+        return self.core._validate_config_schema(config)
+    
+    def validate_directory(self, directory_path: str, base_path: str) -> Tuple[bool, str]:
+        """Validate that a directory exists and is within the repository root."""
+        return self.core.validate_directory(directory_path, base_path)
+    
+    def prompt_for_repository_root(self) -> str:
+        """Prompt user for repository root directory."""
+        return self.ui.prompt_for_repository_root()
+    
+    def prompt_for_directories(self, prompt_text: str, repo_root: str, 
+                             existing_dirs: Optional[List[str]] = None) -> List[str]:
+        """Prompt user for directory list with validation."""
+        return self.ui.prompt_for_directories(prompt_text, repo_root, existing_dirs)
+    
+    def display_configuration(self, config: dict, config_path: Optional[str] = None) -> None:
+        """Display current configuration in a user-friendly format."""
+        self.ui.display_configuration(config, config_path)
+    
+    def interactive_setup(self) -> bool:
+        """Run interactive setup wizard for directory configuration."""
+        try:
+            print("ADT Directory Configuration Setup")
+            print("=" * 40)
+            
+            # Step 1: Repository root
+            repo_root = self.ui.prompt_for_repository_root()
+            
+            # Step 2: Include directories
+            include_dirs = self.ui.prompt_for_directories(
+                "Include Directories (leave empty to include all)",
+                repo_root
+            )
+            
+            # Step 3: Exclude directories
+            exclude_dirs = self.ui.prompt_for_directories(
+                "Exclude Directories (leave empty to exclude none)",
+                repo_root
+            )
+            
+            # Step 4: Create and update configuration
+            config = self.core.create_default_config(repo_root)
+            config = self.core.update_config_paths(config, include_dirs, exclude_dirs)
+            
+            # Step 5: Choose where to save
+            config_path = self.ui._prompt_for_save_location()
+            
+            # Step 6: Save configuration with retry
+            success = self.ui._save_config_with_retry(config_path, config)
+            
+            if success:
+                self.logger.info("Interactive setup completed successfully")
+            else:
+                self.logger.error("Interactive setup failed")
+            
+            return success
+            
+        except KeyboardInterrupt:
+            print("\n\nSetup cancelled by user (Ctrl+C).")
+            self.logger.info("Setup cancelled by user")
+            return False
+        except Exception as e:
+            print(f"\nUnexpected error during setup: {e}")
+            self.logger.error(f"Unexpected error during setup: {e}")
+            return False
+    
+    def show_current_config(self) -> None:
         """Display the current active configuration."""
+        self.logger.debug("Showing current configuration")
+        
         # Check for local config first
         local_config = load_config_file("./.adtconfig.json")
         home_config = load_config_file("~/.adtconfig.json")
-
+        
         if local_config and home_config:
             print("Multiple configuration files found:")
             print("\nLocal configuration (./.adtconfig.json):")
-            self.display_configuration(local_config, "./.adtconfig.json")
+            self.ui.display_configuration(local_config, "./.adtconfig.json")
             print("\nHome configuration (~/.adtconfig.json):")
-            self.display_configuration(home_config, "~/.adtconfig.json")
+            self.ui.display_configuration(home_config, "~/.adtconfig.json")
             print("\nNote: Local configuration takes precedence when both exist.")
+            self.logger.debug("Displayed multiple configurations")
         elif local_config:
-            self.display_configuration(local_config, "./.adtconfig.json")
+            self.ui.display_configuration(local_config, "./.adtconfig.json")
+            self.logger.debug("Displayed local configuration")
         elif home_config:
-            self.display_configuration(home_config, "~/.adtconfig.json")
+            self.ui.display_configuration(home_config, "~/.adtconfig.json")
+            self.logger.debug("Displayed home configuration")
         else:
             print("No directory configuration found.")
             print("Run 'adt DirectoryConfig' to create a configuration.")
+            self.logger.debug("No configuration found")
 
 
 # Modular compatibility functions for the new architecture
 
-def load_directory_config():
-    """Load directory configuration from the local or home config file.
+def load_directory_config() -> Optional[dict]:
+    """
+    Load directory configuration from the local or home config file.
 
     Returns:
         dict or None: Configuration dictionary if found, None otherwise.
     """
+    logger.debug("Loading directory configuration")
+    
     # Check for local config first
     local_config = load_config_file("./.adtconfig.json")
     if local_config:
+        logger.debug("Loaded local configuration")
         return local_config
 
     # Fallback to home config
     home_config = load_config_file("~/.adtconfig.json")
-    return home_config
+    if home_config:
+        logger.debug("Loaded home configuration")
+        return home_config
+    
+    logger.debug("No configuration found")
+    return None
 
 
-def apply_directory_filters(base_path, config):
-    """Apply directory filters based on configuration.
+def apply_directory_filters(base_path: str, config: Optional[dict]) -> List[str]:
+    """
+    Apply directory filters based on configuration.
 
     Args:
-        base_path (str): The base directory path to filter
-        config (dict): Directory configuration
+        base_path: The base directory path to filter
+        config: Directory configuration
 
     Returns:
-        list: List of filtered directory paths
+        List of filtered directory paths
     """
-    import logging
-    from ..file_utils import find_adoc_files
-
-    logger = logging.getLogger(__name__)
-
+    logger.debug(f"Applying directory filters to {base_path}")
+    
     if not config:
+        logger.debug("No configuration provided, returning base path")
         return [base_path]
 
-    repo_root = config.get("repoRoot", os.getcwd())
-    include_dirs = config.get("includeDirs", [])
-    exclude_dirs = config.get("excludeDirs", [])
-
-    # Convert to absolute paths
-    base_path = os.path.abspath(base_path)
-    repo_root = os.path.abspath(repo_root)
-
-    # Check if base_path is excluded
-    for exclude_dir in exclude_dirs:
-        exclude_path = os.path.join(repo_root, exclude_dir)
-        exclude_path = os.path.abspath(exclude_path)
-
-        # Check if base_path is in or under an excluded directory
-        try:
-            common_path = os.path.commonpath([base_path, exclude_path])
-            if common_path == exclude_path:
-                logger.warning(f"Directory {base_path} is excluded by configuration")
+    try:
+        repo_root = config.get("repoRoot", os.getcwd())
+        include_dirs = config.get("includeDirs", [])
+        exclude_dirs = config.get("excludeDirs", [])
+        
+        # Normalize paths
+        normalized_base = _normalize_path(base_path)
+        normalized_repo = _normalize_path(repo_root)
+        
+        logger.debug(f"Filtering: base={normalized_base}, repo={normalized_repo}, "
+                    f"includes={len(include_dirs)}, excludes={len(exclude_dirs)}")
+        
+        # Check if base_path is excluded
+        for exclude_dir in exclude_dirs:
+            exclude_path = _normalize_path(exclude_dir, normalized_repo)
+            
+            if _is_path_under_directory(normalized_base, exclude_path):
+                logger.warning(f"Directory {normalized_base} is excluded by configuration")
                 # Still return the path since there's no alternative
-                return [base_path]
-        except ValueError:
-            # Paths are on different drives (Windows) or don't share common path
-            continue
-
-    # If include dirs are specified, filter based on them
-    if include_dirs:
-        filtered_dirs = []
-        for include_dir in include_dirs:
-            include_path = os.path.join(repo_root, include_dir)
-            include_path = os.path.abspath(include_path)
-
-            # Check if base_path is in or under an included directory
-            try:
-                common_path = os.path.commonpath([base_path, include_path])
-                if common_path == include_path or common_path == base_path:
+                return [normalized_base]
+        
+        # If include dirs are specified, filter based on them
+        if include_dirs:
+            filtered_dirs = []
+            for include_dir in include_dirs:
+                include_path = _normalize_path(include_dir, normalized_repo)
+                
+                # Check if base_path is in or under an included directory
+                if (_is_path_under_directory(normalized_base, include_path) or 
+                    _is_path_under_directory(include_path, normalized_base)):
                     filtered_dirs.append(include_path)
-            except ValueError:
-                # Paths are on different drives (Windows) or don't share common path
-                continue
+                    logger.debug(f"Directory {include_path} matches include filter")
+            
+            result = filtered_dirs if filtered_dirs else [normalized_base]
+            logger.debug(f"Include filtering resulted in {len(result)} directories")
+            return result
+        
+        # No include filters, just return the base path (exclude filters already checked)
+        logger.debug("No include filters, returning base path")
+        return [normalized_base]
+        
+    except Exception as e:
+        logger.error(f"Error applying directory filters: {e}")
+        # Fallback to base path
+        return [base_path]
 
-        return filtered_dirs if filtered_dirs else [base_path]
 
-    # No include filters, just return the base path (exclude filters already checked)
-    return [base_path]
-
-
-def get_filtered_adoc_files(directory_path, config, find_adoc_files_func=None):
-    """Get filtered AsciiDoc files based on directory configuration.
+def get_filtered_adoc_files(directory_path: str, config: Optional[dict], 
+                          find_adoc_files_func: Optional[callable] = None) -> List[str]:
+    """
+    Get filtered AsciiDoc files based on directory configuration.
 
     Args:
-        directory_path (str): The directory to search
-        config (dict): Directory configuration
-        find_adoc_files_func (callable): Function to find adoc files (optional)
+        directory_path: The directory to search
+        config: Directory configuration
+        find_adoc_files_func: Function to find adoc files (optional)
 
     Returns:
-        list: List of filtered .adoc file paths
+        List of filtered .adoc file paths
     """
+    logger.debug(f"Getting filtered adoc files from {directory_path}")
+    
     if find_adoc_files_func is None:
         from ..file_utils import find_adoc_files
         find_adoc_files_func = find_adoc_files
 
     if not config:
+        logger.debug("No configuration provided, finding all adoc files")
         return find_adoc_files_func(directory_path, recursive=True)
 
-    repo_root = config.get("repoRoot", os.getcwd())
-    include_dirs = config.get("includeDirs", [])
-    exclude_dirs = config.get("excludeDirs", [])
-
-    all_files = []
-
-    # If include dirs are specified, only process those
-    if include_dirs:
-        for include_dir in include_dirs:
-            include_path = os.path.join(repo_root, include_dir)
-            include_path = os.path.abspath(include_path)
-
-            if os.path.exists(include_path) and os.path.isdir(include_path):
-                files = find_adoc_files_func(include_path, recursive=True)
-                all_files.extend(files)
-    else:
-        # Process all files in the directory path
-        all_files = find_adoc_files_func(directory_path, recursive=True)
-
-    # Filter out excluded directories
-    if exclude_dirs:
-        filtered_files = []
-        for file_path in all_files:
-            excluded = False
-            abs_file_path = os.path.abspath(file_path)
-
-            for exclude_dir in exclude_dirs:
-                exclude_path = os.path.join(repo_root, exclude_dir)
-                exclude_path = os.path.abspath(exclude_path)
-
-                # Check if file is in an excluded directory
-                try:
-                    common_path = os.path.commonpath([abs_file_path, exclude_path])
-                    if common_path == exclude_path:
+    try:
+        repo_root = config.get("repoRoot", os.getcwd())
+        include_dirs = config.get("includeDirs", [])
+        exclude_dirs = config.get("excludeDirs", [])
+        
+        normalized_repo = _normalize_path(repo_root)
+        
+        logger.debug(f"Filtering files: repo={normalized_repo}, "
+                    f"includes={len(include_dirs)}, excludes={len(exclude_dirs)}")
+        
+        all_files = []
+        
+        # If include dirs are specified, only process those
+        if include_dirs:
+            for include_dir in include_dirs:
+                include_path = _normalize_path(include_dir, normalized_repo)
+                
+                if os.path.exists(include_path) and os.path.isdir(include_path):
+                    files = find_adoc_files_func(include_path, recursive=True)
+                    all_files.extend(files)
+                    logger.debug(f"Found {len(files)} files in include directory {include_path}")
+        else:
+            # Process all files in the directory path
+            all_files = find_adoc_files_func(directory_path, recursive=True)
+            logger.debug(f"Found {len(all_files)} files in directory {directory_path}")
+        
+        # Filter out excluded directories
+        if exclude_dirs:
+            filtered_files = []
+            for file_path in all_files:
+                excluded = False
+                normalized_file = _normalize_path(file_path)
+                
+                for exclude_dir in exclude_dirs:
+                    exclude_path = _normalize_path(exclude_dir, normalized_repo)
+                    
+                    if _is_path_under_directory(normalized_file, exclude_path):
                         excluded = True
+                        logger.debug(f"File {file_path} excluded by directory {exclude_dir}")
                         break
-                except ValueError:
-                    # Paths are on different drives (Windows) or don't share common path
-                    continue
-
-            if not excluded:
-                filtered_files.append(file_path)
-
-        return filtered_files
-
-    return all_files
+                
+                if not excluded:
+                    filtered_files.append(file_path)
+            
+            logger.debug(f"Exclusion filtering resulted in {len(filtered_files)} files")
+            return filtered_files
+        
+        logger.debug(f"No exclusion filtering, returning {len(all_files)} files")
+        return all_files
+        
+    except Exception as e:
+        logger.error(f"Error filtering adoc files: {e}")
+        # Fallback to basic file finding
+        return find_adoc_files_func(directory_path, recursive=True)
 
 
 def run_directory_config(args):
