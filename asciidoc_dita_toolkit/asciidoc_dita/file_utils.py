@@ -24,6 +24,9 @@ logger = logging.getLogger(__name__)
 # Environment variable for non-interactive config selection (improvement #1 from issue #87)
 ADT_CONFIG_CHOICE_ENV = "ADT_CONFIG_CHOICE"
 
+# Default timestamp for missing lastUpdated fields
+DEFAULT_TIMESTAMP = "1970-01-01T00:00:00Z"
+
 # Regex to split lines and preserve their original line endings
 LINE_SPLITTER = re.compile(rb"(.*?)(\r\n|\r|\n|$)")
 
@@ -164,31 +167,36 @@ def process_adoc_files(args, process_file_func):
             process_file_func(args.file)
         else:
             logger.error(f"{args.file} is not a valid .adoc file or is a symlink.")
-    else:
-        # Try to load directory configuration
-        config = load_directory_config()
-        directory_path = getattr(args, "directory", ".")
-        
-        if config:
-            # Use configuration-aware file discovery
-            logger.info("Using directory configuration")
-            adoc_files = get_filtered_adoc_files(directory_path, config)
-            if adoc_files:
-                directories = apply_directory_filters(directory_path, config)
-                excluded_count = len(config.get('excludeDirs', []))
-                logger.info(f"Processing {len(directories)} director{'y' if len(directories) == 1 else 'ies'}" + 
-                           (f", excluding {excluded_count}" if excluded_count > 0 else ""))
-                logger.info(f"Found {len(adoc_files)} .adoc file{'s' if len(adoc_files) != 1 else ''} to process")
-            else:
-                logger.warning("No .adoc files found in configured directories")
+        return
+    
+    # Initialize adoc_files to avoid UnboundLocalError
+    adoc_files = []
+    
+    # Try to load directory configuration
+    config = load_directory_config()
+    directory_path = getattr(args, "directory", ".")
+    
+    if config:
+        # Use configuration-aware file discovery
+        logger.info("Using directory configuration")
+        adoc_files = get_filtered_adoc_files(directory_path, config)
+        if adoc_files:
+            directories = apply_directory_filters(directory_path, config)
+            excluded_count = len(config.get('excludeDirs', []))
+            dir_text = "directory" if len(directories) == 1 else "directories"
+            exclude_text = f", excluding {excluded_count}" if excluded_count > 0 else ""
+            logger.info(f"Processing {len(directories)} {dir_text}{exclude_text}")
+            logger.info(f"Found {len(adoc_files)} .adoc file{'s' if len(adoc_files) != 1 else ''} to process")
         else:
-            # Legacy behavior: process all files in directory
-            adoc_files = find_adoc_files(
-                directory_path, getattr(args, "recursive", False)
-            )
-        
-        for filepath in adoc_files:
-            process_file_func(filepath)
+            logger.warning("No .adoc files found in configured directories")
+            # Fall back to legacy behavior when no files found in config
+            adoc_files = find_adoc_files(directory_path, getattr(args, "recursive", False))
+    else:
+        # Legacy behavior: process all files in directory
+        adoc_files = find_adoc_files(directory_path, getattr(args, "recursive", False))
+    
+    for filepath in adoc_files:
+        process_file_func(filepath)
 
 # Helper functions for path operations
 def _is_subpath(child_path, parent_path):
@@ -215,19 +223,6 @@ def _is_subpath(child_path, parent_path):
             return False
     except (OSError, ValueError):
         return False
-
-
-def _normalize_path_for_comparison(path):
-    """
-    Normalize a path for safe comparison operations.
-    
-    Args:
-        path: Path to normalize
-    
-    Returns:
-        Normalized absolute path
-    """
-    return os.path.abspath(os.path.normpath(path))
 
 
 # Directory Configuration Support
@@ -374,8 +369,8 @@ def prompt_user_to_choose_config(local_config, home_config):
     print(f"[2] Home:   ~/.adtconfig.json (last updated: {home_config.get('lastUpdated', 'unknown')})")
     
     # Preselect most recent
-    local_time = local_config.get('lastUpdated', '1970-01-01T00:00:00Z')
-    home_time = home_config.get('lastUpdated', '1970-01-01T00:00:00Z')
+    local_time = local_config.get('lastUpdated', DEFAULT_TIMESTAMP)
+    home_time = home_config.get('lastUpdated', DEFAULT_TIMESTAMP)
     default_choice = "1" if local_time >= home_time else "2"
     
     while True:
