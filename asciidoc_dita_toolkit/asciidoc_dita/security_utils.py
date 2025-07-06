@@ -2,13 +2,29 @@
 security_utils.py - Path validation and security utilities.
 
 This module provides security-focused path operations to prevent directory traversal
-attacks and validate directory paths safely.
+attacks and validate directory paths safely. All functions use robust path resolution
+and validation to ensure safe file system operations.
+
+Usage Examples:
+    # Sanitize a user-provided directory path
+    from .security_utils import sanitize_directory_path, validate_directory_path
+    
+    safe_path = sanitize_directory_path("../../../etc/passwd")  # Returns None (unsafe)
+    safe_path = sanitize_directory_path("docs/modules")  # Returns absolute path if safe
+    
+    # Validate directory with detailed error messages
+    is_valid, result = validate_directory_path("/path/to/docs", require_exists=True)
+    if is_valid:
+        print(f"Using directory: {result}")
+    else:
+        print(f"Error: {result}")
 """
 
 import os
+from typing import Optional, Tuple
 
 
-def _is_subpath(child_path, parent_path):
+def _is_subpath(child_path: str, parent_path: str) -> bool:
     """
     Check if child_path is a subpath of parent_path.
     
@@ -18,6 +34,12 @@ def _is_subpath(child_path, parent_path):
     
     Returns:
         True if child_path is under parent_path, False otherwise
+        
+    Examples:
+        >>> _is_subpath("/home/user/docs", "/home/user")
+        True
+        >>> _is_subpath("/etc/passwd", "/home/user") 
+        False
     """
     try:
         child_path = os.path.abspath(child_path)
@@ -34,9 +56,15 @@ def _is_subpath(child_path, parent_path):
         return False
 
 
-def sanitize_directory_path(directory_path, base_path=None):
+def sanitize_directory_path(directory_path: str, base_path: Optional[str] = None) -> Optional[str]:
     """
     Sanitize directory path to prevent directory traversal attacks using robust realpath-based validation.
+    
+    This function performs comprehensive security validation:
+    - Removes dangerous control characters
+    - Resolves symlinks and normalizes paths
+    - Ensures the path stays within the base directory
+    - Prevents directory traversal attacks (../, etc.)
     
     Args:
         directory_path: Directory path to sanitize
@@ -44,11 +72,23 @@ def sanitize_directory_path(directory_path, base_path=None):
     
     Returns:
         Sanitized absolute path or None if path is dangerous
+        
+    Examples:
+        >>> sanitize_directory_path("docs")  # Safe relative path
+        '/current/working/dir/docs'
+        >>> sanitize_directory_path("../../../etc/passwd")  # Dangerous path
+        None
+        >>> sanitize_directory_path("/safe/absolute/path")
+        '/safe/absolute/path'
     """
     if not directory_path:
         return None
     
     sanitized = directory_path.strip()
+    
+    # Reject whitespace-only paths after stripping
+    if not sanitized:
+        return None
     
     # Check for null bytes or other control characters
     if '\x00' in sanitized or any(ord(c) < 32 for c in sanitized if c not in '\t\n\r'):
@@ -82,9 +122,12 @@ def sanitize_directory_path(directory_path, base_path=None):
         return None
 
 
-def validate_directory_path(directory_path, base_path=None, require_exists=True):
+def validate_directory_path(directory_path: str, base_path: Optional[str] = None, require_exists: bool = True) -> Tuple[bool, str]:
     """
     Validate that a directory path is safe and optionally exists.
+    
+    This is an enhanced validation function that combines sanitization with
+    existence checks and provides detailed error messages for troubleshooting.
     
     Args:
         directory_path: Directory path to validate
@@ -92,7 +135,17 @@ def validate_directory_path(directory_path, base_path=None, require_exists=True)
         require_exists: Whether the directory must exist
     
     Returns:
-        Tuple of (is_valid: bool, result: str) where result is either the validated path or error message
+        Tuple of (is_valid: bool, result: str) where:
+        - If valid: result is the validated absolute path
+        - If invalid: result is a descriptive error message
+        
+    Examples:
+        >>> validate_directory_path("docs", require_exists=False)
+        (True, '/current/working/dir/docs')
+        >>> validate_directory_path("../../../etc", require_exists=True)
+        (False, 'Invalid directory path (security check failed): ../../../etc')
+        >>> validate_directory_path("nonexistent", require_exists=True)
+        (False, 'Directory does not exist: /current/working/dir/nonexistent')
     """
     if not directory_path:
         return False, "Directory path cannot be empty"
