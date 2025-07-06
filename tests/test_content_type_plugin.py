@@ -105,17 +105,16 @@ class TestContentTypeDetector(unittest.TestCase):
     
     def test_detect_from_content_procedure(self):
         """Test content-based detection for procedure."""
-        content = """
-        = Installing Software
-        
-        .Prerequisites
-        * System access
-        
-        .Procedure
-        1. Download the software
-        2. Install the package
-        3. Configure the service
-        """
+        content = """= Installing Software
+
+.Prerequisites
+* System access
+
+.Procedure
+1. Download the software
+2. Install the package
+3. Configure the service
+"""
         result = self.detector.detect_from_content(content)
         self.assertEqual(result.suggested_type, "PROCEDURE")
         self.assertGreater(result.confidence, 0.5)
