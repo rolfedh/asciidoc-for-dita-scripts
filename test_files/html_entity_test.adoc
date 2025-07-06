@@ -1,0 +1,142 @@
+= Test File for HtmlEntityNormalizer Plugin
+
+This file contains various HTML entity patterns to test the HtmlEntityNormalizer plugin.
+
+== Section with Unsafe Characters
+
+This line contains a &lt; less than symbol.
+
+This line contains a &gt; greater than symbol.
+
+This line contains a &amp; ampersand symbol.
+
+This line contains a &quot;double quote&quot; character.
+
+This line contains a &#39;single quote&#39; character.
+
+This line contains both &lt; and &gt; symbols together.
+
+This line has mixed content: &quot;quoted text&quot; &amp; &lt;special&gt; tags &#39;with apostrophes&#39;.
+
+== Section with Existing Entities (Should Not Double-Encode)
+
+This line already has &lt; and &gt; entities.
+
+This line has &amp; and &quot; entities.
+
+This line has &#39; entity for apostrophe.
+
+Mixed existing entities: &lt;tag&gt; with &quot;quotes&quot; and &#39;apostrophes&#39;.
+
+== Section with AsciiDoc Attributes (Should Not Be Changed)
+
+This line contains {amp} attribute reference.
+
+This line contains {lt} and {gt} attribute references.
+
+This line contains {author} and {version} attributes.
+
+The {company} makes {product} software.
+
+== Section with AsciiDoc Macros (Should Not Be Changed)
+
+link:https://example.com[Example Link]
+
+image::images/diagram.png[Diagram]
+
+include::fragments/snippet.adoc[]
+
+ifdef::production[]
+This is conditional content.
+endif::[]
+
+== Code Blocks and Literal Content (Should Not Be Processed)
+
+[source,html]
+----
+<html>
+<body>
+<p>This HTML content should not be processed: < > & " '</p>
+</body>
+</html>
+----
+
+`This is inline code with < > & " ' characters`
+
++This is literal text with < > & " ' characters+
+
+##This is unquoted text with < > & " ' characters##
+
+== Comments (Should Not Be Processed)
+
+// This comment has < > & " ' characters
+
+////
+This block comment has:
+< less than
+> greater than
+& ampersand
+" double quotes
+' single quotes
+////
+
+== Passthrough Blocks (Should Not Be Processed)
+
+++++
+<div class="custom">
+This HTML passthrough has < > & " ' characters
+</div>
+++++
+
+== Complex Mixed Content
+
+This paragraph has &quot;quoted text&quot; with &lt;emphasis&gt; and &#39;apostrophes&#39; &amp; ampersands.
+
+The following list contains unsafe characters:
+
+* Item with &lt; symbol
+* Item with &gt; symbol
+* Item with &amp; symbol
+* Item with &quot;quotes&quot;
+* Item with &#39;apostrophes&#39;
+
+.Table with unsafe characters
+|===
+|Column 1 |Column 2
+
+|Cell with &lt; symbol
+|Cell with &gt; symbol
+
+|Cell with &amp; symbol
+|Cell with &quot;quotes&quot; and &#39;apostrophes&#39;
+|===
+
+== Edge Cases
+
+Empty quotes: &quot;&quot;
+
+Empty apostrophes: &#39;&#39;
+
+Multiple quotes: &quot;&quot;&quot;triple quotes&quot;&quot;&quot;
+
+Multiple apostrophes: &#39;&#39;&#39;triple apostrophes&#39;&#39;&#39;
+
+Mixed nesting: &quot;outer &#39;inner&#39; quotes&quot;
+
+Escaped characters: \&quot; and \&#39; (backslash-escaped)
+
+HTML-like but invalid: &lt;incomplete
+
+Just ampersand followed by space: &amp; this
+
+Ampersand with invalid entity: &amp;invalid entity;
+
+== Already Normalized Content (Should Not Change)
+
+This content already has &lt;proper&gt; entities.
+
+This content has &quot;quoted text&quot; properly escaped.
+
+This content has &#39;apostrophes&#39; properly escaped.
+
+Mixed proper entities: &lt;tag&gt; with &quot;quotes&quot; and &#39;apostrophes&#39;.

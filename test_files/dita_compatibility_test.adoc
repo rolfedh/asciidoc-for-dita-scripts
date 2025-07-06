@@ -1,0 +1,179 @@
+= Test File for DitaCompatibilityChecker Plugin
+:author: Test Author
+:version: 1.0
+:_mod-docs-content-type: CONCEPT
+
+This file contains various DITA compatibility issues to test the DitaCompatibilityChecker plugin.
+
+== Section with Invalid IDs
+
+[[invalid_id]]
+This section has an ID with an @ symbol.
+
+[[id_123numeric]]
+This section has an ID starting with a number.
+
+[[id_with_spaces]]
+This section has an ID with spaces.
+
+[[special_chars_in_id]]
+This section has multiple special characters in the ID.
+
+[[valid-id]]
+This section has a valid ID that should not change.
+
+== Section with Problematic HTML Elements
+
+This paragraph contains a <font color="red">deprecated font tag</font>.
+
+This paragraph has a <center>deprecated center tag</center>.
+
+This paragraph includes a <blink>deprecated blink tag</blink>.
+
+This paragraph has a <marquee>deprecated marquee tag</marquee>.
+
+This paragraph contains <span>inline styles</span>.
+
+This paragraph has a <script>alert('test');</script> script tag.
+
+This paragraph includes an <iframe src="example.com"></iframe> iframe.
+
+== Section with Cross-Reference Issues
+
+See <<other-document>> for more information.
+
+Refer to <<document>> for details.
+
+Link to <<valid-reference>> is fine.
+
+== Section with Table Issues
+
+.Complex Table with Issues
+|===
+|Column 1 |Column 2 |Column 3
+
+|Cell 1
+|Cell with <em>HTML</em> content
+|Cell 3
+
+|colspan="2" Complex cell
+|Regular cell
+
+|Cell with rowspan="2" issues
+|Cell 2
+|Cell 3
+|===
+
+.Simple Valid Table
+|===
+|Column 1 |Column 2
+
+|Cell 1
+|Cell 2
+
+|Cell 3
+|Cell 4
+|===
+
+== Section Hierarchy Tests
+
+This document properly starts with level 1 (=).
+
+=== This is Level 3 (Should Flag Hierarchy Jump)
+
+This section jumps from level 2 to level 3, which should be flagged.
+
+== Back to Level 2
+
+This is a proper level 2 section.
+
+=== Level 3
+
+This is a proper level 3 section.
+
+==== Level 4
+
+This is a proper level 4 section.
+
+====== Level 6 (Should Flag Hierarchy Jump)
+
+This section jumps from level 4 to level 6, which should be flagged.
+
+== Code Blocks (Should Not Be Processed)
+
+[source,html]
+----
+[[invalid@id]]
+<font color="red">This should not be flagged</font>
+<script>alert('test');</script>
+----
+
+== Literal Blocks (Should Not Be Processed)
+
+....
+[[invalid@id]]
+<font color="red">This should not be flagged</font>
+<script>alert('test');</script>
+....
+
+== Valid Content (Should Not Be Flagged)
+
+This paragraph contains properly formatted content.
+
+[[proper-id]]
+This section has a properly formatted ID.
+
+.Valid Table
+|===
+|Header 1 |Header 2
+
+|Cell 1
+|Cell 2
+|===
+
+== Nested Block Elements (DITA Issue)
+
+[NOTE]
+This is a note block.
+
+[WARNING]
+This is a warning block immediately following another block, which can cause DITA issues.
+
+== Mixed Valid and Invalid Content
+
+This paragraph is fine: it contains normal text without issues.
+
+But this paragraph has <font size="3">deprecated HTML</font> and <<file>> problematic references.
+
+[[valid-id-here]]
+=== Valid Section
+
+This section is properly structured.
+
+[[id_12invalid-id]]
+=== Invalid Section ID
+
+This section has an ID starting with a number.
+
+== Document Structure Issues
+
+// This document should have proper metadata (already included above)
+// This document should have a proper title (already included above)
+// Section hierarchy should be logical (some issues included above for testing)
+
+== Edge Cases
+
+[[_valid_underscore_id]]
+This ID with underscores should be valid.
+
+[[-valid-dash-id]]
+This ID with dashes should be valid.
+
+[[MixedCaseValidId]]
+This mixed case ID should be valid.
+
+[[]]
+This empty ID should be flagged or handled gracefully.
+
+<<>>
+This empty cross-reference should be flagged or handled gracefully.

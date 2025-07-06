@@ -1,0 +1,145 @@
+= Test File for RoleClassNameSanitizer Plugin
+
+This file contains various role attribute patterns to test the RoleClassNameSanitizer plugin.
+
+== Section with Problematic Roles
+
+[role="system-additional-resources"]
+.Additional Resources
+This is a list with a problematic role containing a colon.
+
+[role="module-concept"]
+.Module Concept
+This is another block with a colon in the role.
+
+[role="ui:button", "test:warning"]
+.Multiple Roles
+This block has multiple roles, some with colons.
+
+[role="namespace-example"]
+.Backslash Role
+This role contains a backslash.
+
+[role="path_to_resource"]
+.Forward Slash Role
+This role contains a forward slash.
+
+[role="data_pipe"]
+.Pipe Role
+This role contains a pipe character.
+
+[role="at_symbol"]
+.At Symbol Role
+This role contains an at symbol.
+
+[role="percent_value"]
+.Percent Role
+This role contains a percent symbol.
+
+[role="hash_tag"]
+.Hash Role
+This role contains a hash symbol.
+
+[role="question_mark"]
+.Question Mark Role
+This role contains a question mark.
+
+[role="asterisk_value"]
+.Asterisk Role
+This role contains an asterisk.
+
+[role="plus_value"]
+.Plus Role
+This role contains a plus symbol.
+
+[role="equals_value"]
+.Equals Role
+This role contains an equals symbol.
+
+[role="less_than"]
+.Less Than Role
+This role contains a less than symbol.
+
+[role="greater_than"]
+.Greater Than Role
+This role contains a greater than symbol.
+
+[role="double\"quote"]
+.Double Quote Role
+This role contains a double quote.
+
+[role="single_quote"]
+.Single Quote Role
+This role contains a single quote.
+
+[role="back_tick"]
+.Backtick Role
+This role contains a backtick.
+
+[role="tilde_value"]
+.Tilde Role
+This role contains a tilde.
+
+[role="caret_value"]
+.Caret Role
+This role contains a caret.
+
+[role="dollar_value"]
+.Dollar Role
+This role contains a dollar sign.
+
+[role="exclamation_value"]
+.Exclamation Role
+This role contains an exclamation mark.
+
+[role="space_value"]
+.Space Role
+This role contains a space.
+
+[role="tab_value"]
+.Tab Role
+This role contains tabs.
+
+== Code Blocks (Should Not Be Processed)
+
+[source,asciidoc]
+----
+[role="system:should-not-change"]
+.This Should Not Change
+This is inside a code block.
+----
+
+== Comments (Should Not Be Processed)
+
+// [role="system:should-not-change"]
+// This is a single-line comment.
+
+////
+[role="system:should-not-change"]
+.This Should Not Change
+This is inside a block comment.
+////
+
+== Valid Roles (Should Not Change)
+
+[role="valid-role"]
+.Valid Role
+This role is already valid and should not change.
+
+[role="another_valid_role"]
+.Another Valid Role
+This role uses underscores which are valid.
+
+[role="ValidCamelCase"]
+.CamelCase Role
+This role uses CamelCase which is valid.
+
+[role="valid123"]
+.Alphanumeric Role
+This role uses alphanumeric characters which are valid.
+
+== Multiple Valid Roles
+
+[role="valid-role, another-valid-role"]
+.Multiple Valid Roles
+Multiple roles that are already valid should not change.
