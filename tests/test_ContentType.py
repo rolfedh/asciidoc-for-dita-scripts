@@ -17,9 +17,13 @@ class TestContentTypePlugin(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures."""
-        from asciidoc_dita_toolkit.asciidoc_dita.plugins import ContentType
+        from asciidoc_dita_toolkit.asciidoc_dita.plugins.content_type_detector import ContentTypeDetector
+        from asciidoc_dita_toolkit.asciidoc_dita.plugins.content_type_processor import ContentTypeProcessor
+        from asciidoc_dita_toolkit.asciidoc_dita.plugins.ui_interface import TestUI
 
-        self.plugin = ContentType
+        self.detector = ContentTypeDetector()
+        self.ui = TestUI()
+        self.processor = ContentTypeProcessor(self.detector, self.ui)
 
     def test_get_content_type_from_filename(self):
         """Test content type detection from filename."""
@@ -39,7 +43,7 @@ class TestContentTypePlugin(unittest.TestCase):
 
         for filename, expected in test_cases:
             with self.subTest(filename=filename):
-                result = self.plugin.get_content_type_from_filename(filename)
+                result = self.detector.detect_from_filename(filename)
                 self.assertEqual(result, expected)
 
     def test_detect_existing_content_type(self):
@@ -54,8 +58,12 @@ class TestContentTypePlugin(unittest.TestCase):
         
         for lines, expected in test_cases:
             with self.subTest(lines=lines):
-                result = self.plugin.detect_existing_content_type(lines)
-                self.assertEqual(result, expected)
+                result = self.detector.detect_existing_attribute(lines)
+                if result:
+                    actual = (result.value, result.line_index, result.attribute_type)
+                else:
+                    actual = (None, None, None)
+                self.assertEqual(actual, expected)
 
     def test_analyze_title_style(self):
         """Test content type suggestions based on title analysis."""
@@ -69,8 +77,8 @@ class TestContentTypePlugin(unittest.TestCase):
         
         for title, expected in test_cases:
             with self.subTest(title=title):
-                result = self.plugin.analyze_title_style(title)
-                self.assertEqual(result, expected)
+                result = self.detector.detect_from_title(title)
+                self.assertEqual(result.suggested_type, expected)
 
     def test_analyze_content_patterns(self):
         """Test content type suggestions based on content analysis."""
@@ -83,8 +91,8 @@ class TestContentTypePlugin(unittest.TestCase):
         
         for content, expected in test_cases:
             with self.subTest(content=content):
-                result = self.plugin.analyze_content_patterns(content)
-                self.assertEqual(result, expected)
+                result = self.detector.detect_from_content(content)
+                self.assertEqual(result.suggested_type, expected)
 
     def test_get_document_title(self):
         """Test extraction of document title from file lines."""
@@ -98,26 +106,26 @@ class TestContentTypePlugin(unittest.TestCase):
         
         for lines, expected in test_cases:
             with self.subTest(lines=lines):
-                result = self.plugin.get_document_title(lines)
+                result = self.detector.extract_document_title(lines)
                 self.assertEqual(result, expected)
 
     def test_ensure_blank_line_below(self):
         """Test ensuring blank line after content type attribute."""
         # Test case: line at end of file
         lines = [("content", "\n"), (":_mod-docs-content-type: CONCEPT", "\n")]
-        result = self.plugin.ensure_blank_line_below(lines, 1)
+        result = self.processor.ensure_blank_line_after_attribute(lines, 1)
         self.assertEqual(len(result), 3)
         self.assertEqual(result[2], ("", "\n"))
         
         # Test case: no blank line after attribute
         lines = [("content", "\n"), (":_mod-docs-content-type: CONCEPT", "\n"), ("more content", "\n")]
-        result = self.plugin.ensure_blank_line_below(lines, 1)
+        result = self.processor.ensure_blank_line_after_attribute(lines, 1)
         self.assertEqual(len(result), 4)
         self.assertEqual(result[2], ("", "\n"))
         
         # Test case: blank line already exists
         lines = [("content", "\n"), (":_mod-docs-content-type: CONCEPT", "\n"), ("", "\n"), ("more content", "\n")]
-        result = self.plugin.ensure_blank_line_below(lines, 1)
+        result = self.processor.ensure_blank_line_after_attribute(lines, 1)
         self.assertEqual(len(result), 4)  # Should not add another blank line
 
 

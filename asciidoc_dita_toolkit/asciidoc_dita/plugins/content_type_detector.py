@@ -300,3 +300,8 @@ class ContentTypeDetector:
         
         logger.debug("No title found")
         return None
+
+
+def register_subcommand(subparsers):
+    """This module doesn't register as a subcommand - it's a helper module."""
+    pass
