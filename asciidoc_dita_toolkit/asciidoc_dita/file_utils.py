@@ -499,39 +499,52 @@ def get_filtered_adoc_files(directory_path, config):
     return list(dict.fromkeys(all_files))
 
 # Directory validation utilities
-def sanitize_directory_path(directory_path):
+def sanitize_directory_path(directory_path, base_path=None):
     """
-    Sanitize directory path to prevent directory traversal attacks.
+    Sanitize directory path to prevent directory traversal attacks using robust realpath-based validation.
     
     Args:
         directory_path: Directory path to sanitize
+        base_path: Optional base directory to constrain paths within (defaults to current working directory)
     
     Returns:
-        Sanitized path or None if path is dangerous
+        Sanitized absolute path or None if path is dangerous
     """
     if not directory_path:
         return None
     
-    # Remove dangerous patterns
-    dangerous_patterns = ["../", "..\\"]
     sanitized = directory_path.strip()
-    
-    # Check for directory traversal attempts
-    if any(pattern in sanitized for pattern in dangerous_patterns):
-        return None
     
     # Check for null bytes or other control characters
     if '\x00' in sanitized or any(ord(c) < 32 for c in sanitized if c not in '\t\n\r'):
         return None
     
-    # Normalize path separators and remove redundant elements
-    sanitized = os.path.normpath(sanitized)
+    # Set default base path to current working directory if not provided
+    if base_path is None:
+        base_path = os.getcwd()
     
-    # Additional check after normalization for traversal attempts
-    if '..' in sanitized.split(os.sep):
+    try:
+        # Resolve the base path to its canonical form
+        base_real = os.path.realpath(base_path)
+        
+        # Convert relative paths to absolute by joining with base_path
+        if not os.path.isabs(sanitized):
+            candidate_path = os.path.join(base_path, sanitized)
+        else:
+            candidate_path = sanitized
+        
+        # Resolve to canonical path (follows symlinks and normalizes)
+        resolved_path = os.path.realpath(candidate_path)
+        
+        # Verify the resolved path is within the base directory
+        if not _is_subpath(resolved_path, base_real) and resolved_path != base_real:
+            return None
+        
+        return resolved_path
+        
+    except (OSError, ValueError):
+        # Path resolution failed - treat as dangerous
         return None
-    
-    return sanitized
 
 
 def validate_directory_path(directory_path, base_path=None, require_exists=True):
@@ -540,7 +553,7 @@ def validate_directory_path(directory_path, base_path=None, require_exists=True)
     
     Args:
         directory_path: Directory path to validate
-        base_path: Base directory for relative paths (optional)
+        base_path: Base directory for relative paths (optional, defaults to current working directory)
         require_exists: Whether the directory must exist
     
     Returns:
@@ -549,37 +562,16 @@ def validate_directory_path(directory_path, base_path=None, require_exists=True)
     if not directory_path:
         return False, "Directory path cannot be empty"
     
-    # Sanitize input first
-    sanitized_path = sanitize_directory_path(directory_path)
-    if sanitized_path is None:
+    # Sanitize input using robust realpath-based validation
+    validated_path = sanitize_directory_path(directory_path, base_path)
+    if validated_path is None:
         return False, f"Invalid directory path (security check failed): {directory_path}"
     
-    # Convert to absolute path relative to base_path if provided
-    if base_path and not os.path.isabs(sanitized_path):
-        full_path = os.path.join(base_path, sanitized_path)
-    else:
-        full_path = sanitized_path
-    
-    # Normalize and resolve the path
-    try:
-        full_path = os.path.realpath(full_path)
-    except (OSError, ValueError) as e:
-        return False, f"Cannot resolve path: {e}"
-    
-    # Security check: ensure the resolved path is within base_path if provided
-    if base_path:
-        try:
-            base_path = os.path.realpath(base_path)
-            if not _is_subpath(full_path, base_path) and full_path != base_path:
-                return False, f"Directory must be within base path: {full_path}"
-        except (OSError, ValueError) as e:
-            return False, f"Cannot validate base path: {e}"
-    
     if require_exists:
-        if not os.path.exists(full_path):
-            return False, f"Directory does not exist: {full_path}"
+        if not os.path.exists(validated_path):
+            return False, f"Directory does not exist: {validated_path}"
         
-        if not os.path.isdir(full_path):
-            return False, f"Path is not a directory: {full_path}"
+        if not os.path.isdir(validated_path):
+            return False, f"Path is not a directory: {validated_path}"
     
-    return True, full_path
+    return True, validated_path

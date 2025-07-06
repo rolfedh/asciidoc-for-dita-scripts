@@ -132,7 +132,6 @@ def prompt_user_for_content_type(suggested_type=None):
     print("[7] Skip this file")
     print("[8] Quit")
     # Set default choice message
-    default_choice = suggested_index if suggested_index else ""
     prompt_msg = f"Choice (1-8) [{suggested_index}]: " if suggested_index else "Choice (1-8): "
     while True:
         try:
