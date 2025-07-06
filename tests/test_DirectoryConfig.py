@@ -23,15 +23,15 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from asciidoc_dita_toolkit.asciidoc_dita.plugins.DirectoryConfig import (
     DirectoryConfigManager,
     run_directory_config,
-)
-from asciidoc_dita_toolkit.asciidoc_dita.file_utils import (
-    load_config_file,
-    save_config_file,
     load_directory_config,
     apply_directory_filters,
     get_filtered_adoc_files,
-    is_plugin_enabled,
 )
+from asciidoc_dita_toolkit.asciidoc_dita.config_utils import (
+    load_json_config as load_config_file,
+    save_json_config as save_config_file,
+)
+from asciidoc_dita_toolkit.asciidoc_dita.plugin_manager import is_plugin_enabled
 from tests.asciidoc_testkit import get_same_dir_fixture_pairs
 
 FIXTURE_DIR = os.path.abspath(
@@ -120,7 +120,7 @@ class TestFileUtilityFunctions(unittest.TestCase):
             
             try:
                 # Test that logger.warning is called instead of print (improvement #4 from issue #87)
-                with patch('asciidoc_dita_toolkit.asciidoc_dita.file_utils.logger.warning') as mock_warning:
+                with patch('asciidoc_dita_toolkit.asciidoc_dita.config_utils.logger.warning') as mock_warning:
                     config = load_config_file(tmp.name)
                     self.assertIsNone(config)
                     mock_warning.assert_called()
@@ -216,14 +216,16 @@ class TestDirectoryFiltering(unittest.TestCase):
             self.assertIn(good_dir, filtered_dirs)
             
             # Test that the drafts directory would be excluded
-            # Test that logger.warning is called instead of print (improvement #4 from issue #87)
-            with patch('asciidoc_dita_toolkit.asciidoc_dita.file_utils.logger.warning') as mock_warning:
+            # The function logs a warning but still returns the path since there's no alternative
+            with patch('logging.getLogger') as mock_get_logger:
+                mock_logger = MagicMock()
+                mock_get_logger.return_value = mock_logger
                 filtered_dirs = apply_directory_filters(drafts_dir, config)
-                # The function will warn about exclusion but still return the base path
-                # since there's no alternative
-                mock_warning.assert_called()
+                # Check that the excluded directory warning was logged
+                self.assertTrue(mock_get_logger.called)
+                mock_logger.warning.assert_called()
                 # Check that warning was called with exclusion message
-                warning_calls = [call for call in mock_warning.call_args_list 
+                warning_calls = [call for call in mock_logger.warning.call_args_list 
                                if 'excluded by configuration' in str(call)]
                 self.assertGreater(len(warning_calls), 0)
 
