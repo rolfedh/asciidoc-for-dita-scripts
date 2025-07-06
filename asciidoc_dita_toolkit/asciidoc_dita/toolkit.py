@@ -35,10 +35,16 @@ def discover_plugins():
 
 def print_plugin_list():
     """Print a list of all available plugins with their descriptions."""
+    from .plugin_manager import is_plugin_enabled
+    
     print("Available plugins:")
     plugins = discover_plugins()
 
     for modname in plugins:
+        # Only show enabled plugins in the list
+        if not is_plugin_enabled(modname):
+            continue
+            
         try:
             module = importlib.import_module(
                 f".plugins.{modname}", package="asciidoc_dita_toolkit.asciidoc_dita"
@@ -52,6 +58,8 @@ def print_plugin_list():
 
 def main():
     """Main entry point for the AsciiDoc DITA toolkit."""
+    from .plugin_manager import is_plugin_enabled
+    
     parser = argparse.ArgumentParser(
         description="AsciiDoc DITA Toolkit - Process and validate AsciiDoc files for DITA publishing"
     )
@@ -67,11 +75,15 @@ def main():
     )
     subparsers = parser.add_subparsers(dest="command", required=False)
 
-    # Discover and register all plugins
+    # Discover and register only enabled plugins
     plugins = discover_plugins()
     plugin_modules = []
 
     for modname in plugins:
+        # Only register enabled plugins as CLI subcommands
+        if not is_plugin_enabled(modname):
+            continue
+            
         try:
             module = importlib.import_module(
                 f".plugins.{modname}", package="asciidoc_dita_toolkit.asciidoc_dita"
