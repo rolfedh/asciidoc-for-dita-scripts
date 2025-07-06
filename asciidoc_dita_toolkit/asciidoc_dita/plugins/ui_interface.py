@@ -291,3 +291,8 @@ class TestUI(UIInterface):
     def should_exit(self) -> bool:
         """Check if exit was requested during testing."""
         return self.exit_requested
+
+
+def register_subcommand(subparsers):
+    """This module doesn't register as a subcommand - it's a helper module."""
+    pass

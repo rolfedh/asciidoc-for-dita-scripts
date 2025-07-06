@@ -138,5 +138,10 @@ def example_usage():
     print("- GUIDE (guide_*, guide-*)")
 
 
+def register_subcommand(subparsers):
+    """This module doesn't register as a subcommand - it's an example/helper module."""
+    pass
+
+
 if __name__ == "__main__":
     example_usage()

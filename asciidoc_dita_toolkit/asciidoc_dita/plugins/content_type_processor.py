@@ -367,3 +367,8 @@ class ContentTypeProcessor:
         
         self.ui.show_message("=" * 40)
         return True
+
+
+def register_subcommand(subparsers):
+    """This module doesn't register as a subcommand - it's a helper module."""
+    pass
