@@ -10,7 +10,10 @@ import os
 import re
 import sys
 
-from ..file_utils import common_arg_parser, process_adoc_files, read_text_preserve_endings, write_text_preserve_endings, is_plugin_enabled
+from ..cli_utils import common_arg_parser
+from ..file_utils import read_text_preserve_endings, write_text_preserve_endings
+from ..plugin_manager import is_plugin_enabled
+from ..workflow_utils import process_adoc_files
 
 
 class Highlighter:

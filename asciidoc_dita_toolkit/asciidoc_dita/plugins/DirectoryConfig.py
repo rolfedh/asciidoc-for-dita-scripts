@@ -16,7 +16,9 @@ import os
 import sys
 from datetime import datetime
 
-from ..file_utils import save_config_file, load_config_file, is_plugin_enabled, validate_directory_path
+from ..config_utils import save_json_config as save_config_file, load_json_config as load_config_file
+from ..plugin_manager import is_plugin_enabled
+from ..security_utils import validate_directory_path
 
 # Constants
 CONFIG_VERSION = "1.0"
@@ -270,6 +272,154 @@ class DirectoryConfigManager:
         else:
             print("No directory configuration found.")
             print("Run 'adt DirectoryConfig' to create a configuration.")
+
+
+# Modular compatibility functions for the new architecture
+
+def load_directory_config():
+    """Load directory configuration from the local or home config file.
+    
+    Returns:
+        dict or None: Configuration dictionary if found, None otherwise.
+    """
+    # Check for local config first
+    local_config = load_config_file("./.adtconfig.json")
+    if local_config:
+        return local_config
+    
+    # Fallback to home config
+    home_config = load_config_file("~/.adtconfig.json")
+    return home_config
+
+
+def apply_directory_filters(base_path, config):
+    """Apply directory filters based on configuration.
+    
+    Args:
+        base_path (str): The base directory path to filter
+        config (dict): Directory configuration
+        
+    Returns:
+        list: List of filtered directory paths
+    """
+    import logging
+    from ..file_utils import find_adoc_files
+    
+    logger = logging.getLogger(__name__)
+    
+    if not config:
+        return [base_path]
+    
+    repo_root = config.get("repoRoot", os.getcwd())
+    include_dirs = config.get("includeDirs", [])
+    exclude_dirs = config.get("excludeDirs", [])
+    
+    # Convert to absolute paths
+    base_path = os.path.abspath(base_path)
+    repo_root = os.path.abspath(repo_root)
+    
+    # Check if base_path is excluded
+    for exclude_dir in exclude_dirs:
+        exclude_path = os.path.join(repo_root, exclude_dir)
+        exclude_path = os.path.abspath(exclude_path)
+        
+        # Check if base_path is in or under an excluded directory
+        try:
+            os.path.commonpath([base_path, exclude_path])
+            if base_path.startswith(exclude_path):
+                logger.warning(f"Directory {base_path} is excluded by configuration")
+                # Still return the path since there's no alternative
+                return [base_path]
+        except ValueError:
+            # Paths are on different drives (Windows) or don't share common path
+            continue
+    
+    # If include dirs are specified, filter based on them
+    if include_dirs:
+        filtered_dirs = []
+        for include_dir in include_dirs:
+            include_path = os.path.join(repo_root, include_dir)
+            include_path = os.path.abspath(include_path)
+            
+            # Check if base_path is in or under an included directory
+            try:
+                os.path.commonpath([base_path, include_path])
+                if base_path.startswith(include_path) or include_path.startswith(base_path):
+                    filtered_dirs.append(include_path)
+            except ValueError:
+                # Paths are on different drives (Windows) or don't share common path
+                continue
+        
+        return filtered_dirs if filtered_dirs else [base_path]
+    
+    # No include filters, just return the base path (exclude filters already checked)
+    return [base_path]
+
+
+def get_filtered_adoc_files(directory_path, config, find_adoc_files_func=None):
+    """Get filtered AsciiDoc files based on directory configuration.
+    
+    Args:
+        directory_path (str): The directory to search
+        config (dict): Directory configuration
+        find_adoc_files_func (callable): Function to find adoc files (optional)
+        
+    Returns:
+        list: List of filtered .adoc file paths
+    """
+    if find_adoc_files_func is None:
+        from ..file_utils import find_adoc_files
+        find_adoc_files_func = find_adoc_files
+    
+    if not config:
+        return find_adoc_files_func(directory_path, recursive=True)
+    
+    repo_root = config.get("repoRoot", os.getcwd())
+    include_dirs = config.get("includeDirs", [])
+    exclude_dirs = config.get("excludeDirs", [])
+    
+    all_files = []
+    
+    # If include dirs are specified, only process those
+    if include_dirs:
+        for include_dir in include_dirs:
+            include_path = os.path.join(repo_root, include_dir)
+            include_path = os.path.abspath(include_path)
+            
+            if os.path.exists(include_path) and os.path.isdir(include_path):
+                files = find_adoc_files_func(include_path, recursive=True)
+                all_files.extend(files)
+    else:
+        # Process all files in the directory path
+        all_files = find_adoc_files_func(directory_path, recursive=True)
+    
+    # Filter out excluded directories
+    if exclude_dirs:
+        filtered_files = []
+        for file_path in all_files:
+            excluded = False
+            abs_file_path = os.path.abspath(file_path)
+            
+            for exclude_dir in exclude_dirs:
+                exclude_path = os.path.join(repo_root, exclude_dir)
+                exclude_path = os.path.abspath(exclude_path)
+                
+                # Check if file is in an excluded directory
+                try:
+                    os.path.commonpath([abs_file_path, exclude_path])
+                    if abs_file_path.startswith(exclude_path):
+                        excluded = True
+                        break
+                except ValueError:
+                    # Paths are on different drives (Windows) or don't share common path
+                    continue
+            
+            if not excluded:
+                filtered_files.append(file_path)
+        
+        return filtered_files
+    
+    return all_files
 
 
 def run_directory_config(args):
