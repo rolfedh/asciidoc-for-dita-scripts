@@ -325,8 +325,8 @@ def apply_directory_filters(base_path, config):
         
         # Check if base_path is in or under an excluded directory
         try:
-            os.path.commonpath([base_path, exclude_path])
-            if base_path.startswith(exclude_path):
+            common_path = os.path.commonpath([base_path, exclude_path])
+            if common_path == exclude_path:
                 logger.warning(f"Directory {base_path} is excluded by configuration")
                 # Still return the path since there's no alternative
                 return [base_path]
@@ -343,8 +343,8 @@ def apply_directory_filters(base_path, config):
             
             # Check if base_path is in or under an included directory
             try:
-                os.path.commonpath([base_path, include_path])
-                if base_path.startswith(include_path) or include_path.startswith(base_path):
+                common_path = os.path.commonpath([base_path, include_path])
+                if common_path == include_path or common_path == base_path:
                     filtered_dirs.append(include_path)
             except ValueError:
                 # Paths are on different drives (Windows) or don't share common path
@@ -406,8 +406,8 @@ def get_filtered_adoc_files(directory_path, config, find_adoc_files_func=None):
                 
                 # Check if file is in an excluded directory
                 try:
-                    os.path.commonpath([abs_file_path, exclude_path])
-                    if abs_file_path.startswith(exclude_path):
+                    common_path = os.path.commonpath([abs_file_path, exclude_path])
+                    if common_path == exclude_path:
                         excluded = True
                         break
                 except ValueError:
