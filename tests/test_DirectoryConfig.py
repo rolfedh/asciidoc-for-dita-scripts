@@ -217,12 +217,9 @@ class TestDirectoryFiltering(unittest.TestCase):
             
             # Test that the drafts directory would be excluded
             # The function logs a warning but still returns the path since there's no alternative
-            with patch('logging.getLogger') as mock_get_logger:
-                mock_logger = MagicMock()
-                mock_get_logger.return_value = mock_logger
+            with patch('asciidoc_dita_toolkit.asciidoc_dita.plugins.DirectoryConfig.logger') as mock_logger:
                 filtered_dirs = apply_directory_filters(drafts_dir, config)
                 # Check that the excluded directory warning was logged
-                self.assertTrue(mock_get_logger.called)
                 mock_logger.warning.assert_called()
                 # Check that warning was called with exclusion message
                 warning_calls = [call for call in mock_logger.warning.call_args_list 
