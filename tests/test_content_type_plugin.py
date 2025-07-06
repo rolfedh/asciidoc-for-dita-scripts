@@ -5,7 +5,7 @@ Tests the refactored components with proper separation of concerns.
 """
 
 import unittest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 import tempfile
 import os
 
