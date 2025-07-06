@@ -129,24 +129,96 @@ class ConsoleUI(UIInterface):
             print(f"\nContent type not specified. Based on analysis, this appears to be a {Highlighter(suggested_type).highlight()}.")
             if detection_result.reasoning:
                 print(f"Reasoning: {'; '.join(detection_result.reasoning[:2])}")  # Show first 2 reasons
-            print("\nSelect content type:")
         else:
-            print("\nNo content type detected. Please select:")
+            print("\nNo content type detected.")
         
-        # Display options
+        # Build the compact option display
+        options_display = []
         for i, option in enumerate(self.content_type_options, 1):
             if i == suggested_index:
-                print(f"[{i}] ✓ {Highlighter(option).highlight()} (recommended)")
-            elif option == "TBD" and not suggested_index:
-                print(f"[{i}] ✓ {Highlighter(option).highlight()} (type not detected)")
+                options_display.append(f"{Highlighter(f'{i} {option}').bold()}💡")
             else:
-                print(f"[{i}]   {option}")
+                options_display.append(f"{i} {option}")
+        options_display.append("7 Skip")
         
-        print("[7] Skip this file")
-        print("[8] Quit")
+        print(f"\nContent Type: {', '.join(options_display)}")
         
-        # Set default choice message
-        prompt_msg = f"Choice (1-8) [{suggested_index}]: " if suggested_index else "Choice (1-8): "
+        # Set prompt message
+        if suggested_index:
+            prompt_msg = f"Press 1-7 or *Enter* to accept suggestion: "
+        else:
+            prompt_msg = "Press 1-7: "
+        
+        while True:
+            try:
+                import sys
+                import tty
+                import termios
+                
+                print(prompt_msg, end='', flush=True)
+                
+                # Get single character input without requiring Enter
+                fd = sys.stdin.fileno()
+                old_settings = termios.tcgetattr(fd)
+                try:
+                    tty.cbreak(fd)
+                    choice = sys.stdin.read(1)
+                finally:
+                    termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+                
+                print()  # New line after input
+                
+                # Handle Enter key (accept suggestion)
+                if choice == '\r' or choice == '\n':
+                    if suggested_index:
+                        choice = str(suggested_index)
+                    else:
+                        choice = "6"  # Default to TBD if no suggestion
+                
+                # Handle quit (Ctrl+C equivalent)
+                if choice == '\x03':  # Ctrl+C
+                    raise KeyboardInterrupt
+                
+                if choice == "7":
+                    logger.debug("User chose to skip file")
+                    return None
+                
+                try:
+                    choice_num = int(choice)
+                    if 1 <= choice_num <= 6:
+                        selected_type = self.content_type_options[choice_num - 1]
+                        logger.info("User selected content type: %s", selected_type)
+                        return selected_type
+                    elif choice_num == 7:
+                        logger.debug("User chose to skip file")
+                        return None
+                    else:
+                        print("Please press a number between 1 and 7.")
+                        continue
+                except ValueError:
+                    print("Please press a number between 1 and 7.")
+                    continue
+                    
+            except (KeyboardInterrupt, EOFError):
+                print(f"\nDefaulting to {Highlighter('TBD').highlight()} (type not detected).")
+                logger.info("User input interrupted, defaulting to TBD")
+                return "TBD"
+            except ImportError:
+                # Fallback to regular input if termios/tty not available (e.g., Windows)
+                return self._prompt_content_type_fallback(detection_result, suggested_index)
+    
+    def _prompt_content_type_fallback(self, detection_result: DetectionResult, suggested_index: Optional[int]) -> Optional[str]:
+        """
+        Fallback prompt method for systems without termios/tty support.
+        
+        Args:
+            detection_result: Result of content type detection with suggestions
+            suggested_index: Index of suggested option (1-based)
+            
+        Returns:
+            Selected content type string or None if skipped
+        """
+        prompt_msg = f"Choice (1-7) [{suggested_index}]: " if suggested_index else "Choice (1-7): "
         
         while True:
             try:
@@ -156,15 +228,10 @@ class ConsoleUI(UIInterface):
                 if choice == "" and suggested_index:
                     choice = str(suggested_index)
                 elif choice == "":
-                    # No suggestion, default to 6 (TBD)
-                    choice = "6"
+                    choice = "6"  # Default to TBD
                 
                 if choice == "7":
                     logger.debug("User chose to skip file")
-                    return None
-                if choice == "8":
-                    logger.info("User requested to quit")
-                    self.exit_requested = True
                     return None
                 
                 choice_num = int(choice)
@@ -172,8 +239,11 @@ class ConsoleUI(UIInterface):
                     selected_type = self.content_type_options[choice_num - 1]
                     logger.info("User selected content type: %s", selected_type)
                     return selected_type
+                elif choice_num == 7:
+                    logger.debug("User chose to skip file")
+                    return None
                 else:
-                    print("Please enter a number between 1 and 8.")
+                    print("Please enter a number between 1 and 7.")
                     
             except (ValueError, KeyboardInterrupt, EOFError):
                 print(f"\nDefaulting to {Highlighter('TBD').highlight()} (type not detected).")
@@ -278,9 +348,6 @@ class TestUI(UIInterface):
             self.response_index += 1
             
             if response == "SKIP":
-                return None
-            elif response == "QUIT":
-                self.exit_requested = True
                 return None
             else:
                 return response
