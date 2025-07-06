@@ -9,7 +9,7 @@ This module provides core file operations for:
 After modularization (Issue #92), this module focuses solely on file operations.
 Other concerns have been moved to specialized modules:
 - CLI parsing → cli_utils.py
-- Security validation → security_utils.py  
+- Security validation → security_utils.py
 - Configuration management → config_utils.py
 - Plugin management → plugin_manager.py
 - User interaction → user_interface.py
@@ -135,10 +135,10 @@ def is_valid_adoc_file(filepath):
 # =============================================================================
 # These functions are deprecated and will be removed in a future version.
 # They are maintained for backward compatibility and delegate to new modules.
-# 
+#
 # Migration Guide:
 # - CLI functions → cli_utils.py
-# - Security functions → security_utils.py  
+# - Security functions → security_utils.py
 # - Configuration functions → config_utils.py
 # - Plugin functions → plugin_manager.py
 # - UI functions → user_interface.py
@@ -147,7 +147,7 @@ def is_valid_adoc_file(filepath):
 def _validate_config_structure(config):
     """Deprecated: Use config_utils.validate_config_structure instead."""
     import warnings
-    warnings.warn("_validate_config_structure is deprecated. Use config_utils.validate_config_structure instead.", 
+    warnings.warn("_validate_config_structure is deprecated. Use config_utils.validate_config_structure instead.",
                   DeprecationWarning, stacklevel=2)
     from .config_utils import validate_config_structure
     required_fields = ['version', 'repoRoot', 'includeDirs', 'excludeDirs', 'lastUpdated']
@@ -164,7 +164,7 @@ def _validate_config_structure(config):
 def load_directory_config():
     """Deprecated: Use plugins.DirectoryConfig.load_directory_config instead."""
     import warnings
-    warnings.warn("load_directory_config is deprecated. Use plugins.DirectoryConfig.load_directory_config instead.", 
+    warnings.warn("load_directory_config is deprecated. Use plugins.DirectoryConfig.load_directory_config instead.",
                   DeprecationWarning, stacklevel=2)
     try:
         from .plugins.DirectoryConfig import load_directory_config as load_dir_config
@@ -176,7 +176,7 @@ def load_directory_config():
 def apply_directory_filters(base_path, config):
     """Deprecated: Use plugins.DirectoryConfig.apply_directory_filters instead."""
     import warnings
-    warnings.warn("apply_directory_filters is deprecated. Use plugins.DirectoryConfig.apply_directory_filters instead.", 
+    warnings.warn("apply_directory_filters is deprecated. Use plugins.DirectoryConfig.apply_directory_filters instead.",
                   DeprecationWarning, stacklevel=2)
     try:
         from .plugins.DirectoryConfig import apply_directory_filters as apply_filters
@@ -188,7 +188,7 @@ def apply_directory_filters(base_path, config):
 def get_filtered_adoc_files(directory_path, config):
     """Deprecated: Use plugins.DirectoryConfig.get_filtered_adoc_files instead."""
     import warnings
-    warnings.warn("get_filtered_adoc_files is deprecated. Use plugins.DirectoryConfig.get_filtered_adoc_files instead.", 
+    warnings.warn("get_filtered_adoc_files is deprecated. Use plugins.DirectoryConfig.get_filtered_adoc_files instead.",
                   DeprecationWarning, stacklevel=2)
     try:
         from .plugins.DirectoryConfig import get_filtered_adoc_files as get_filtered_files
