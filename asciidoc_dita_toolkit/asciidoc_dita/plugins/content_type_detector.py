@@ -108,7 +108,7 @@ class ContentTypeDetector:
         
         for prefix_group, content_type in self.config.filename_prefixes.items():
             if any(filename.startswith(prefix) for prefix in prefix_group):
-                logger.info("Detected content type '%s' from filename prefix", content_type)
+                logger.debug("Detected content type '%s' from filename prefix", content_type)
                 return content_type
         
         logger.debug("No content type detected from filename")
@@ -132,24 +132,24 @@ class ContentTypeDetector:
             # Current format
             if stripped.startswith(":_mod-docs-content-type:"):
                 value = stripped.split(":", 2)[-1].strip()
-                logger.info("Found current format content type: %s", value)
+                logger.debug("Found current format content type: %s", value)
                 return ContentTypeAttribute(value, i, 'current')
             
             # Commented-out current format
             if stripped.startswith("//:_mod-docs-content-type:"):
                 value = stripped.split(":", 2)[-1].strip()
-                logger.info("Found commented content type: %s", value)
+                logger.debug("Found commented content type: %s", value)
                 return ContentTypeAttribute(value, i, 'commented')
             
             # Deprecated formats
             if stripped.startswith(":_content-type:"):
                 value = stripped.split(":", 2)[-1].strip()
-                logger.info("Found deprecated content-type: %s", value)
+                logger.debug("Found deprecated content-type: %s", value)
                 return ContentTypeAttribute(value, i, 'deprecated_content')
                 
             if stripped.startswith(":_module-type:"):
                 value = stripped.split(":", 2)[-1].strip()
-                logger.info("Found deprecated module-type: %s", value)
+                logger.debug("Found deprecated module-type: %s", value)
                 return ContentTypeAttribute(value, i, 'deprecated_module')
         
         logger.debug("No existing content type attributes found")
@@ -180,7 +180,7 @@ class ContentTypeDetector:
             for pattern in patterns:
                 if re.search(pattern, title, re.IGNORECASE):
                     reasoning.append(f"Title matches {content_type.lower()} pattern: {pattern}")
-                    logger.info("Title suggests content type: %s", content_type)
+                    logger.debug("Title suggests content type: %s", content_type)
                     return DetectionResult(content_type, 0.8, reasoning)
         
         # Default to concept for other noun phrases
@@ -207,7 +207,7 @@ class ContentTypeDetector:
         for pattern in assembly_patterns:
             if re.search(pattern, content, re.MULTILINE):
                 reasoning.append(f"Found assembly pattern: {pattern}")
-                logger.info("Content suggests ASSEMBLY type")
+                logger.debug("Content suggests ASSEMBLY type")
                 return DetectionResult("ASSEMBLY", 0.9, reasoning)
         
         # Check procedure indicators
@@ -219,7 +219,7 @@ class ContentTypeDetector:
                 reasoning.append(f"Found procedure pattern: {pattern}")
         
         if procedure_matches >= 2:  # Multiple procedure indicators
-            logger.info("Content suggests PROCEDURE type")
+            logger.debug("Content suggests PROCEDURE type")
             return DetectionResult("PROCEDURE", 0.8, reasoning)
         
         # Check reference indicators
@@ -237,7 +237,7 @@ class ContentTypeDetector:
             reference_matches += 1
         
         if reference_matches >= 1:
-            logger.info("Content suggests REFERENCE type")
+            logger.debug("Content suggests REFERENCE type")
             return DetectionResult("REFERENCE", 0.7, reasoning)
         
         # No clear patterns found
