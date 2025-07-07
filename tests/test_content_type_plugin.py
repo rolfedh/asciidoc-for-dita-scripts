@@ -13,7 +13,7 @@ from asciidoc_dita_toolkit.asciidoc_dita.plugins.content_type_detector import (
     ContentTypeDetector, ContentTypeConfig, ContentTypeAttribute, DetectionResult
 )
 from asciidoc_dita_toolkit.asciidoc_dita.plugins.ui_interface import (
-    UIInterface, ConsoleUI, BatchUI, TestUI
+    UIInterface, ConsoleUI, BatchUI, TestUI, MinimalistConsoleUI, QuietModeUI
 )
 from asciidoc_dita_toolkit.asciidoc_dita.plugins.content_type_processor import (
     ContentTypeProcessor
@@ -199,6 +199,36 @@ class TestUIInterface(unittest.TestCase):
         
         result = ui.prompt_content_type(detection_result)
         self.assertEqual(result, "CONCEPT")
+    
+    def test_quiet_mode_ui_always_returns_tbd(self):
+        """Test QuietModeUI always returns TBD."""
+        ui = QuietModeUI()
+        detection_result = DetectionResult("ASSEMBLY", 0.8, ["test reasoning"])
+        
+        result = ui.prompt_content_type(detection_result)
+        self.assertEqual(result, "TBD")
+    
+    def test_quiet_mode_ui_never_exits(self):
+        """Test QuietModeUI never exits early."""
+        ui = QuietModeUI()
+        self.assertFalse(ui.should_exit())
+    
+    def test_minimalist_console_ui_initialization(self):
+        """Test MinimalistConsoleUI initialization."""
+        ui = MinimalistConsoleUI()
+        self.assertFalse(ui.should_exit())
+        self.assertEqual(len(ui.content_type_options), 6)
+        
+        # Check the content type options format
+        expected_options = [
+            ("A", "ASSEMBLY"),
+            ("C", "CONCEPT"),
+            ("P", "PROCEDURE"),
+            ("R", "REFERENCE"),
+            ("S", "SNIPPET"),
+            ("T", "TBD")
+        ]
+        self.assertEqual(ui.content_type_options, expected_options)
 
 
 class TestContentTypeProcessor(unittest.TestCase):

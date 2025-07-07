@@ -16,7 +16,7 @@ from ..plugin_manager import is_plugin_enabled
 from ..workflow_utils import process_adoc_files
 
 from .content_type_detector import ContentTypeDetector, ContentTypeConfig
-from .ui_interface import ConsoleUI, BatchUI
+from .ui_interface import MinimalistConsoleUI, QuietModeUI, ConsoleUI, BatchUI
 from .content_type_processor import ContentTypeProcessor
 
 
@@ -24,13 +24,57 @@ from .content_type_processor import ContentTypeProcessor
 logger = logging.getLogger(__name__)
 
 
+def prompt_for_mode() -> str:
+    """
+    Prompt user for operating mode at startup.
+    
+    Returns:
+        Selected mode: 'quiet', 'minimalist', or 'legacy'
+    """
+    print("ContentType Plugin - Press Ctrl+Q for quiet mode (auto-assigns TBD), or any other key to continue")
+    
+    try:
+        import termios
+        import tty
+        
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        try:
+            tty.cbreak(fd)
+            choice = sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        
+        # Handle Ctrl+Q (quiet mode)
+        if choice == '\x11':  # Ctrl+Q
+            print("Quiet mode selected - auto-assigning TBD to unknown content types")
+            return 'quiet'
+        else:
+            return 'minimalist'
+            
+    except ImportError:
+        # Fallback for systems without termios/tty
+        choice = input("Press Q for quiet mode, or Enter to continue: ").strip().lower()
+        if choice == 'q':
+            return 'quiet'
+        else:
+            return 'minimalist'
+    except (KeyboardInterrupt, EOFError):
+        print("\nExiting.")
+        sys.exit(0)
+
+
 def create_processor(batch_mode: bool = False, 
+                    quiet_mode: bool = False,
+                    legacy_mode: bool = False,
                     config: Optional[ContentTypeConfig] = None) -> ContentTypeProcessor:
     """
     Create a ContentTypeProcessor with appropriate dependencies.
     
     Args:
         batch_mode: If True, use batch UI mode that doesn't prompt for input
+        quiet_mode: If True, use quiet mode that auto-assigns TBD
+        legacy_mode: If True, use legacy UI with emojis and decorative elements
         config: Optional configuration for content type detection
         
     Returns:
@@ -42,8 +86,12 @@ def create_processor(batch_mode: bool = False,
     # Create appropriate UI interface
     if batch_mode:
         ui = BatchUI()
-    else:
+    elif quiet_mode:
+        ui = QuietModeUI()
+    elif legacy_mode:
         ui = ConsoleUI()
+    else:
+        ui = MinimalistConsoleUI()
     
     # Create processor with dependencies
     processor = ContentTypeProcessor(detector, ui)
@@ -91,9 +139,22 @@ def main(args):
     else:
         logging.basicConfig(level=logging.INFO)
     
-    # Create processor instance
+    # Determine operating mode
     batch_mode = getattr(args, 'batch', False)
-    processor = create_processor(batch_mode)
+    legacy_mode = getattr(args, 'legacy', False)
+    quiet_mode = getattr(args, 'quiet_mode', False)
+    
+    # If no specific mode is set and not in batch mode, prompt for mode
+    if not batch_mode and not legacy_mode and not quiet_mode:
+        mode = prompt_for_mode()
+        if mode == 'quiet':
+            quiet_mode = True
+        elif mode == 'legacy':
+            legacy_mode = True
+        # else: use minimalist mode (default)
+    
+    # Create processor instance
+    processor = create_processor(batch_mode, quiet_mode, legacy_mode)
     
     # Process files using the workflow utility
     def process_file_wrapper(filepath):
@@ -115,6 +176,16 @@ def register_subcommand(subparsers):
         "--batch", 
         action="store_true",
         help="Run in batch mode without prompting for input"
+    )
+    parser.add_argument(
+        "--legacy", 
+        action="store_true",
+        help="Use legacy UI with emojis and decorative elements"
+    )
+    parser.add_argument(
+        "--quiet-mode", 
+        action="store_true",
+        help="Auto-assign TBD to unknown content types without prompting"
     )
     parser.add_argument(
         "--verbose", 

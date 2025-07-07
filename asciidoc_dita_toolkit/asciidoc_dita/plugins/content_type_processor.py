@@ -9,7 +9,7 @@ import os
 import logging
 from typing import List, Tuple, Optional
 from .content_type_detector import ContentTypeDetector, ContentTypeAttribute
-from .ui_interface import UIInterface, Highlighter
+from .ui_interface import UIInterface
 
 
 logger = logging.getLogger(__name__)
@@ -245,17 +245,16 @@ class ContentTypeProcessor:
             True if processing was successful, False otherwise
         """
         filename = os.path.basename(filepath)
-        self.ui.show_message(f"\nChecking {Highlighter(filename).bold()}...")
+        
+        # File processing messages are handled by individual handlers
         
         # Validate file access
         if not self.validate_file_access(filepath):
-            self.ui.show_message("=" * 40)
             return False
         
         # Read file content
         lines = self.read_file_safely(filepath)
         if lines is None:
-            self.ui.show_message("=" * 40)
             return False
         
         # Get comprehensive analysis
@@ -277,13 +276,15 @@ class ContentTypeProcessor:
                                   detection_result) -> bool:
         """Handle files with existing content type attributes."""
         logger.debug("Handling existing attribute: %s", existing_attribute.value)
+        filename = os.path.basename(filepath)
         
         # Check if value is empty and prompt if needed
         if not existing_attribute.value.strip():
+            # Show file header for prompting
+            self.ui.show_message(f"File: {filename} — Missing content type")
+            
             content_type = self.ui.prompt_content_type(detection_result)
             if not content_type:
-                self.ui.show_message("  → Skipped")
-                self.ui.show_message("=" * 40)
                 return True
             
             if self.ui.should_exit():
@@ -296,59 +297,49 @@ class ContentTypeProcessor:
         
         # Write back to file
         if not self.write_file_safely(filepath, lines):
-            self.ui.show_message("=" * 40)
             return False
         
-        # Show success message
-        attr_type_labels = {
-            'current': 'current format',
-            'deprecated_content': 'deprecated content type',
-            'deprecated_module': 'deprecated module type',
-            'commented': 'commented out content type'
-        }
-        user_friendly_attr_type = attr_type_labels.get(
-            existing_attribute.attribute_type, existing_attribute.attribute_type
-        )
-        
+        # Show success message in minimalist format
         if existing_attribute.attribute_type == 'current' and existing_attribute.value.strip():
-            action = "Updated"
+            self.ui.show_success(f"File: {filename} — Updated: {content_type}")
         else:
-            action = f"Converted from {user_friendly_attr_type}"
+            # Convert from deprecated format
+            old_type = existing_attribute.value.strip() if existing_attribute.value.strip() else "deprecated"
+            self.ui.show_success(f"File: {filename} — Converted: {old_type} → {content_type}")
         
-        self.ui.show_success(f"{action}: {Highlighter(content_type).success()}")
-        self.ui.show_message("=" * 40)
         return True
     
     def _handle_new_attribute(self, filepath: str, lines: List[Tuple[str, str]], 
                              analysis: dict) -> bool:
         """Handle files without existing content type attributes."""
         detection_result = analysis['detection_result']
+        filename = analysis['filename']
         
         # Try filename-based detection first
-        filename_type = self.detector.detect_from_filename(analysis['filename'])
+        filename_type = self.detector.detect_from_filename(filename)
         if filename_type:
-            self.ui.show_message(f"  💡 Detected from filename: {Highlighter(filename_type).highlight()}")
-            
             lines = self.add_new_attribute(lines, filename_type)
             
             if not self.write_file_safely(filepath, lines):
-                self.ui.show_message("=" * 40)
                 return False
                 
-            self.ui.show_success(f"Added content type: {Highlighter(filename_type).success()}")
-            self.ui.show_message("=" * 40)
+            self.ui.show_success(f"File: {filename} — Detected: {filename_type}")
             return True
         
-        # Try smart content analysis
-        self.ui.show_message("  🔍 Analyzing file content...")
+        # Check if quiet mode should auto-assign TBD
+        if self.ui.__class__.__name__ == 'QuietModeUI':
+            lines = self.add_new_attribute(lines, "TBD")
+            
+            if not self.write_file_safely(filepath, lines):
+                return False
+                
+            self.ui.show_success(f"File: {filename} — Auto-assigned: TBD")
+            return True
         
-        if detection_result.suggested_type:
-            self.ui.show_message(f"  💭 Analysis suggests: {Highlighter(detection_result.suggested_type).highlight()}")
-            if analysis['title']:
-                title_preview = analysis['title'][:50] + ('...' if len(analysis['title']) > 50 else '')
-                self.ui.show_message(f"     Based on title: '{title_preview}'")
+        # Show file header and prompt user
+        self.ui.show_message(f"File: {filename} — Missing content type")
         
-        # Prompt user with smart pre-selection
+        # Prompt user with analysis
         content_type = self.ui.prompt_content_type(detection_result)
         
         if self.ui.should_exit():
@@ -358,14 +349,10 @@ class ContentTypeProcessor:
             lines = self.add_new_attribute(lines, content_type)
             
             if not self.write_file_safely(filepath, lines):
-                self.ui.show_message("=" * 40)
                 return False
                 
-            self.ui.show_success(f"Added content type: {Highlighter(content_type).success()}")
-        else:
-            self.ui.show_message("  → Skipped")
+            self.ui.show_success(f"File: {filename} — Updated: {content_type}")
         
-        self.ui.show_message("=" * 40)
         return True
 
 

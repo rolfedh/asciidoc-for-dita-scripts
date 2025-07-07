@@ -6,31 +6,13 @@ to test and potentially support different UI modes (CLI, GUI, batch).
 """
 
 import logging
+import sys
 from abc import ABC, abstractmethod
 from typing import Optional, List
 from .content_type_detector import DetectionResult
 
 
 logger = logging.getLogger(__name__)
-
-
-class Highlighter:
-    """Simple text highlighter for console output."""
-
-    def __init__(self, text: str):
-        self.text = text
-
-    def warn(self) -> str:
-        return f"\033[0;31m{self.text}\033[0m"
-
-    def bold(self) -> str:
-        return f"\033[1m{self.text}\033[0m"
-
-    def highlight(self) -> str:
-        return f"\033[0;36m{self.text}\033[0m"
-
-    def success(self) -> str:
-        return f"\033[0;32m{self.text}\033[0m"
 
 
 class UIInterface(ABC):
@@ -75,8 +57,173 @@ class UIInterface(ABC):
         pass
 
 
+class MinimalistConsoleUI(UIInterface):
+    """Minimalist console-based user interface implementation."""
+    
+    def __init__(self):
+        self.exit_requested = False
+        self.content_type_options = [
+            ("A", "ASSEMBLY"),
+            ("C", "CONCEPT"), 
+            ("P", "PROCEDURE"),
+            ("R", "REFERENCE"),
+            ("S", "SNIPPET"),
+            ("T", "TBD")
+        ]
+        logger.debug("MinimalistConsoleUI initialized")
+    
+    def show_message(self, message: str) -> None:
+        """Display a message to the user."""
+        print(message)
+    
+    def show_error(self, error_message: str) -> None:
+        """Display an error message to the user."""
+        print(f"Error: {error_message}")
+    
+    def show_success(self, success_message: str) -> None:
+        """Display a success message to the user."""
+        print(success_message)
+    
+    def show_warning(self, warning_message: str) -> None:
+        """Display a warning message to the user."""
+        print(f"Warning: {warning_message}")
+    
+    def prompt_content_type(self, detection_result: DetectionResult) -> Optional[str]:
+        """
+        Prompt user to select content type with minimalist interface.
+        
+        Args:
+            detection_result: Result of content type detection with suggestions
+            
+        Returns:
+            Selected content type string or None if skipped
+        """
+
+        logger.debug("Prompting user for content type selection")
+        
+        suggested_type = detection_result.suggested_type
+        
+        # Show analysis
+        if suggested_type:
+            reasoning = detection_result.reasoning[0] if detection_result.reasoning else ""
+            print(f"Analysis: {suggested_type} ({reasoning})")
+        else:
+            print("Analysis: TBD (content analysis failed)")
+        
+        # Build type menu with emphasized first letters
+        type_menu = []
+        for letter, type_name in self.content_type_options:
+            type_menu.append(f"{letter.upper()}{type_name[1:]}")
+        
+        print(f"Type: {', '.join(type_menu)}")
+        
+        # Show suggestion
+        if suggested_type:
+            print(f"Suggestion: {suggested_type}.")
+        else:
+            print("Suggestion: TBD.")
+        
+        print("Press: Enter to accept; the first letter of a type; Ctrl+C to quit; or Ctrl+S to skip")
+        
+        while True:
+            try:
+                # Try to get single character input
+                choice = self._get_single_char_input()
+                
+                # Handle Enter key (accept suggestion)
+                if choice in ['\r', '\n']:
+                    chosen_type = suggested_type or "TBD"
+                    return chosen_type
+                
+                # Handle Ctrl+C (quit)
+                if choice == '\x03':
+                    raise KeyboardInterrupt
+                
+                # Handle Ctrl+S (skip)
+                if choice == '\x13':
+                    return None
+                
+                # Handle type selection by first letter
+                choice_upper = choice.upper()
+                for letter, type_name in self.content_type_options:
+                    if choice_upper == letter:
+                        return type_name
+                
+                # Invalid choice
+                print("Invalid choice. Press Enter to accept suggestion, first letter of type, Ctrl+C to quit, or Ctrl+S to skip.")
+                continue
+                    
+            except (KeyboardInterrupt, EOFError):
+                print("\nExiting.")
+                self.exit_requested = True
+                return None
+    
+    def _get_single_char_input(self) -> str:
+        """Get single character input without requiring Enter."""
+        try:
+            import termios
+            import tty
+            
+            fd = sys.stdin.fileno()
+            old_settings = termios.tcgetattr(fd)
+            try:
+                tty.cbreak(fd)
+                choice = sys.stdin.read(1)
+            finally:
+                termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+            
+            return choice
+        except (ImportError, AttributeError):
+            # Fallback for systems without termios/tty (e.g., Windows)
+            user_input = input().strip()
+            return user_input[:1] if user_input else '\r'
+    
+    def should_exit(self) -> bool:
+        """Check if the user wants to exit the application."""
+        return self.exit_requested
+
+
+class QuietModeUI(UIInterface):
+    """Quiet mode user interface that automatically assigns TBD."""
+    
+    def __init__(self):
+        logger.debug("QuietModeUI initialized")
+    
+    def show_message(self, message: str) -> None:
+        """Suppress all messages in quiet mode."""
+        pass
+    
+    def show_error(self, error_message: str) -> None:
+        """Show errors even in quiet mode."""
+        print(f"Error: {error_message}")
+    
+    def show_success(self, success_message: str) -> None:
+        """Show success messages in quiet mode."""
+        print(success_message)
+    
+    def show_warning(self, warning_message: str) -> None:
+        """Suppress warnings in quiet mode."""
+        pass
+    
+    def prompt_content_type(self, detection_result: DetectionResult) -> Optional[str]:
+        """
+        Return TBD without prompting in quiet mode.
+        
+        Args:
+            detection_result: Result of content type detection with suggestions
+            
+        Returns:
+            Always returns TBD
+        """
+        return "TBD"
+    
+    def should_exit(self) -> bool:
+        """Quiet mode never exits early."""
+        return False
+
+
 class ConsoleUI(UIInterface):
-    """Console-based user interface implementation."""
+    """Original console-based user interface (for backwards compatibility)."""
     
     def __init__(self):
         self.exit_requested = False
@@ -96,15 +243,15 @@ class ConsoleUI(UIInterface):
     
     def show_error(self, error_message: str) -> None:
         """Display an error message to the user."""
-        print(f"  ❌ Error: {error_message}")
+        print(f"❌ Error: {error_message}")
     
     def show_success(self, success_message: str) -> None:
         """Display a success message to the user."""
-        print(f"  ✓ {success_message}")
+        print(f"✓ {success_message}")
     
     def show_warning(self, warning_message: str) -> None:
         """Display a warning message to the user."""
-        print(f"  ⚠️  Warning: {warning_message}")
+        print(f"⚠️  Warning: {warning_message}")
     
     def prompt_content_type(self, detection_result: DetectionResult) -> Optional[str]:
         """
@@ -126,7 +273,7 @@ class ConsoleUI(UIInterface):
         
         # Display context and suggestion
         if suggested_type:
-            print(f"\nContent type not specified. Based on analysis, this appears to be a {Highlighter(suggested_type).highlight()}.")
+            print(f"\nContent type not specified. Based on analysis, this appears to be a {suggested_type}.")
             if detection_result.reasoning:
                 print(f"Reasoning: {'; '.join(detection_result.reasoning[:2])}")  # Show first 2 reasons
         else:
@@ -154,9 +301,8 @@ class ConsoleUI(UIInterface):
         
         while True:
             try:
-                import sys
-                import tty
                 import termios
+                import tty
                 
                 # Get single character input without requiring Enter
                 fd = sys.stdin.fileno()
@@ -186,7 +332,7 @@ class ConsoleUI(UIInterface):
                     choice_num = int(choice)
                     if 1 <= choice_num <= 6:
                         selected_type = self.content_type_options[choice_num - 1]
-                        print(f"✅ {Highlighter(selected_type).bold()} chosen")
+                        print(f"✅ {selected_type} chosen")
                         logger.info("User selected content type: %s", selected_type)
                         return selected_type
                     elif choice_num == 7:
@@ -200,7 +346,7 @@ class ConsoleUI(UIInterface):
                     continue
                     
             except (KeyboardInterrupt, EOFError):
-                print(f"\nDefaulting to {Highlighter('TBD').highlight()} (type not detected).")
+                print(f"\nDefaulting to TBD (type not detected).")
                 logger.info("User input interrupted, defaulting to TBD")
                 return "TBD"
             except ImportError:
@@ -240,7 +386,7 @@ class ConsoleUI(UIInterface):
                 choice_num = int(choice)
                 if 1 <= choice_num <= 6:
                     selected_type = self.content_type_options[choice_num - 1]
-                    print(f"✅ {Highlighter(selected_type).bold()} chosen")
+                    print(f"✅ {selected_type} chosen")
                     logger.info("User selected content type: %s", selected_type)
                     return selected_type
                 elif choice_num == 7:
@@ -250,7 +396,7 @@ class ConsoleUI(UIInterface):
                     print("Please enter a number between 1 and 7.")
                     
             except (ValueError, KeyboardInterrupt, EOFError):
-                print(f"\nDefaulting to {Highlighter('TBD').highlight()} (type not detected).")
+                print(f"\nDefaulting to TBD (type not detected).")
                 logger.info("User input interrupted, defaulting to TBD")
                 return "TBD"
     
@@ -272,15 +418,15 @@ class BatchUI(UIInterface):
     
     def show_error(self, error_message: str) -> None:
         """Display an error message to the user."""
-        print(f"  ❌ Error: {error_message}")
+        print(f"❌ Error: {error_message}")
     
     def show_success(self, success_message: str) -> None:
         """Display a success message to the user."""
-        print(f"  ✓ {success_message}")
+        print(f"✓ {success_message}")
     
     def show_warning(self, warning_message: str) -> None:
         """Display a warning message to the user."""
-        print(f"  ⚠️  Warning: {warning_message}")
+        print(f"⚠️  Warning: {warning_message}")
     
     def prompt_content_type(self, detection_result: DetectionResult) -> Optional[str]:
         """
