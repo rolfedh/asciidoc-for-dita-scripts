@@ -11,23 +11,27 @@ File: docker_guide_assembly.adoc — Updated: ASSEMBLY
 ```
 File: installing_docker.adoc — Missing content type
 Analysis: PROCEDURE (found numbered steps)
-Type: ASSEMBLY, CONCEPT, PROCEDURE, REFERENCE, SNIPPET, TBD, Skip
-Suggestion: PROCEDURE — Press Enter to accept, or first letter of type, or Ctrl+C to quit
+Type: **A**SSEMBLY, **C**ONCEPT, **P**ROCEDURE, **R**EFERENCE, **S**NIPPET, **T**BD
+Suggestion: PROCEDURE.
+Press: Enter to accept; the first letter of a type; Ctrl+C to quit; or Ctrl+S to skip
 
 File: what_is_containerization.adoc — Missing content type  
 Analysis: CONCEPT (explanatory title)
-Type: ASSEMBLY, CONCEPT, PROCEDURE, REFERENCE, SNIPPET, TBD, Skip
-Suggestion: CONCEPT — Press Enter to accept, or first letter of type, or Ctrl+C to quit
+Type: **A**SSEMBLY, **C**ONCEPT, **P**ROCEDURE, **R**EFERENCE, **S**NIPPET, **T**BD
+Suggestion: CONCEPT.
+Press: Enter to accept; the first letter of a type; Ctrl+C to quit; or Ctrl+S to skip
 
 File: docker_commands.adoc — Missing content type
 Analysis: REFERENCE (found tables and reference title)
-Type: ASSEMBLY, CONCEPT, PROCEDURE, REFERENCE, SNIPPET, TBD, Skip  
-Suggestion: REFERENCE — Press Enter to accept, or first letter of type, or Ctrl+C to quit
+Type: **A**SSEMBLY, **C**ONCEPT, **P**ROCEDURE, **R**EFERENCE, **S**NIPPET, **T**BD
+Suggestion: REFERENCE.
+Press: Enter to accept; the first letter of a type; Ctrl+C to quit; or Ctrl+S to skip
 
 File: empty_content_type.adoc — Missing content type
 Analysis: CONCEPT (default)
-Type: ASSEMBLY, CONCEPT, PROCEDURE, REFERENCE, SNIPPET, TBD, Skip
-Suggestion: CONCEPT — Press Enter to accept, or first letter of type, or Ctrl+C to quit
+Type: **A**SSEMBLY, **C**ONCEPT, **P**ROCEDURE, **R**EFERENCE, **S**NIPPET, **T**BD
+Suggestion: CONCEPT.
+Press: Enter to accept; the first letter of a type; Ctrl+C to quit; or Ctrl+S to skip
 ```
 
 ## Error Cases
@@ -49,8 +53,9 @@ Error: Content analysis failed
 ### Interactive Prompts
 - **File header**: `File: [filename] — [problem description]`
 - **Analysis line**: `Analysis: [TYPE] ([brief reasoning])`
-- **Type menu**: `Type: ASSEMBLY, CONCEPT, PROCEDURE, REFERENCE, SNIPPET, TBD, Skip`
-- **Suggestion**: `Suggestion: [TYPE] — Press Enter to accept, or first letter of type, or Ctrl+C to quit`
+- **Type menu**: `Type: **A**SSEMBLY, **C**ONCEPT, **P**ROCEDURE, **R**EFERENCE, **S**NIPPET, **T**BD`
+- **Suggestion**: `Suggestion: [TYPE].`
+- **Controls**: `Press: Enter to accept; the first letter of a type; Ctrl+C to quit; or Ctrl+S to skip`
 
 ### Error Messages
 - **Processing error**: `File: [filename] — Processing error`
@@ -68,6 +73,6 @@ Error: Content analysis failed
 2. **Consistent format**: Same structure for all file status messages
 3. **Clear hierarchy**: File name first, then status/problem, then details
 4. **Brief analysis**: One line explanation of content type suggestion
-5. **Simple controls**: Enter to accept, first letter to choose, Ctrl+C to quit
+5. **Simple controls**: Enter to accept, first letter to choose type, Ctrl+C to quit, Ctrl+S to skip
 6. **Reduced visual noise**: No separators, minimal punctuation
 7. **Grouped output**: Successful operations shown together, errors grouped separately
