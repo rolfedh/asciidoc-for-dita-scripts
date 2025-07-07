@@ -123,7 +123,7 @@ class CrossReferenceProcessor:
         Returns:
             Updated link string with file path included
         """
-        link_id = regex_match.group(1).split('_')[0]
+        link_id = regex_match.group(1)  # Use the full ID for lookup
         file_path = self.id_map.get(link_id, '')
 
         if not file_path:

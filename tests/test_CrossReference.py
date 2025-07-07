@@ -207,9 +207,9 @@ class TestCrossReferenceProcessor(unittest.TestCase):
         """Test link updating with underscore-separated IDs."""
         # Setup ID map
         self.processor.id_map = {
-            'section': '/path/to/chapter1.adoc'
+            'section_subsection_detail': '/path/to/chapter1.adoc'
         }
-
+    
         # Create a mock match object for complex ID
         mock_match = MagicMock()
         mock_match.group.side_effect = lambda x: {
@@ -217,7 +217,7 @@ class TestCrossReferenceProcessor(unittest.TestCase):
             1: 'section_subsection_detail',
             2: '[Link Text]'
         }[x]
-
+    
         with patch('builtins.print'):  # Suppress console output during test
             result = self.processor.update_link(mock_match)
             self.assertEqual(result, 'chapter1.adoc#section_subsection_detail[Link Text]')
