@@ -13,7 +13,7 @@ from asciidoc_dita_toolkit.asciidoc_dita.plugins.content_type_detector import (
     ContentTypeDetector, ContentTypeConfig, ContentTypeAttribute, DetectionResult
 )
 from asciidoc_dita_toolkit.asciidoc_dita.plugins.ui_interface import (
-    UIInterface, ConsoleUI, BatchUI, TestUI, MinimalistConsoleUI, QuietModeUI
+    UIInterface, ConsoleUI, BatchUI, MockUI, MinimalistConsoleUI, QuietModeUI
 )
 from asciidoc_dita_toolkit.asciidoc_dita.plugins.content_type_processor import (
     ContentTypeProcessor
@@ -153,9 +153,9 @@ class TestContentTypeDetector(unittest.TestCase):
 class TestUIInterface(unittest.TestCase):
     """Test the UI interface implementations."""
     
-    def test_test_ui_stores_messages(self):
-        """Test that TestUI stores messages for verification."""
-        ui = TestUI()
+    def test_mock_ui_stores_messages(self):
+        """Test that MockUI stores messages for verification."""
+        ui = MockUI()
         ui.show_message("Test message")
         ui.show_error("Test error")
         ui.show_success("Test success")
@@ -166,9 +166,9 @@ class TestUIInterface(unittest.TestCase):
         self.assertEqual(ui.successes, ["Test success"])
         self.assertEqual(ui.warnings, ["Test warning"])
     
-    def test_test_ui_prompt_with_responses(self):
-        """Test TestUI with pre-configured responses."""
-        ui = TestUI(responses=["PROCEDURE", "SKIP", "CONCEPT"])
+    def test_mock_ui_prompt_with_responses(self):
+        """Test MockUI with pre-configured responses."""
+        ui = MockUI(responses=["PROCEDURE", "SKIP", "CONCEPT"])
         
         detection_result = DetectionResult("ASSEMBLY", 0.8, ["test reasoning"])
         
@@ -237,7 +237,7 @@ class TestContentTypeProcessor(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.detector = ContentTypeDetector()
-        self.ui = TestUI()
+        self.ui = MockUI()
         self.processor = ContentTypeProcessor(self.detector, self.ui)
     
     def test_validate_file_access_missing_file(self):
@@ -378,7 +378,7 @@ class TestIntegration(unittest.TestCase):
     def test_full_workflow_new_file(self):
         """Test complete workflow for a new file."""
         # Create test UI with predetermined responses
-        ui = TestUI(responses=["PROCEDURE"])
+        ui = MockUI(responses=["PROCEDURE"])
         detector = ContentTypeDetector()
         processor = ContentTypeProcessor(detector, ui)
         
@@ -408,7 +408,7 @@ class TestIntegration(unittest.TestCase):
     
     def test_full_workflow_existing_deprecated_attribute(self):
         """Test complete workflow for file with deprecated attribute."""
-        ui = TestUI()
+        ui = MockUI()
         detector = ContentTypeDetector()
         processor = ContentTypeProcessor(detector, ui)
         

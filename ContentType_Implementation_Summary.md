@@ -139,11 +139,12 @@ File: docker_commands.adoc — Auto-assigned: TBD
 
 ## Files Modified
 
-1. `asciidoc_dita_toolkit/asciidoc_dita/plugins/ui_interface.py` - Added MinimalistConsoleUI and QuietModeUI
-2. `asciidoc_dita_toolkit/asciidoc_dita/plugins/content_type_processor.py` - Updated output format
+1. `asciidoc_dita_toolkit/asciidoc_dita/plugins/ui_interface.py` - Added MinimalistConsoleUI and QuietModeUI, renamed TestUI to MockUI
+2. `asciidoc_dita_toolkit/asciidoc_dita/plugins/content_type_processor.py` - Updated output format, fixed isinstance usage
 3. `asciidoc_dita_toolkit/asciidoc_dita/plugins/ContentType.py` - Added startup mode selection
-4. `tests/test_content_type_plugin.py` - Added tests for new UI classes
-5. `design-docs/ContentType_Plugin_Output_Minimalist.md` - Design specification (preserved)
+4. `tests/test_content_type_plugin.py` - Added tests for new UI classes, updated MockUI references
+5. `tests/test_ContentType.py` - Updated MockUI references
+6. `design-docs/ContentType_Plugin_Output_Minimalist.md` - Design specification (preserved)
 
 ## Usage Examples
 
@@ -196,5 +197,23 @@ This change improves:
 - **Maintainability**: Refactoring-safe approach that survives class renames
 - **Readability**: More explicit and Pythonic code
 - **Reliability**: Eliminates string comparison fragility
+
+### Fixed: Pytest Collection Warning
+**Before (Problematic)**:
+```python
+class TestUI(UIInterface):
+    """Test user interface for automated testing."""
+```
+
+**After (Fixed)**:
+```python
+class MockUI(UIInterface):
+    """Mock user interface for automated testing."""
+```
+
+This change resolves:
+- **Pytest Warning**: Eliminates "cannot collect test class 'TestUI' because it has a __init__ constructor"
+- **Naming Clarity**: Better reflects the class purpose as a mock/stub for testing
+- **Test Discovery**: Prevents pytest from mistakenly trying to collect utility classes as tests
 
 The new interface is now the default, providing a significantly improved user experience while preserving all existing functionality and maintaining high code quality standards.

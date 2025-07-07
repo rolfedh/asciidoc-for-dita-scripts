@@ -19,10 +19,10 @@ class TestContentTypePlugin(unittest.TestCase):
         """Set up test fixtures."""
         from asciidoc_dita_toolkit.asciidoc_dita.plugins.content_type_detector import ContentTypeDetector
         from asciidoc_dita_toolkit.asciidoc_dita.plugins.content_type_processor import ContentTypeProcessor
-        from asciidoc_dita_toolkit.asciidoc_dita.plugins.ui_interface import TestUI
+        from asciidoc_dita_toolkit.asciidoc_dita.plugins.ui_interface import MockUI
 
         self.detector = ContentTypeDetector()
-        self.ui = TestUI()
+        self.ui = MockUI()
         self.processor = ContentTypeProcessor(self.detector, self.ui)
 
     def test_get_content_type_from_filename(self):
