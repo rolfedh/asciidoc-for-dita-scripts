@@ -10,6 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **mod-docs-cross-reference plugin**: Fix cross-references in AsciiDoc files by updating xref links to include proper file paths
+  - Original plugin by Roger Heslop, integrated into AsciiDoc DITA Toolkit framework
+  - Supports processing from master.adoc files with recursive include tracking
+  - Automatically maps section IDs to files and updates incomplete xref links
+  - Includes comprehensive test suite and documentation
+
+### Improved
 - Enhanced testing system with colocated expected files
 - Modernized fixture-based testing infrastructure
 
