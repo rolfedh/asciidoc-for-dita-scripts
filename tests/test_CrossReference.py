@@ -1,12 +1,12 @@
 """
-Test suite for the mod-docs-cross-reference plugin.
+Test suite for the CrossReference plugin.
 
 This script tests the cross-reference fixing logic including:
 - ID mapping from AsciiDoc files
 - Cross-reference link updating
 - Master file processing
 
-To run: python3 tests/test_mod_docs_cross_reference.py
+To run: python3 tests/test_CrossReference.py
 
 Recommended: Integrate this script into CI to catch regressions.
 """
@@ -27,7 +27,7 @@ if plugin_dir not in sys.path:
 
 try:
     # Import by renaming the module file temporarily or use exec
-    plugin_path = os.path.join(plugin_dir, "mod-docs-cross-reference.py")
+    plugin_path = os.path.join(plugin_dir, "CrossReference.py")
     
     # Read and execute the plugin code in a namespace
     plugin_namespace = {}
@@ -54,7 +54,7 @@ try:
     
 except Exception as e:
     # If import fails, skip the tests
-    print(f"Warning: Could not import mod-docs-cross-reference plugin: {e}")
+    print(f"Warning: Could not import CrossReference plugin: {e}")
     CrossReferenceProcessor = None
     Highlighter = None
     find_master_files = None
@@ -62,11 +62,11 @@ except Exception as e:
     mod_docs_cross_reference = None
 
 FIXTURE_DIR = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "fixtures", "mod-docs-cross-reference")
+    os.path.join(os.path.dirname(__file__), "fixtures", "CrossReference")
 )
 
 
-@unittest.skipIf(Highlighter is None, "mod-docs-cross-reference plugin could not be imported")
+@unittest.skipIf(Highlighter is None, "CrossReference plugin could not be imported")
 class TestHighlighter(unittest.TestCase):
     """Test cases for the Highlighter utility class."""
 

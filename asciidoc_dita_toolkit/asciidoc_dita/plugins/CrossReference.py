@@ -1,5 +1,5 @@
 """
-Plugin for the AsciiDoc DITA toolkit: mod-docs-cross-reference
+Plugin for the AsciiDoc DITA toolkit: CrossReference
 
 This plugin fixes cross-references in AsciiDoc files by updating xref links to include the proper file paths.
 It scans for section IDs and updates xref links that point to those IDs but lack the proper file reference.
@@ -231,7 +231,7 @@ def process_master_file(filepath: str) -> None:
 
 
 def main(args):
-    """Main function for the mod-docs-cross-reference plugin."""
+    """Main function for the CrossReference plugin."""
     # Setup logging based on verbosity
     if hasattr(args, 'verbose') and args.verbose:
         logging.basicConfig(level=logging.DEBUG)
@@ -289,7 +289,7 @@ def main(args):
 def register_subcommand(subparsers):
     """Register this plugin as a subcommand."""
     parser = subparsers.add_parser(
-        "mod-docs-cross-reference",
+        "CrossReference",
         help=__description__,
         description=__description__
     )
