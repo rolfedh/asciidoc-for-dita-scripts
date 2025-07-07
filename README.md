@@ -126,10 +126,10 @@ asciidoc-dita-toolkit EntityReference -d /path/to/docs -r
 
 ```sh
 # Fix xrefs starting from a master.adoc file
-asciidoc-dita-toolkit mod-docs-cross-reference --master-file master.adoc
+asciidoc-dita-toolkit CrossReference --master-file master.adoc
 
 # Find and fix xrefs in all master.adoc files recursively
-asciidoc-dita-toolkit mod-docs-cross-reference -r
+asciidoc-dita-toolkit CrossReference -r
 ```
 
 ### Container Usage
@@ -176,7 +176,7 @@ asciidoc-dita-toolkit EntityReference -r
 |--------|-------------|---------------|
 | `EntityReference` | Replace unsupported HTML character entity references with AsciiDoc attribute references | `asciidoc-dita-toolkit EntityReference -f file.adoc` |
 | `ContentType` | Add `:_mod-docs-content-type:` labels where missing, based on filename | `asciidoc-dita-toolkit ContentType -r` |
-| `mod-docs-cross-reference` | Fix cross-references in AsciiDoc files by updating xref links to include proper file paths | `asciidoc-dita-toolkit mod-docs-cross-reference --master-file master.adoc` |
+| `CrossReference` | Fix cross-references in AsciiDoc files by updating xref links to include proper file paths | `asciidoc-dita-toolkit CrossReference --master-file master.adoc` |
 
 > **📋 Technical Details**: For plugin internals and supported entity mappings, see [docs/asciidoc-dita-toolkit.md](docs/asciidoc-dita-toolkit.md).
 
