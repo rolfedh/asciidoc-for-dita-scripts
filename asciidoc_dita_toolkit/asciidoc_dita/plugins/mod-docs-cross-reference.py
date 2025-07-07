@@ -14,10 +14,9 @@ import os
 import re
 import sys
 import logging
-from typing import Dict, List, Set
+from typing import Dict, List
 
 from ..cli_utils import common_arg_parser
-from ..workflow_utils import process_adoc_files
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -62,9 +61,6 @@ class CrossReferenceProcessor:
         
         # The id_map dictionary maps the ID as the key and the file as the value
         self.id_map: Dict[str, str] = {}
-        
-        # Track files to prevent infinite recursion
-        self.bread_crumbs: List[str] = []
     
     def build_id_map(self, file: str, bread_crumbs: List[str] = None) -> None:
         """
