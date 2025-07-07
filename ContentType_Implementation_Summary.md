@@ -45,7 +45,8 @@ Successfully implemented the minimalist interface design for the ContentType plu
 - **Removed**: Emoji-based status indicators
 
 #### Quiet Mode Integration
-- Detects QuietModeUI and automatically assigns TBD without prompting
+- Uses robust `isinstance(self.ui, QuietModeUI)` detection instead of brittle string comparison
+- Automatically assigns TBD without prompting when QuietModeUI is detected
 - Suppresses all analysis messages in quiet mode
 - Still shows success messages for tracking
 
@@ -88,6 +89,7 @@ if not batch_mode and not legacy_mode and not quiet_mode:
 4. **Letter-based Selection**: Users press A for Assembly, C for Concept, etc.
 5. **Automatic Processing**: Continuous file processing with prompts only when needed
 6. **Quiet Mode**: Unattended operation with TBD auto-assignment
+7. **Robust Type Detection**: Uses `isinstance()` instead of string comparison for UI type checking
 
 ## User Experience Improvements
 
@@ -173,6 +175,26 @@ The implementation successfully delivers a clean, minimalist interface that:
 - Provides intuitive letter-based selection
 - Supports unattended operation via quiet mode
 - Maintains backwards compatibility
+- Uses robust type checking with `isinstance()` instead of brittle string comparison
 - Passes all existing tests
 
-The new interface is now the default, providing a significantly improved user experience while preserving all existing functionality.
+## Code Quality Improvements
+
+### Fixed: Brittle Type Detection
+**Before (Brittle)**:
+```python
+if self.ui.__class__.__name__ == 'QuietModeUI':
+```
+
+**After (Robust)**:
+```python
+if isinstance(self.ui, QuietModeUI):
+```
+
+This change improves:
+- **Type Safety**: Proper type checking using Python's built-in `isinstance()`
+- **Maintainability**: Refactoring-safe approach that survives class renames
+- **Readability**: More explicit and Pythonic code
+- **Reliability**: Eliminates string comparison fragility
+
+The new interface is now the default, providing a significantly improved user experience while preserving all existing functionality and maintaining high code quality standards.
