@@ -451,8 +451,8 @@ class BatchUI(UIInterface):
         return False
 
 
-class TestUI(UIInterface):
-    """Test user interface for automated testing."""
+class MockUI(UIInterface):
+    """Mock user interface for automated testing."""
     
     def __init__(self, responses: Optional[List[str]] = None):
         self.responses = responses or []
@@ -463,7 +463,7 @@ class TestUI(UIInterface):
         self.warnings = []
         self.prompts = []
         self.exit_requested = False
-        logger.debug("TestUI initialized with %d responses", len(self.responses))
+        logger.debug("MockUI initialized with %d responses", len(self.responses))
     
     def show_message(self, message: str) -> None:
         """Store message for testing verification."""
