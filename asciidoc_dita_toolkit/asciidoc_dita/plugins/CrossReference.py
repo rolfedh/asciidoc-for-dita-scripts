@@ -134,9 +134,7 @@ class CrossReferenceProcessor:
             return regex_match.group(0)
 
         file_name = os.path.basename(file_path)
-        updated_link = f"{file_name}#{
-            regex_match.group(1)}{
-            regex_match.group(2)}"
+        updated_link = f"{file_name}#{regex_match.group(1)}{regex_match.group(2)}"
 
         print(Highlighter(
             f"Fix found! moving {regex_match.group(0)} to {updated_link}"
@@ -245,8 +243,7 @@ def main(args):
         if not os.path.exists(args.master_file):
             print(
                 Highlighter(
-                    f"Error: Master file {
-                        args.master_file} not found").warn())
+                    f"Error: Master file {args.master_file} not found").warn())
             sys.exit(1)
 
         process_master_file(args.master_file)
@@ -264,9 +261,7 @@ def main(args):
             return
 
         print(f"Found {len(master_files)} master.adoc file(s) to process")
-        logger.info(
-            f"Found {
-                len(master_files)} master.adoc file(s) to process")
+        logger.info(f"Found {len(master_files)} master.adoc file(s) to process")
 
         for master_file in master_files:
             print(f"\nProcessing {master_file}")
