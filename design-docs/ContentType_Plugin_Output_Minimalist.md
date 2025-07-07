@@ -1,5 +1,10 @@
 # ContentType Plugin Minimalist Interface Proposal
 
+## Startup Options
+```
+ContentType Plugin - Press Ctrl+Q for quiet mode (auto-assigns TBD), or any other key to continue
+```
+
 ## Successful Operations
 ```
 File: installing_docker.adoc — Updated: PROCEDURE
@@ -40,6 +45,15 @@ Suggestion: TBD.
 Press: Enter to accept; the first letter of a type; Ctrl+C to quit; or Ctrl+S to skip
 ```
 
+## Quiet Mode Output
+```
+File: installing_docker.adoc — Auto-assigned: TBD
+File: what_is_containerization.adoc — Auto-assigned: TBD
+File: docker_commands.adoc — Auto-assigned: TBD
+File: empty_content_type.adoc — Auto-assigned: TBD
+File: complex_file.adoc — Auto-assigned: TBD
+```
+
 ## Error Cases
 ```
 File: installing_docker.adoc — Input error
@@ -55,6 +69,7 @@ Error: Unable to read file content
 - **Success**: `File: [filename] — Updated: [TYPE]`
 - **Conversion**: `File: [filename] — Converted: [OLD_TYPE] → [NEW_TYPE]`
 - **Auto-detected**: `File: [filename] — Detected: [TYPE]`
+- **Quiet mode**: `File: [filename] — Auto-assigned: TBD`
 
 ### Interactive Prompts
 - **File header**: `File: [filename] — [problem description]`
@@ -69,8 +84,8 @@ Error: Unable to read file content
 - **Error detail**: `Error: [brief error message]`
 
 ### Navigation
-- **Batch processing**: Process all files, prompt only when needed
-- **Single file mode**: Process one file at a time
+- **Default processing**: Process all files automatically, prompt only when content type is missing or unclear
+- **Quiet mode**: `Ctrl+Q` at startup to process all files without prompts, defaults to TBD when type is unknown
 - **Skip files**: Continue to next file without changes
 
 ## Key Design Principles
@@ -82,3 +97,5 @@ Error: Unable to read file content
 5. **Simple controls**: Enter to accept, first letter to choose type, Ctrl+C to quit, Ctrl+S to skip
 6. **Reduced visual noise**: No separators, minimal punctuation
 7. **Grouped output**: Successful operations shown together, errors grouped separately
+8. **Automatic processing**: Process all files continuously, only prompt when user input is needed
+9. **Quiet mode option**: Allow users to process all files without prompts for unattended operation
