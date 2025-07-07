@@ -32,6 +32,12 @@ Analysis: CONCEPT (default)
 Type: **A**SSEMBLY, **C**ONCEPT, **P**ROCEDURE, **R**EFERENCE, **S**NIPPET, **T**BD
 Suggestion: CONCEPT.
 Press: Enter to accept; the first letter of a type; Ctrl+C to quit; or Ctrl+S to skip
+
+File: complex_file.adoc — Missing content type
+Analysis: TBD (content analysis failed)
+Type: **A**SSEMBLY, **C**ONCEPT, **P**ROCEDURE, **R**EFERENCE, **S**NIPPET, **T**BD
+Suggestion: TBD.
+Press: Enter to accept; the first letter of a type; Ctrl+C to quit; or Ctrl+S to skip
 ```
 
 ## Error Cases
@@ -39,8 +45,8 @@ Press: Enter to accept; the first letter of a type; Ctrl+C to quit; or Ctrl+S to
 File: installing_docker.adoc — Input error
 Error: Unable to read user input
 
-File: what_is_containerization.adoc — Processing error  
-Error: Content analysis failed
+File: corrupted_file.adoc — Processing error  
+Error: Unable to read file content
 ```
 
 ## Interface Elements
@@ -52,7 +58,7 @@ Error: Content analysis failed
 
 ### Interactive Prompts
 - **File header**: `File: [filename] — [problem description]`
-- **Analysis line**: `Analysis: [TYPE] ([brief reasoning])`
+- **Analysis line**: `Analysis: [TYPE] ([brief reasoning])` or `Analysis: TBD (content analysis failed)`
 - **Type menu**: `Type: **A**SSEMBLY, **C**ONCEPT, **P**ROCEDURE, **R**EFERENCE, **S**NIPPET, **T**BD`
 - **Suggestion**: `Suggestion: [TYPE].`
 - **Controls**: `Press: Enter to accept; the first letter of a type; Ctrl+C to quit; or Ctrl+S to skip`
@@ -72,7 +78,7 @@ Error: Content analysis failed
 1. **Minimal text**: Remove emojis, verbose explanations, and decorative elements
 2. **Consistent format**: Same structure for all file status messages
 3. **Clear hierarchy**: File name first, then status/problem, then details
-4. **Brief analysis**: One line explanation of content type suggestion
+4. **Brief analysis**: One line explanation of content type suggestion (TBD when analysis fails)
 5. **Simple controls**: Enter to accept, first letter to choose type, Ctrl+C to quit, Ctrl+S to skip
 6. **Reduced visual noise**: No separators, minimal punctuation
 7. **Grouped output**: Successful operations shown together, errors grouped separately
