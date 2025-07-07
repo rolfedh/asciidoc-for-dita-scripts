@@ -9,7 +9,7 @@ import os
 import logging
 from typing import List, Tuple, Optional
 from .content_type_detector import ContentTypeDetector, ContentTypeAttribute
-from .ui_interface import UIInterface
+from .ui_interface import UIInterface, QuietModeUI
 
 
 logger = logging.getLogger(__name__)
@@ -327,7 +327,7 @@ class ContentTypeProcessor:
             return True
         
         # Check if quiet mode should auto-assign TBD
-        if self.ui.__class__.__name__ == 'QuietModeUI':
+        if isinstance(self.ui, QuietModeUI):
             lines = self.add_new_attribute(lines, "TBD")
             
             if not self.write_file_safely(filepath, lines):
