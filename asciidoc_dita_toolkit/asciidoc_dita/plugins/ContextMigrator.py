@@ -121,18 +121,21 @@ class ContextMigrator:
             
         try:
             # Create backup directory if it doesn't exist
-            backup_dir = self.options.backup_dir
+            backup_dir = os.path.abspath(self.options.backup_dir)
             if not os.path.exists(backup_dir):
                 os.makedirs(backup_dir)
             
-            # Create backup file path
-            rel_path = os.path.relpath(filepath)
-            backup_path = os.path.join(backup_dir, rel_path)
+            # Create safe backup file path by using just the filename
+            # This avoids path traversal issues with relative paths
+            filename = os.path.basename(filepath)
+            backup_path = os.path.join(backup_dir, filename)
             
-            # Ensure backup directory structure exists
-            backup_file_dir = os.path.dirname(backup_path)
-            if not os.path.exists(backup_file_dir):
-                os.makedirs(backup_file_dir)
+            # If backup already exists, add a timestamp suffix
+            if os.path.exists(backup_path):
+                from datetime import datetime
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                name, ext = os.path.splitext(filename)
+                backup_path = os.path.join(backup_dir, f"{name}_{timestamp}{ext}")
             
             # Copy the file
             shutil.copy2(filepath, backup_path)
@@ -191,15 +194,19 @@ class ContextMigrator:
                 full_id = match.group(1) + '_' + match.group(2)
                 base_id = match.group(1)
                 
-                # Resolve potential collisions
-                new_id = self.resolve_id_collisions(base_id, existing_ids)
-                existing_ids.add(new_id)
+                # Check if we already have a mapping from directory-level processing
+                if full_id in self.id_mappings:
+                    new_id = self.id_mappings[full_id]
+                else:
+                    # Single file processing - resolve collisions locally
+                    new_id = self.resolve_id_collisions(base_id, existing_ids)
+                    existing_ids.add(new_id)
+                    
+                    # Track the mapping for xref updates
+                    self.id_mappings[full_id] = new_id
+                    self.file_id_map[new_id] = filepath
                 
                 id_changes_needed.append((line_num - 1, match, full_id, new_id))
-                
-                # Track the mapping for xref updates
-                self.id_mappings[full_id] = new_id
-                self.file_id_map[new_id] = filepath
         
         # Second pass: apply the changes
         for line_idx, match, old_id, new_id in id_changes_needed:
@@ -445,6 +452,10 @@ class ContextMigrator:
         """
         Migrate all AsciiDoc files in a directory.
         
+        This method performs a two-pass migration:
+        1. First pass: Analyze all files to collect IDs and plan collision resolution
+        2. Second pass: Apply the migrations with consistent ID mappings
+        
         Args:
             root_dir: Directory to migrate
             
@@ -454,6 +465,49 @@ class ContextMigrator:
         try:
             adoc_files = find_adoc_files(root_dir, recursive=True)
             
+            # First pass: collect all IDs and build global mappings
+            all_base_ids = {}  # base_id -> list of (full_id, filepath)
+            existing_ids = set()
+            
+            for filepath in adoc_files:
+                try:
+                    lines = read_text_preserve_endings(filepath)
+                    content = ''.join(text + ending for text, ending in lines)
+                    
+                    for match in self.id_with_context_regex.finditer(content):
+                        full_id = match.group(1) + '_' + match.group(2)
+                        base_id = match.group(1)
+                        
+                        if base_id not in all_base_ids:
+                            all_base_ids[base_id] = []
+                        all_base_ids[base_id].append((full_id, filepath))
+                        
+                except Exception as e:
+                    logger.warning(f"Error analyzing {filepath}: {e}")
+                    continue
+            
+            # Build global ID mappings with collision resolution
+            for base_id, id_list in all_base_ids.items():
+                if len(id_list) == 1:
+                    # No collision
+                    full_id, filepath = id_list[0]
+                    new_id = self.resolve_id_collisions(base_id, existing_ids)
+                    existing_ids.add(new_id)
+                    self.id_mappings[full_id] = new_id
+                    self.file_id_map[new_id] = filepath
+                else:
+                    # Multiple IDs would map to same base_id - resolve collisions
+                    for i, (full_id, filepath) in enumerate(id_list):
+                        if i == 0:
+                            new_id = self.resolve_id_collisions(base_id, existing_ids)
+                        else:
+                            new_id = self.resolve_id_collisions(f"{base_id}-{i}", existing_ids)
+                        
+                        existing_ids.add(new_id)
+                        self.id_mappings[full_id] = new_id
+                        self.file_id_map[new_id] = filepath
+            
+            # Second pass: apply migrations
             file_results = []
             validation_results = []
             
