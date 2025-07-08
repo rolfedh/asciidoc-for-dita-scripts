@@ -12,6 +12,7 @@ isort>=5.0.0
 # Build and distribution
 build>=0.8.0
 twine>=4.0.0
+toml>=0.10.0
 
 # Pre-commit hooks
 pre-commit>=2.20.0
