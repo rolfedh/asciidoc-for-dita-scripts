@@ -54,6 +54,8 @@ Install the toolkit using pip:
 python3 -m pip install asciidoc-dita-toolkit
 ```
 
+> **🌙 Nightly Releases**: This project automatically publishes nightly patch releases to PyPI whenever there are new commits. These releases include the latest fixes and improvements. The nightly releases follow the pattern `x.y.z` where `z` is automatically incremented.
+
 ### Upgrading
 
 **Container:**
