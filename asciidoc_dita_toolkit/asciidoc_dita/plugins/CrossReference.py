@@ -1,4 +1,4 @@
-THIS SHOULD BE A LINTER ERROR"""
+"""
 Plugin for the AsciiDoc DITA toolkit: CrossReference
 
 This plugin fixes cross-references in AsciiDoc files by updating xref links to include proper file paths.
@@ -129,6 +129,7 @@ class CrossReferenceProcessor:
         """
         Recursively walk all files from master.adoc down and create ID map.
         Enhanced to handle both old and new style IDs for migration awareness.
+        Uses two-pass processing to handle context ID mappings regardless of ordering.
 
         Args:
             file: Path to the file to process
@@ -148,7 +149,11 @@ class CrossReferenceProcessor:
             with open(file, 'r', encoding='utf-8') as f:
                 logger.debug(f"Reading file {file}")
                 lines = f.readlines()
+                
+                # Store potential context mappings for second pass
+                temp_context_ids = {}
 
+                # First pass: collect all IDs and potential context mappings
                 for line_num, line in enumerate(lines, 1):
                     # Look for ID definitions
                     id_match = self.id_regex.search(line.strip())
@@ -159,17 +164,13 @@ class CrossReferenceProcessor:
                         self.id_map[id_value] = file
                         logger.debug(f"Found ID '{id_value}' in file {file}")
 
-                        # Check if this is a context-style ID for migration awareness
+                        # Collect potential context mappings for second pass
                         if self.migration_mode:
                             context_match = self.context_id_regex.search(line.strip())
                             if context_match:
                                 full_id = context_match.group(1) + '_' + context_match.group(2)
                                 base_id = context_match.group(1)
-                                
-                                # In migration mode, prefer the base ID if both exist
-                                if base_id in self.id_map and self.id_map[base_id] == file:
-                                    self.context_id_mappings[full_id] = base_id
-                                    logger.debug(f"Context ID mapping: {full_id} -> {base_id}")
+                                temp_context_ids[full_id] = base_id
 
                     elif include_match:
                         include_path = include_match.group()
@@ -182,6 +183,15 @@ class CrossReferenceProcessor:
                             warning = f"Include file not found: {file_path} (referenced in {file})"
                             self.warnings.append(warning)
                             logger.warning(warning)
+                
+                # Second pass: apply context mappings where both IDs exist in the same file
+                if self.migration_mode and temp_context_ids:
+                    for full_id, base_id in temp_context_ids.items():
+                        if base_id in self.id_map and self.id_map[base_id] == file:
+                            self.context_id_mappings[full_id] = base_id
+                            logger.debug(f"Context ID mapping: {full_id} -> {base_id}")
+                        else:
+                            logger.debug(f"No base ID '{base_id}' found for context ID '{full_id}' in file {file}")
 
         except Exception as e:
             error_msg = f"Error reading {file}: {e}"
