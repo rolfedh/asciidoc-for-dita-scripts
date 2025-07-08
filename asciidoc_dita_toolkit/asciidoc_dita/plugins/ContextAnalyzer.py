@@ -140,9 +140,23 @@ class ContextAnalyzer:
             xref_usages = []
             for line_num, (text, _) in enumerate(lines, 1):
                 for match in self.xref_regex.finditer(text):
-                    target_file = match.group(1) if match.group(1) else ""
-                    target_id = match.group(2) if match.group(2) else ""
+                    # XREF_BASIC_PATTERN captures: ([^#\[]+)(?:#([^#\[]+))?(\[.*?\])
+                    # Group 1: file_or_id (before # or [)
+                    # Group 2: optional_id (after #)
+                    # Group 3: link_text (in brackets)
+                    
+                    first_part = match.group(1) if match.group(1) else ""
+                    second_part = match.group(2) if match.group(2) else ""
                     full_match = match.group(0)
+                    
+                    if second_part:
+                        # Format: xref:file.adoc#target_id[text]
+                        target_file = first_part
+                        target_id = second_part
+                    else:
+                        # Format: xref:target_id[text]
+                        target_file = ""
+                        target_id = first_part
                     
                     xref_usage = XrefUsage(
                         target_id=target_id,
@@ -158,9 +172,23 @@ class ContextAnalyzer:
             link_usages = []
             for line_num, (text, _) in enumerate(lines, 1):
                 for match in self.link_regex.finditer(text):
-                    target_file = match.group(1) if match.group(1) else ""
-                    target_id = match.group(2) if match.group(2) else ""
+                    # LINK_PATTERN captures: ([^#\[]+)(?:#([^#\[]+))?(\[.*?\])
+                    # Group 1: url_or_file (before # or [)
+                    # Group 2: optional_anchor (after #)
+                    # Group 3: link_text (in brackets)
+                    
+                    first_part = match.group(1) if match.group(1) else ""
+                    second_part = match.group(2) if match.group(2) else ""
                     full_match = match.group(0)
+                    
+                    if second_part:
+                        # Format: link:url#anchor[text]
+                        target_file = first_part
+                        target_id = second_part
+                    else:
+                        # Format: link:url[text]
+                        target_file = first_part
+                        target_id = ""
                     
                     link_usage = XrefUsage(
                         target_id=target_id,

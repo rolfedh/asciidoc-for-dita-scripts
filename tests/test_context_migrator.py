@@ -208,18 +208,35 @@ Also link:http://example.com#topic_banana[External Link].
         
         modified_content, changes = self.migrator.update_xrefs_and_links(content, 'test.adoc')
         
-        # Check that changes were made
-        self.assertEqual(len(changes), 2)
-        self.assertEqual(changes[0].old_xref, 'topic_banana[Topic]')
-        self.assertEqual(changes[0].new_xref, 'topic[Topic]')
-        self.assertEqual(changes[1].old_xref, 'section_apple[Section]')
-        self.assertEqual(changes[1].new_xref, 'section[Section]')
+        # Check that changes were made (2 xrefs + 1 link = 3 total)
+        self.assertEqual(len(changes), 3)
+        
+        # Find the xref changes
+        xref_changes = [c for c in changes if c.old_xref.startswith('xref:')]
+        self.assertEqual(len(xref_changes), 2)
+        
+        # Check specific xref changes
+        topic_change = next(c for c in xref_changes if 'topic_banana[Topic]' in c.old_xref)
+        self.assertEqual(topic_change.old_xref, 'xref:topic_banana[Topic]')
+        self.assertEqual(topic_change.new_xref, 'xref:topic[Topic]')
+        
+        section_change = next(c for c in xref_changes if 'section_apple[Section]' in c.old_xref)
+        self.assertEqual(section_change.old_xref, 'xref:section_apple[Section]')
+        self.assertEqual(section_change.new_xref, 'xref:section[Section]')
+        
+        # Find the link change
+        link_changes = [c for c in changes if c.old_xref.startswith('link:')]
+        self.assertEqual(len(link_changes), 1)
+        self.assertEqual(link_changes[0].old_xref, 'link:http://example.com#topic_banana[External Link]')
+        self.assertEqual(link_changes[0].new_xref, 'link:http://example.com#topic[External Link]')
         
         # Check that content was modified
         self.assertIn('xref:topic[Topic]', modified_content)
         self.assertIn('xref:section[Section]', modified_content)
+        self.assertIn('link:http://example.com#topic[External Link]', modified_content)
         self.assertNotIn('xref:topic_banana[Topic]', modified_content)
         self.assertNotIn('xref:section_apple[Section]', modified_content)
+        self.assertNotIn('link:http://example.com#topic_banana[External Link]', modified_content)
 
     def test_validate_migration(self):
         """Test migration validation."""

@@ -163,7 +163,7 @@ See xref:other_topic[Other Topic].
         with tempfile.NamedTemporaryFile(mode='w', suffix='.adoc', delete=False) as f:
             f.write("""= Test Document
 
-[id="simple_topic"]
+[id="simpletopic"]
 == Topic
 
 Some content here.

@@ -233,9 +233,23 @@ class ContextMigrator:
         for line_num, line in enumerate(lines):
             # Process xref patterns
             def replace_xref(match):
-                target_file = match.group(1) if match.group(1) else ""
-                target_id = match.group(2) if match.group(2) else ""
+                # XREF_BASIC_PATTERN captures: ([^#\[]+)(?:#([^#\[]+))?(\[.*?\])
+                # Group 1: file_or_id (before # or [)
+                # Group 2: optional_id (after #)
+                # Group 3: link_text (in brackets)
+                
+                first_part = match.group(1) if match.group(1) else ""
+                second_part = match.group(2) if match.group(2) else ""
                 link_text = match.group(3) if match.group(3) else ""
+                
+                if second_part:
+                    # Format: xref:file.adoc#target_id[text]
+                    target_file = first_part
+                    target_id = second_part
+                else:
+                    # Format: xref:target_id[text]
+                    target_file = ""
+                    target_id = first_part
                 
                 # Check if this ID has been migrated
                 if target_id in self.id_mappings:
@@ -259,9 +273,23 @@ class ContextMigrator:
             
             # Update links
             def replace_link(match):
-                target_file = match.group(1) if match.group(1) else ""
-                target_id = match.group(2) if match.group(2) else ""
+                # LINK_PATTERN captures: ([^#\[]+)(?:#([^#\[]+))?(\[.*?\])
+                # Group 1: url_or_file (before # or [)
+                # Group 2: optional_anchor (after #)
+                # Group 3: link_text (in brackets)
+                
+                first_part = match.group(1) if match.group(1) else ""
+                second_part = match.group(2) if match.group(2) else ""
                 link_text = match.group(3) if match.group(3) else ""
+                
+                if second_part:
+                    # Format: link:url#anchor[text]
+                    target_file = first_part
+                    target_id = second_part
+                else:
+                    # Format: link:url[text]
+                    target_file = first_part
+                    target_id = ""
                 
                 # Check if this ID has been migrated
                 if target_id in self.id_mappings:
@@ -314,9 +342,18 @@ class ContextMigrator:
             
             # Check for broken xrefs (basic validation)
             # This is a simplified check - full validation would require cross-file analysis
-            xref_matches = self.xref_regex.findall(content)
-            for match in xref_matches:
-                target_id = match[1] if len(match) > 1 else ""
+            for match in self.xref_regex.finditer(content):
+                # XREF_BASIC_PATTERN captures: ([^#\[]+)(?:#([^#\[]+))?(\[.*?\])
+                first_part = match.group(1) if match.group(1) else ""
+                second_part = match.group(2) if match.group(2) else ""
+                
+                if second_part:
+                    # Format: xref:file.adoc#target_id[text]
+                    target_id = second_part
+                else:
+                    # Format: xref:target_id[text]
+                    target_id = first_part
+                
                 if target_id and target_id not in self.file_id_map:
                     broken_xrefs.append(target_id)
             
