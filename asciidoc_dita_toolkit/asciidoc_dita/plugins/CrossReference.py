@@ -14,7 +14,6 @@ __description__ = "Fix cross-references in AsciiDoc files by updating xref links
 
 import json
 import os
-import re
 import sys
 import logging
 from dataclasses import dataclass, asdict
@@ -24,6 +23,7 @@ from pathlib import Path
 from ..cli_utils import common_arg_parser
 from ..file_utils import find_adoc_files, read_text_preserve_endings, write_text_preserve_endings
 from ..workflow_utils import process_adoc_files
+from ..regex_patterns import CompiledPatterns
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -94,17 +94,11 @@ class CrossReferenceProcessor:
     """
 
     def __init__(self, validation_only: bool = False, migration_mode: bool = False):
-        # Match IDs - captures both old and new style IDs
-        self.id_regex = re.compile(r'\[id="([^"]+)"\]')
-        
-        # Match include lines for recursively traversing a book from master.adoc
-        self.include_regex = re.compile(r'(?<=^include::)[^[]+')
-        
-        # Match xrefs. The negative look-ahead (?!.*\.adoc#) prevents modifying already-modified xref links.
-        self.xref_regex = re.compile(r'(?<=xref:)(?!.*\.adoc#)([^\[]+)(\[.*?\])')
-        
-        # Match context-style IDs for migration awareness
-        self.context_id_regex = re.compile(r'\[id="([^"]+)_([^"]+)"\]')
+        # Use shared regex patterns
+        self.id_regex = CompiledPatterns.ID_REGEX
+        self.include_regex = CompiledPatterns.INCLUDE_REGEX
+        self.xref_regex = CompiledPatterns.XREF_UNFIXED_REGEX  # Special unfixed version for fixing
+        self.context_id_regex = CompiledPatterns.ID_WITH_CONTEXT_REGEX
         
         # The id_map dictionary maps the ID as the key and the file as the value
         self.id_map: Dict[str, str] = {}
