@@ -397,7 +397,11 @@ class TestIntegration(unittest.TestCase):
 
     def test_analyze_directory_with_multiple_files(self):
         """Test analyzing a directory with multiple files."""
-        with tempfile.TemporaryDirectory() as temp_dir:
+        # Create temporary directory within current working directory
+        import tempfile
+        temp_dir = tempfile.mkdtemp(dir='.')
+        
+        try:
             # Create test files
             file1_path = os.path.join(temp_dir, 'file1.adoc')
             file2_path = os.path.join(temp_dir, 'file2.adoc')
@@ -433,10 +437,19 @@ See xref:topic_banana[Topic].
             self.assertEqual(report.total_context_ids, 2)
             self.assertEqual(report.total_xrefs, 2)
             self.assertEqual(len(report.potential_collisions), 0)
+            
+        finally:
+            # Clean up
+            import shutil
+            shutil.rmtree(temp_dir, ignore_errors=True)
 
     def test_analyze_directory_with_collisions(self):
         """Test analyzing a directory with ID collisions."""
-        with tempfile.TemporaryDirectory() as temp_dir:
+        # Create temporary directory within current working directory
+        import tempfile
+        temp_dir = tempfile.mkdtemp(dir='.')
+        
+        try:
             # Create test files with colliding IDs
             file1_path = os.path.join(temp_dir, 'file1.adoc')
             file2_path = os.path.join(temp_dir, 'file2.adoc')
@@ -467,6 +480,11 @@ See xref:topic_banana[Topic].
             collision = report.potential_collisions[0]
             self.assertEqual(collision.base_id, 'topic')
             self.assertEqual(len(collision.conflicting_files), 2)
+            
+        finally:
+            # Clean up
+            import shutil
+            shutil.rmtree(temp_dir, ignore_errors=True)
 
 
 def main():

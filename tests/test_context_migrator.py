@@ -39,7 +39,7 @@ class TestContextMigrator(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures."""
-        self.temp_dir = tempfile.mkdtemp()
+        self.temp_dir = tempfile.mkdtemp(dir='.')
         self.options = MigrationOptions(
             dry_run=False,
             create_backups=True,
@@ -372,9 +372,12 @@ Content here.
 
     def test_migrate_directory(self):
         """Test directory migration."""
-        # Create test files
-        file1 = os.path.join(self.temp_dir, 'file1.adoc')
-        file2 = os.path.join(self.temp_dir, 'file2.adoc')
+        # Create test files using a subdirectory within current working directory
+        test_subdir = os.path.join(self.temp_dir, 'test_subdir')
+        os.makedirs(test_subdir, exist_ok=True)
+        
+        file1 = os.path.join(test_subdir, 'file1.adoc')
+        file2 = os.path.join(test_subdir, 'file2.adoc')
         
         with open(file1, 'w') as f:
             f.write("""= File 1
@@ -394,7 +397,7 @@ Content here.
 == Section
 """)
         
-        result = self.migrator.migrate_directory(self.temp_dir)
+        result = self.migrator.migrate_directory(test_subdir)
         
         # Check migration results
         self.assertEqual(result.total_files_processed, 2)
@@ -573,7 +576,7 @@ class TestIntegration(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures."""
-        self.temp_dir = tempfile.mkdtemp()
+        self.temp_dir = tempfile.mkdtemp(dir='.')
 
     def tearDown(self):
         """Clean up test fixtures."""
