@@ -12,7 +12,6 @@ __description__ = "Migrate AsciiDoc files from context-suffixed IDs to context-f
 
 import json
 import os
-import re
 import shutil
 import sys
 import tempfile
@@ -24,6 +23,7 @@ import logging
 from ..cli_utils import common_arg_parser
 from ..file_utils import find_adoc_files, read_text_preserve_endings, write_text_preserve_endings
 from ..workflow_utils import process_adoc_files
+from ..regex_patterns import CompiledPatterns
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -96,11 +96,11 @@ class ContextMigrator:
         self.options = options or MigrationOptions()
         self.migration_log = []
         
-        # Regex patterns
-        self.id_with_context_regex = re.compile(r'\[id="([^"]+)_([^"]+)"\]')
-        self.xref_regex = re.compile(r'xref:([^#\[]+)(?:#([^#\[]+))?(\[.*?\])')
-        self.link_regex = re.compile(r'link:([^#\[]+)(?:#([^#\[]+))?(\[.*?\])')
-        self.context_attr_regex = re.compile(r'^:context:\s*(.+)$', re.MULTILINE)
+        # Use shared regex patterns
+        self.id_with_context_regex = CompiledPatterns.ID_WITH_CONTEXT_REGEX
+        self.xref_regex = CompiledPatterns.XREF_BASIC_REGEX
+        self.link_regex = CompiledPatterns.LINK_REGEX
+        self.context_attr_regex = CompiledPatterns.CONTEXT_ATTR_REGEX
         
         # Track ID mappings for cross-reference updates
         self.id_mappings: Dict[str, str] = {}  # old_id -> new_id
