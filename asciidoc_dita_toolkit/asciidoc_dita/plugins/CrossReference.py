@@ -1,4 +1,4 @@
-"""
+THIS SHOULD BE A LINTER ERROR"""
 Plugin for the AsciiDoc DITA toolkit: CrossReference
 
 This plugin fixes cross-references in AsciiDoc files by updating xref links to include proper file paths.
