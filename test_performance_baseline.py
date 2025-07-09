@@ -21,6 +21,9 @@ sys.path.insert(0, str(workspace_root))
 
 def create_test_files(num_files: int = 10, entities_per_file: int = 20) -> List[str]:
     """Create test .adoc files with entity references for performance testing."""
+    import random
+    random.seed(42)  # Set a fixed seed for deterministic behavior
+    
     test_files = []
     
     # Sample content with various entities
