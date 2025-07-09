@@ -24,7 +24,7 @@ As a **Plugin Developer**, you create reusable modules that extend ADT functiona
 **File Structure:**
 ```
 my_adt_module/
-├── setup.py                    # Package configuration
+├── pyproject.toml              # Package configuration
 ├── src/
 │   └── my_adt_module/
 │       ├── __init__.py
@@ -104,27 +104,31 @@ class MyCustomModule(ADTModule):
 
 #### 3. Configuring Package Distribution
 
-**Step 2: Setup entry points in setup.py**
-```python
-# setup.py
-from setuptools import setup, find_packages
+**Step 2: Setup entry points in pyproject.toml**
+```toml
+# pyproject.toml
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
 
-setup(
-    name="my-adt-module",
-    version="1.0.0",
-    packages=find_packages(where="src"),
-    package_dir={"": "src"},
-    install_requires=[
-        "adt-core>=1.0.0",
-        # Your dependencies
-    ],
-    entry_points={
-        "adt.modules": [
-            "MyCustomModule = my_adt_module.module:MyCustomModule",
-        ]
-    },
-    python_requires=">=3.8",
-)
+[project]
+name = "my-adt-module"
+version = "1.0.0"
+description = "Custom ADT module for processing data"
+requires-python = ">=3.8"
+dependencies = [
+    "adt-core>=1.0.0",
+    # Your dependencies
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+[project.entry-points."adt.modules"]
+MyCustomModule = "my_adt_module.module:MyCustomModule"
 ```
 
 #### 4. Providing Configuration Schema

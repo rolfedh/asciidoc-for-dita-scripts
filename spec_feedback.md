@@ -26,7 +26,7 @@ Your specification provides a good foundation for a module configuration system,
 **Problem**: No mention of how this integrates with actual Python packaging/modules.
 **Fix**: Specify:
 - How modules are discovered (entry points? file system scanning?)
-- Integration with `setup.py`/`pyproject.toml`
+- Integration with `pyproject.toml`
 - Module loading mechanism
 - Error handling for missing dependencies
 
@@ -270,7 +270,7 @@ Test Categories:
 When you go back to ChatGPT, ask for:
 
 1. **"Please add a comprehensive dependency resolution algorithm with cycle detection"**
-2. **"Include a complete Python package structure with setup.py and proper entry points"**
+2. **"Include a complete Python package structure with pyproject.toml and proper entry points"**
 3. **"Add comprehensive error handling with custom exception classes"**
 4. **"Include a performance testing strategy for configurations with 100+ modules"**
 5. **"Add backwards compatibility strategy for configuration format changes"**
