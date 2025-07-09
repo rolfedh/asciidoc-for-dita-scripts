@@ -1,0 +1,42 @@
+{
+  "version": "1.0",
+  "modules": [
+    {
+      "name": "EntityReference",
+      "required": true,
+      "version": ">=1.2.0",
+      "dependencies": [],
+      "init_order": 1,
+      "config": {
+        "timeout_seconds": 30,
+        "cache_size": 1000
+      }
+    },
+    {
+      "name": "ContentType",
+      "required": false,
+      "version": ">=2.0.0",
+      "dependencies": ["EntityReference"],
+      "init_order": 2,
+      "config": {
+        "cache_enabled": true,
+        "supported_types": ["text", "image", "video"]
+      }
+    },
+    {
+      "name": "DirectoryConfig",
+      "required": false,
+      "version": "~1.0.0",
+      "dependencies": ["ContentType", "EntityReference"],
+      "init_order": 3,
+      "config": {
+        "scan_depth": 5,
+        "exclude_patterns": ["*.tmp", "*.log"]
+      }
+    }
+  ],
+  "global_config": {
+    "max_retries": 3,
+    "log_level": "INFO"
+  }
+}

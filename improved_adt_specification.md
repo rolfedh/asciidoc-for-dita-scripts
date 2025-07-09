@@ -604,7 +604,36 @@ ERROR_SCENARIOS = {
 
 ---
 
-## 8. CLI Output Example
+## 8. CLI Interface Design
+
+### Available Commands
+```bash
+# Module status and information
+adt modules status                      # Show all modules and their current status
+adt modules status --module <name>      # Show specific module details
+adt modules list                        # List all available modules
+
+# Module management
+adt modules enable <module>             # Enable a specific module
+adt modules disable <module>            # Disable a specific module
+adt modules enable <mod1> <mod2> <mod3> # Enable multiple modules
+
+# Configuration and validation
+adt modules validate                    # Validate current configuration
+adt modules config --format json       # Output current config as JSON
+
+# Dependency and performance analysis
+adt modules deps <module>               # Show module dependencies
+adt modules performance                 # Show module execution times
+
+# Temporary overrides for testing
+adt run --enable-module=<name>          # Run with temporary module override
+adt run --disable-module=<name>         # Run with module temporarily disabled
+```
+
+---
+
+## 9. CLI Output Example
 ```
 ADT Module Status:
 ================
@@ -623,7 +652,37 @@ Use 'adt modules enable DirectoryConfig' to enable disabled modules.
 
 ---
 
-## 9. Enhanced Test Cases
+## 10. File Structure and Organization
+
+```
+adt_project/
+├── .adt-modules.json              # Developer configuration
+├── adt-user-config.json           # User configuration (optional)
+├── src/
+│   └── adt_core/
+│       ├── __init__.py
+│       ├── module_sequencer.py     # ModuleSequencer implementation
+│       ├── exceptions.py           # Custom exception classes
+│       └── schemas/                # JSON schema files
+│           ├── developer_config.json
+│           └── user_config.json
+├── modules/                       # Module implementations directory
+│   ├── entity_reference/
+│   ├── content_type/
+│   └── directory_config/
+├── tests/
+│   ├── test_module_sequencer.py
+│   ├── test_configuration.py
+│   ├── test_dependencies.py
+│   └── fixtures/
+│       ├── sample_dev_config.json
+│       └── sample_user_config.json
+└── pyproject.toml                 # Package configuration
+```
+
+---
+
+## 11. Enhanced Test Cases
 
 | Module          | Required | Dependencies        | User Enabled | User Disabled | CLI Override | Final State | Init Order |
 |-----------------|----------|---------------------|--------------|---------------|--------------|-------------|------------|
@@ -635,7 +694,7 @@ Use 'adt modules enable DirectoryConfig' to enable disabled modules.
 
 ---
 
-## 10. Configuration Priority (High → Low)
+## 12. Configuration Priority (High → Low)
 
 1. **CLI flags** (temporary override): `--enable-module=X --disable-module=Y`
 2. **Required status** (from developer config): Cannot be overridden by user
