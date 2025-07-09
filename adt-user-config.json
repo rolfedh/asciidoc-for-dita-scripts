@@ -1,0 +1,11 @@
+{
+  "version": "1.0",
+  "enabledModules": ["ContentType"],
+  "disabledModules": ["DirectoryConfig"],
+  "moduleOverrides": {
+    "ContentType": {
+      "cache_enabled": false,
+      "supported_types": ["text", "image"]
+    }
+  }
+}
