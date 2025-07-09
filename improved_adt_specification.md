@@ -83,34 +83,34 @@ class ADTModule(ABC):
   "version": "1.0",
   "modules": [
     {
-      "name": "EntityReference",
-      "required": true,
-      "version": ">=1.2.0",
-      "dependencies": [],
-      "init_order": 1,
-      "config": {
+      "name": "EntityReference",                   // REFERENCE: Must match module's actual name
+      "required": true,                            // CONSTRAINT: Developer decides if required
+      "version": ">=1.2.0",                       // CONSTRAINT: Version requirement (actual version comes from module)
+      "dependencies": [],                          // CONSTRAINT: Additional dependencies (module's dependencies auto-detected)
+      "init_order": 1,                            // CONSTRAINT: Developer-controlled initialization order
+      "config": {                                 // CONFIGURATION: Values passed to module.initialize()
         "timeout_seconds": 30
       }
     },
     {
-      "name": "ContentType",
-      "required": false,
-      "version": ">=2.0.0",
-      "dependencies": ["EntityReference"],
-      "init_order": 2,
-      "config": {
+      "name": "ContentType",                       // REFERENCE: Must match module's actual name
+      "required": false,                           // CONSTRAINT: Developer decides if required
+      "version": ">=2.0.0",                       // CONSTRAINT: Version requirement
+      "dependencies": ["EntityReference"],         // CONSTRAINT: Additional dependencies
+      "init_order": 2,                            // CONSTRAINT: Developer-controlled initialization order
+      "config": {                                 // CONFIGURATION: Values passed to module.initialize()
         "cache_enabled": true
       }
     },
     {
-      "name": "DirectoryConfig",
-      "required": false,
-      "version": "~1.0.0",
-      "dependencies": ["ContentType", "EntityReference"],
-      "init_order": 3
+      "name": "DirectoryConfig",                   // REFERENCE: Must match module's actual name
+      "required": false,                           // CONSTRAINT: Developer decides if required
+      "version": "~1.0.0",                        // CONSTRAINT: Version requirement
+      "dependencies": ["ContentType", "EntityReference"], // CONSTRAINT: Additional dependencies
+      "init_order": 3                             // CONSTRAINT: Developer-controlled initialization order
     }
   ],
-  "global_config": {
+  "global_config": {                              // CONFIGURATION: Global settings for all modules
     "max_retries": 3,
     "log_level": "INFO"
   }
