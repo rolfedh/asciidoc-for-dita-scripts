@@ -3,7 +3,7 @@ requires = ["setuptools>=45", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "adt-core"
+name = "adt"
 version = "2.0.1"
 description = "ADT Module Configuration and Sequencing System"
 requires-python = ">=3.8"
@@ -12,15 +12,15 @@ dependencies = [
 ]
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["."]
+include = ["adt_core*", "asciidoc_dita_toolkit*"]
+exclude = ["tests*", "build*", "dist*", "*.egg-info*"]
 
-[tool.setuptools.package-dir]
-"" = "src"
+
 
 [project.scripts]
-adt-core = "adt_core.cli:main"
-adg = "adt_core.cli:main"
 adt = "adt_core.cli:main"
+adg = "adt_core.cli:main"
 adt-test-files = "adt_core.cli:main"
 asciidoc-dita-toolkit = "adt_core.cli:main"
 asciidoc-dita-toolkit-gui = "adt_core.cli:main"

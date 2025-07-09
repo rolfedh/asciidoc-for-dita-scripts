@@ -86,7 +86,7 @@ jobs:
               toml.dump(config, f)
           
           # Update version in __init__.py
-          with open('src/adt_core/__init__.py', 'r') as f:
+          with open('adt_core/__init__.py', 'r') as f:
               init_content = f.read()
           
           # Replace __version__ line
@@ -96,7 +96,7 @@ jobs:
               init_content
           )
           
-          with open('src/adt_core/__init__.py', 'w') as f:
+          with open('adt_core/__init__.py', 'w') as f:
               f.write(init_content)
           
           # Write new version to GitHub output
@@ -107,7 +107,7 @@ jobs:
       - name: Commit version bump
         if: steps.check-changes.outputs.has_changes == 'true'
         run: |
-          git add pyproject.toml src/adt_core/__init__.py
+          git add pyproject.toml adt_core/__init__.py
           git commit -m "Bump version to ${{ steps.version-bump.outputs.new_version }} for nightly release"
 
       - name: Build package
