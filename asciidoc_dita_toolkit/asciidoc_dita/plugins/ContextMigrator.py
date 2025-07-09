@@ -17,7 +17,8 @@ import sys
 import tempfile
 from dataclasses import dataclass, asdict
 from datetime import datetime
-from typing import List, Dict, Optional, Tuple, Set
+from pathlib import Path
+from typing import List, Dict, Optional, Tuple, Set, Any
 import logging
 
 from ..cli_utils import common_arg_parser
@@ -25,8 +26,281 @@ from ..file_utils import find_adoc_files, read_text_preserve_endings, write_text
 from ..workflow_utils import process_adoc_files
 from ..regex_patterns import CompiledPatterns
 
+# Try to import ADTModule for the new pattern
+try:
+    # Add the path to find the ADTModule
+    package_root = Path(__file__).parent.parent.parent.parent
+    if str(package_root / "src") not in sys.path:
+        sys.path.insert(0, str(package_root / "src"))
+    
+    from adt_core.module_sequencer import ADTModule
+    ADT_MODULE_AVAILABLE = True
+except ImportError:
+    ADT_MODULE_AVAILABLE = False
+    # Create a dummy ADTModule for backward compatibility
+    class ADTModule:
+        pass
+
 # Configure logging
 logger = logging.getLogger(__name__)
+
+
+class ContextMigratorModule(ADTModule):
+    """
+    ADTModule implementation for ContextMigrator plugin.
+    
+    This module migrates AsciiDoc files from context-suffixed IDs to context-free IDs
+    with comprehensive validation and rollback capabilities. It performs the actual
+    migration with safety checks and backups.
+    """
+    
+    @property
+    def name(self) -> str:
+        """Module name identifier."""
+        return "ContextMigrator"
+    
+    @property
+    def version(self) -> str:
+        """Module version using semantic versioning."""
+        return "1.1.0"
+    
+    @property
+    def dependencies(self) -> List[str]:
+        """List of required module names."""
+        return ["ContextAnalyzer"]  # Depends on ContextAnalyzer
+    
+    @property
+    def release_status(self) -> str:
+        """Release status: 'GA' for stable."""
+        return "GA"
+    
+    def initialize(self, config: Dict[str, Any]) -> None:
+        """
+        Initialize the module with configuration.
+        
+        Args:
+            config: Configuration dictionary containing module settings
+        """
+        # Migration configuration
+        self.dry_run = config.get("dry_run", False)
+        self.create_backups = config.get("create_backups", True)
+        self.backup_dir = config.get("backup_dir", ".migration_backups")
+        self.resolve_collisions = config.get("resolve_collisions", True)
+        self.validate_after = config.get("validate_after", False)
+        self.output_file = config.get("output_file")
+        self.verbose = config.get("verbose", False)
+        
+        # Initialize statistics
+        self.files_processed = 0
+        self.successful_migrations = 0
+        self.failed_migrations = 0
+        self.id_changes_made = 0
+        self.xref_changes_made = 0
+        self.backups_created = 0
+        self.validations_passed = 0
+        self.validations_failed = 0
+        
+        # Initialize migration options
+        self.migration_options = MigrationOptions(
+            dry_run=self.dry_run,
+            create_backups=self.create_backups,
+            backup_dir=self.backup_dir,
+            resolve_collisions=self.resolve_collisions,
+            validate_after=self.validate_after
+        )
+        
+        # Initialize migrator
+        self.migrator = ContextMigrator(self.migration_options)
+        
+        if self.verbose:
+            print(f"Initialized ContextMigrator v{self.version}")
+            print(f"  Dry run: {self.dry_run}")
+            print(f"  Create backups: {self.create_backups}")
+            print(f"  Backup dir: {self.backup_dir}")
+            print(f"  Resolve collisions: {self.resolve_collisions}")
+            print(f"  Validate after: {self.validate_after}")
+    
+    def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Execute the context migration.
+        
+        Args:
+            context: Execution context containing parameters and results from dependencies
+        
+        Returns:
+            Dictionary with execution results
+        """
+        try:
+            # Extract parameters from context
+            file_path = context.get("file")
+            recursive = context.get("recursive", False)
+            directory = context.get("directory", ".")
+            
+            # Create args object for compatibility with legacy code
+            class Args:
+                def __init__(self, file=None, recursive=False, directory="."):
+                    self.file = file
+                    self.recursive = recursive
+                    self.directory = directory
+            
+            args = Args(file_path, recursive, directory)
+            
+            # Reset statistics
+            self.files_processed = 0
+            self.successful_migrations = 0
+            self.failed_migrations = 0
+            self.id_changes_made = 0
+            self.xref_changes_made = 0
+            self.backups_created = 0
+            self.validations_passed = 0
+            self.validations_failed = 0
+            
+            # Collect file results
+            file_results = []
+            
+            # Process files using the existing logic
+            process_adoc_files(args, lambda filepath: self._process_file_wrapper(filepath, file_results))
+            
+            # Update statistics
+            self.files_processed = len(file_results)
+            self.successful_migrations = sum(1 for r in file_results if r.success)
+            self.failed_migrations = self.files_processed - self.successful_migrations
+            
+            # Calculate totals
+            self.id_changes_made = sum(len(r.id_changes) for r in file_results)
+            self.xref_changes_made = sum(len(r.xref_changes) for r in file_results)
+            self.backups_created = sum(1 for r in file_results if r.backup_path)
+            
+            # Run validation if requested
+            validation_results = []
+            if self.validate_after and not self.dry_run:
+                for result in file_results:
+                    if result.success:
+                        validation_result = self.migrator.validate_migration(result.filepath)
+                        validation_results.append(validation_result)
+                        if validation_result.valid:
+                            self.validations_passed += 1
+                        else:
+                            self.validations_failed += 1
+            
+            # Create migration result
+            migration_result = MigrationResult(
+                total_files_processed=self.files_processed,
+                successful_migrations=self.successful_migrations,
+                failed_migrations=self.failed_migrations,
+                file_results=file_results,
+                validation_results=validation_results,
+                backup_directory=self.backup_dir
+            )
+            
+            # Generate report
+            report_content = format_migration_report(migration_result)
+            
+            # Save report to file if specified
+            if self.output_file:
+                self._save_report_to_file(report_content)
+            
+            return {
+                "module_name": self.name,
+                "version": self.version,
+                "success": True,
+                "dry_run": self.dry_run,
+                "files_processed": self.files_processed,
+                "successful_migrations": self.successful_migrations,
+                "failed_migrations": self.failed_migrations,
+                "id_changes_made": self.id_changes_made,
+                "xref_changes_made": self.xref_changes_made,
+                "backups_created": self.backups_created,
+                "validations_passed": self.validations_passed,
+                "validations_failed": self.validations_failed,
+                "backup_directory": self.backup_dir,
+                "output_file": self.output_file,
+                "report_content": report_content if not self.output_file else None,
+                "migration_result": asdict(migration_result)
+            }
+            
+        except Exception as e:
+            error_msg = f"Error in ContextMigrator module: {e}"
+            if self.verbose:
+                print(error_msg)
+            return {
+                "module_name": self.name,
+                "version": self.version,
+                "error": str(e),
+                "success": False,
+                "dry_run": self.dry_run,
+                "files_processed": self.files_processed,
+                "successful_migrations": self.successful_migrations,
+                "failed_migrations": self.failed_migrations,
+                "id_changes_made": self.id_changes_made,
+                "xref_changes_made": self.xref_changes_made,
+                "backups_created": self.backups_created,
+                "validations_passed": self.validations_passed,
+                "validations_failed": self.validations_failed
+            }
+    
+    def _process_file_wrapper(self, filepath: str, file_results: List) -> bool:
+        """
+        Wrapper around the process_context_migrator_file function.
+        
+        Args:
+            filepath: Path to the file to process
+            file_results: List to store file results
+            
+        Returns:
+            True if processing was successful, False otherwise
+        """
+        if self.verbose:
+            print(f"Migrating file: {filepath}")
+        
+        try:
+            result = process_context_migrator_file(filepath, self.migrator)
+            file_results.append(result)
+            return result.success
+            
+        except Exception as e:
+            logger.error("Error processing file %s: %s", filepath, e)
+            # Create an error result
+            error_result = FileMigrationResult(
+                filepath=filepath,
+                success=False,
+                id_changes=[],
+                xref_changes=[],
+                errors=[str(e)],
+                backup_path=""
+            )
+            file_results.append(error_result)
+            return False
+    
+    def _save_report_to_file(self, content: str) -> None:
+        """
+        Save report content to file.
+        
+        Args:
+            content: Report content to save
+        """
+        try:
+            with open(self.output_file, 'w', encoding='utf-8') as f:
+                f.write(content)
+            if self.verbose:
+                print(f"Migration report saved to {self.output_file}")
+        except Exception as e:
+            logger.error(f"Error saving report to {self.output_file}: {e}")
+            raise
+    
+    def cleanup(self) -> None:
+        """Clean up module resources."""
+        if self.verbose:
+            print(f"ContextMigrator cleanup complete")
+            print(f"  Total files processed: {self.files_processed}")
+            print(f"  Successful migrations: {self.successful_migrations}")
+            print(f"  Failed migrations: {self.failed_migrations}")
+            print(f"  ID changes made: {self.id_changes_made}")
+            print(f"  Xref changes made: {self.xref_changes_made}")
+            print(f"  Backups created: {self.backups_created}")
+            print(f"  Validations passed: {self.validations_passed}")
+            print(f"  Validations failed: {self.validations_failed}")
+            print(f"  Dry run mode: {self.dry_run}")
 
 
 @dataclass
@@ -626,81 +900,128 @@ def process_context_migrator_file(filepath: str, migrator: ContextMigrator):
 
 
 def main(args):
-    """Main function for the ContextMigrator plugin."""
-    # Setup logging
-    if hasattr(args, 'verbose') and args.verbose:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig(level=logging.INFO)
-    
-    # Parse options
-    options = MigrationOptions()
-    options.dry_run = getattr(args, 'dry_run', False)
-    options.create_backups = not getattr(args, 'no_backup', False)
-    options.backup_dir = getattr(args, 'backup_dir', '.migration_backups')
-    options.resolve_collisions = not getattr(args, 'no_collision_resolution', False)
-    options.validate_after = getattr(args, 'validate', False)
-    
-    # Create migrator
-    migrator = ContextMigrator(options)
-    
-    # Collect all file results
-    file_results = []
-    
-    # Process files
-    def process_file_wrapper(filepath):
-        result = process_context_migrator_file(filepath, migrator)
-        file_results.append(result)
-        return result
-    
-    try:
-        process_adoc_files(args, process_file_wrapper)
+    """Legacy main function for backward compatibility."""
+    if ADT_MODULE_AVAILABLE:
+        # Use the new ADTModule implementation
+        module = ContextMigratorModule()
         
-        # Create migration result
-        successful_migrations = sum(1 for r in file_results if r.success)
-        failed_migrations = len(file_results) - successful_migrations
+        # Initialize with configuration from args
+        config = {
+            "dry_run": getattr(args, "dry_run", False),
+            "create_backups": not getattr(args, "no_backup", False),
+            "backup_dir": getattr(args, "backup_dir", ".migration_backups"),
+            "resolve_collisions": not getattr(args, "no_collision_resolution", False),
+            "validate_after": getattr(args, "validate", False),
+            "output_file": getattr(args, "output", None),
+            "verbose": getattr(args, "verbose", False)
+        }
         
-        # Run validation if requested
-        validation_results = []
-        if options.validate_after and not options.dry_run:
-            for result in file_results:
-                if result.success:
-                    validation_result = migrator.validate_migration(result.filepath)
-                    validation_results.append(validation_result)
+        module.initialize(config)
         
-        migration_result = MigrationResult(
-            total_files_processed=len(file_results),
-            successful_migrations=successful_migrations,
-            failed_migrations=failed_migrations,
-            file_results=file_results,
-            validation_results=validation_results,
-            backup_directory=options.backup_dir
-        )
+        # Execute with context
+        context = {
+            "file": getattr(args, "file", None),
+            "recursive": getattr(args, "recursive", False),
+            "directory": getattr(args, "directory", "."),
+            "verbose": getattr(args, "verbose", False)
+        }
         
-        # Generate report
-        report = format_migration_report(migration_result)
+        result = module.execute(context)
         
-        # Output results
-        output_file = getattr(args, 'output', None)
-        if output_file:
-            with open(output_file, 'w', encoding='utf-8') as f:
-                f.write(report)
-            print(f"Migration report saved to {output_file}")
-        else:
-            print(report)
+        # Display report if not saved to file
+        if not result.get("output_file") and result.get("report_content"):
+            print(result["report_content"])
+        
+        # Check if module execution was successful
+        if not result.get("success", False):
+            if result.get("error"):
+                print(f"Error: {result['error']}")
+            sys.exit(1)
         
         # Exit with error code if there were failures
-        if failed_migrations > 0:
+        if result.get("failed_migrations", 0) > 0:
             sys.exit(1)
+        
+        # Cleanup
+        module.cleanup()
+        
+        return result
+    else:
+        # Fallback to legacy implementation
+        # Setup logging
+        if hasattr(args, 'verbose') and args.verbose:
+            logging.basicConfig(level=logging.DEBUG)
+        else:
+            logging.basicConfig(level=logging.INFO)
+        
+        # Parse options
+        options = MigrationOptions()
+        options.dry_run = getattr(args, 'dry_run', False)
+        options.create_backups = not getattr(args, 'no_backup', False)
+        options.backup_dir = getattr(args, 'backup_dir', '.migration_backups')
+        options.resolve_collisions = not getattr(args, 'no_collision_resolution', False)
+        options.validate_after = getattr(args, 'validate', False)
+        
+        # Create migrator
+        migrator = ContextMigrator(options)
+        
+        # Collect all file results
+        file_results = []
+        
+        # Process files
+        def process_file_wrapper(filepath):
+            result = process_context_migrator_file(filepath, migrator)
+            file_results.append(result)
+            return result
+        
+        try:
+            process_adoc_files(args, process_file_wrapper)
             
-    except KeyboardInterrupt:
-        logger.info("Migration interrupted by user")
-        print("\nMigration interrupted by user.")
-        sys.exit(1)
-    except Exception as e:
-        logger.error(f"Unexpected error during migration: {e}")
-        print(f"Error during migration: {e}")
-        sys.exit(1)
+            # Create migration result
+            successful_migrations = sum(1 for r in file_results if r.success)
+            failed_migrations = len(file_results) - successful_migrations
+            
+            # Run validation if requested
+            validation_results = []
+            if options.validate_after and not options.dry_run:
+                for result in file_results:
+                    if result.success:
+                        validation_result = migrator.validate_migration(result.filepath)
+                        validation_results.append(validation_result)
+            
+            migration_result = MigrationResult(
+                total_files_processed=len(file_results),
+                successful_migrations=successful_migrations,
+                failed_migrations=failed_migrations,
+                file_results=file_results,
+                validation_results=validation_results,
+                backup_directory=options.backup_dir
+            )
+            
+            # Generate report
+            report = format_migration_report(migration_result)
+            
+            # Output results
+            output_file = getattr(args, 'output', None)
+            if output_file:
+                with open(output_file, 'w', encoding='utf-8') as f:
+                    f.write(report)
+                print(f"Migration report saved to {output_file}")
+            else:
+                print(report)
+            
+            # Exit with error code if there were failures
+            if failed_migrations > 0:
+                sys.exit(1)
+                
+        except KeyboardInterrupt:
+            logger.info("Migration interrupted by user")
+            print("\nMigration interrupted by user.")
+            sys.exit(1)
+        except Exception as e:
+            logger.error(f"Unexpected error during migration: {e}")
+            print(f"Error during migration: {e}")
+            sys.exit(1)
 
 
 def register_subcommand(subparsers):

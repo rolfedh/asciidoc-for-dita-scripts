@@ -14,13 +14,29 @@ import json
 import os
 import sys
 from dataclasses import dataclass, asdict
-from typing import List, Dict, Optional, Set
+from pathlib import Path
+from typing import List, Dict, Optional, Set, Any
 import logging
 
 from ..cli_utils import common_arg_parser
 from ..file_utils import find_adoc_files, read_text_preserve_endings
 from ..workflow_utils import process_adoc_files
 from ..regex_patterns import CompiledPatterns
+
+# Try to import ADTModule for the new pattern
+try:
+    # Add the path to find the ADTModule
+    package_root = Path(__file__).parent.parent.parent.parent
+    if str(package_root / "src") not in sys.path:
+        sys.path.insert(0, str(package_root / "src"))
+    
+    from adt_core.module_sequencer import ADTModule
+    ADT_MODULE_AVAILABLE = True
+except ImportError:
+    ADT_MODULE_AVAILABLE = False
+    # Create a dummy ADTModule for backward compatibility
+    class ADTModule:
+        pass
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -74,6 +90,215 @@ class AnalysisReport:
     total_links: int
     potential_collisions: List[CollisionReport]
     file_analyses: List[FileAnalysis]
+
+
+class ContextAnalyzerModule(ADTModule):
+    """
+    ADTModule implementation for ContextAnalyzer plugin.
+    
+    This module analyzes AsciiDoc documentation to report on context usage
+    and potential migration complexity. It provides detailed reports on IDs
+    with _{context} suffixes, xref usage, and potential collision scenarios.
+    """
+    
+    @property
+    def name(self) -> str:
+        """Module name identifier."""
+        return "ContextAnalyzer"
+    
+    @property
+    def version(self) -> str:
+        """Module version using semantic versioning."""
+        return "1.2.0"
+    
+    @property
+    def dependencies(self) -> List[str]:
+        """List of required module names."""
+        return ["EntityReference", "ContentType"]  # Depends on EntityReference and ContentType
+    
+    @property
+    def release_status(self) -> str:
+        """Release status: 'GA' for stable."""
+        return "GA"
+    
+    def initialize(self, config: Dict[str, Any]) -> None:
+        """
+        Initialize the module with configuration.
+        
+        Args:
+            config: Configuration dictionary containing module settings
+        """
+        # Analysis configuration
+        self.output_format = config.get("output_format", "text")
+        self.detailed = config.get("detailed", False)
+        self.collisions_only = config.get("collisions_only", False)
+        self.output_file = config.get("output_file")
+        self.verbose = config.get("verbose", False)
+        
+        # Initialize statistics
+        self.files_analyzed = 0
+        self.context_ids_found = 0
+        self.xrefs_found = 0
+        self.links_found = 0
+        self.collisions_detected = 0
+        
+        # Initialize analyzer
+        self.analyzer = ContextAnalyzer()
+        
+        if self.verbose:
+            print(f"Initialized ContextAnalyzer v{self.version}")
+            print(f"  Output format: {self.output_format}")
+            print(f"  Detailed: {self.detailed}")
+            print(f"  Collisions only: {self.collisions_only}")
+            print(f"  Output file: {self.output_file}")
+    
+    def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Execute the context analysis.
+        
+        Args:
+            context: Execution context containing parameters and results from dependencies
+        
+        Returns:
+            Dictionary with execution results
+        """
+        try:
+            # Extract parameters from context
+            file_path = context.get("file")
+            recursive = context.get("recursive", False)
+            directory = context.get("directory", ".")
+            
+            # Create args object for compatibility with legacy code
+            class Args:
+                def __init__(self, file=None, recursive=False, directory="."):
+                    self.file = file
+                    self.recursive = recursive
+                    self.directory = directory
+            
+            args = Args(file_path, recursive, directory)
+            
+            # Reset statistics
+            self.files_analyzed = 0
+            self.context_ids_found = 0
+            self.xrefs_found = 0
+            self.links_found = 0
+            self.collisions_detected = 0
+            
+            # Process files using the existing logic
+            process_adoc_files(args, self._process_file_wrapper)
+            
+            # Generate report
+            report = self.analyzer.generate_report()
+            
+            # Update statistics
+            self.files_analyzed = report.total_files_scanned
+            self.context_ids_found = report.total_context_ids
+            self.xrefs_found = report.total_xrefs
+            self.links_found = report.total_links
+            self.collisions_detected = len(report.potential_collisions)
+            
+            # Generate output content
+            output_content = self._generate_output_content(report)
+            
+            # Save to file if specified
+            if self.output_file:
+                self._save_output_to_file(output_content)
+            
+            return {
+                "module_name": self.name,
+                "version": self.version,
+                "success": True,
+                "files_analyzed": self.files_analyzed,
+                "context_ids_found": self.context_ids_found,
+                "xrefs_found": self.xrefs_found,
+                "links_found": self.links_found,
+                "collisions_detected": self.collisions_detected,
+                "output_format": self.output_format,
+                "output_file": self.output_file,
+                "output_content": output_content if not self.output_file else None,
+                "report": asdict(report) if self.output_format == "json" else None
+            }
+            
+        except Exception as e:
+            error_msg = f"Error in ContextAnalyzer module: {e}"
+            if self.verbose:
+                print(error_msg)
+            return {
+                "module_name": self.name,
+                "version": self.version,
+                "error": str(e),
+                "success": False,
+                "files_analyzed": self.files_analyzed,
+                "context_ids_found": self.context_ids_found,
+                "xrefs_found": self.xrefs_found,
+                "links_found": self.links_found,
+                "collisions_detected": self.collisions_detected
+            }
+    
+    def _process_file_wrapper(self, filepath: str) -> bool:
+        """
+        Wrapper around the process_context_analyzer_file function.
+        
+        Args:
+            filepath: Path to the file to process
+            
+        Returns:
+            True if processing was successful, False otherwise
+        """
+        if self.verbose:
+            print(f"Analyzing file: {filepath}")
+        
+        try:
+            process_context_analyzer_file(filepath, self.analyzer)
+            return True
+            
+        except Exception as e:
+            logger.error("Error processing file %s: %s", filepath, e)
+            return False
+    
+    def _generate_output_content(self, report: AnalysisReport) -> str:
+        """
+        Generate output content based on configuration.
+        
+        Args:
+            report: Analysis report to format
+            
+        Returns:
+            Formatted output content
+        """
+        if self.output_format == 'json':
+            # Convert to JSON-serializable format
+            report_dict = asdict(report)
+            return json.dumps(report_dict, indent=2)
+        else:
+            return format_text_report(report, self.detailed, self.collisions_only)
+    
+    def _save_output_to_file(self, content: str) -> None:
+        """
+        Save output content to file.
+        
+        Args:
+            content: Content to save
+        """
+        try:
+            with open(self.output_file, 'w', encoding='utf-8') as f:
+                f.write(content)
+            if self.verbose:
+                print(f"Analysis report saved to {self.output_file}")
+        except Exception as e:
+            logger.error(f"Error saving output to {self.output_file}: {e}")
+            raise
+    
+    def cleanup(self) -> None:
+        """Clean up module resources."""
+        if self.verbose:
+            print(f"ContextAnalyzer cleanup complete")
+            print(f"  Total files analyzed: {self.files_analyzed}")
+            print(f"  Total context IDs found: {self.context_ids_found}")
+            print(f"  Total xrefs found: {self.xrefs_found}")
+            print(f"  Total links found: {self.links_found}")
+            print(f"  Total collisions detected: {self.collisions_detected}")
+            print(f"  Output format: {self.output_format}")
 
 
 class ContextAnalyzer:
@@ -402,51 +627,92 @@ def process_context_analyzer_file(filepath: str, analyzer: ContextAnalyzer):
 
 
 def main(args):
-    """Main function for the ContextAnalyzer plugin."""
-    # Setup logging
-    if hasattr(args, 'verbose') and args.verbose:
-        logging.basicConfig(level=logging.DEBUG)
+    """Legacy main function for backward compatibility."""
+    if ADT_MODULE_AVAILABLE:
+        # Use the new ADTModule implementation
+        module = ContextAnalyzerModule()
+        
+        # Initialize with configuration from args
+        config = {
+            "output_format": getattr(args, "format", "text"),
+            "detailed": getattr(args, "detailed", False),
+            "collisions_only": getattr(args, "collisions_only", False),
+            "output_file": getattr(args, "output", None),
+            "verbose": getattr(args, "verbose", False)
+        }
+        
+        module.initialize(config)
+        
+        # Execute with context
+        context = {
+            "file": getattr(args, "file", None),
+            "recursive": getattr(args, "recursive", False),
+            "directory": getattr(args, "directory", "."),
+            "verbose": getattr(args, "verbose", False)
+        }
+        
+        result = module.execute(context)
+        
+        # Display output if not saved to file
+        if not result.get("output_file") and result.get("output_content"):
+            print(result["output_content"])
+        
+        # Check if module execution was successful
+        if not result.get("success", False):
+            if result.get("error"):
+                print(f"Error: {result['error']}")
+            sys.exit(1)
+        
+        # Cleanup
+        module.cleanup()
+        
+        return result
     else:
-        logging.basicConfig(level=logging.INFO)
-    
-    analyzer = ContextAnalyzer()
-    
-    # Process files
-    def process_file_wrapper(filepath):
-        return process_context_analyzer_file(filepath, analyzer)
-    
-    try:
-        process_adoc_files(args, process_file_wrapper)
-        report = analyzer.generate_report()
-        
-        # Generate output
-        output_format = getattr(args, 'format', 'text')
-        detailed = getattr(args, 'detailed', False)
-        collisions_only = getattr(args, 'collisions_only', False)
-        output_file = getattr(args, 'output', None)
-        
-        if output_format == 'json':
-            # Convert to JSON-serializable format
-            report_dict = asdict(report)
-            output_content = json.dumps(report_dict, indent=2)
+        # Fallback to legacy implementation
+        # Setup logging
+        if hasattr(args, 'verbose') and args.verbose:
+            logging.basicConfig(level=logging.DEBUG)
         else:
-            output_content = format_text_report(report, detailed, collisions_only)
+            logging.basicConfig(level=logging.INFO)
         
-        if output_file:
-            with open(output_file, 'w', encoding='utf-8') as f:
-                f.write(output_content)
-            print(f"Analysis report saved to {output_file}")
-        else:
-            print(output_content)
+        analyzer = ContextAnalyzer()
+        
+        # Process files
+        def process_file_wrapper(filepath):
+            return process_context_analyzer_file(filepath, analyzer)
+        
+        try:
+            process_adoc_files(args, process_file_wrapper)
+            report = analyzer.generate_report()
             
-    except KeyboardInterrupt:
-        logger.info("Analysis interrupted by user")
-        print("\nAnalysis interrupted by user.")
-        sys.exit(1)
-    except Exception as e:
-        logger.error(f"Unexpected error during analysis: {e}")
-        print(f"Error during analysis: {e}")
-        sys.exit(1)
+            # Generate output
+            output_format = getattr(args, 'format', 'text')
+            detailed = getattr(args, 'detailed', False)
+            collisions_only = getattr(args, 'collisions_only', False)
+            output_file = getattr(args, 'output', None)
+            
+            if output_format == 'json':
+                # Convert to JSON-serializable format
+                report_dict = asdict(report)
+                output_content = json.dumps(report_dict, indent=2)
+            else:
+                output_content = format_text_report(report, detailed, collisions_only)
+            
+            if output_file:
+                with open(output_file, 'w', encoding='utf-8') as f:
+                    f.write(output_content)
+                print(f"Analysis report saved to {output_file}")
+            else:
+                print(output_content)
+                
+        except KeyboardInterrupt:
+            logger.info("Analysis interrupted by user")
+            print("\nAnalysis interrupted by user.")
+            sys.exit(1)
+        except Exception as e:
+            logger.error(f"Unexpected error during analysis: {e}")
+            print(f"Error during analysis: {e}")
+            sys.exit(1)
 
 
 def register_subcommand(subparsers):

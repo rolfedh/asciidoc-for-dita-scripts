@@ -15,11 +15,27 @@ import logging
 import os
 import sys
 from datetime import datetime
-from typing import List, Optional, Tuple
+from pathlib import Path
+from typing import List, Optional, Tuple, Dict, Any
 
 from ..config_utils import save_json_config as save_config_file, load_json_config as load_config_file
 from ..plugin_manager import is_plugin_enabled
 from ..security_utils import validate_directory_path
+
+# Try to import ADTModule for the new pattern
+try:
+    # Add the path to find the ADTModule
+    package_root = Path(__file__).parent.parent.parent.parent
+    if str(package_root / "src") not in sys.path:
+        sys.path.insert(0, str(package_root / "src"))
+    
+    from adt_core.module_sequencer import ADTModule
+    ADT_MODULE_AVAILABLE = True
+except ImportError:
+    ADT_MODULE_AVAILABLE = False
+    # Create a dummy ADTModule for backward compatibility
+    class ADTModule:
+        pass
 
 # Constants
 CONFIG_VERSION = "1.0"
@@ -28,6 +44,301 @@ HOME_CHOICE = "2"
 
 # Set up logging
 logger = logging.getLogger(__name__)
+
+
+class DirectoryConfigModule(ADTModule):
+    """
+    ADTModule implementation for DirectoryConfig plugin.
+    
+    This module provides directory-scoped processing capabilities for AsciiDoc files,
+    allowing users to configure which directories to include/exclude during processing.
+    Supports both interactive setup and automated configuration management.
+    """
+    
+    @property
+    def name(self) -> str:
+        """Module name identifier."""
+        return "DirectoryConfig"
+    
+    @property
+    def version(self) -> str:
+        """Module version using semantic versioning."""
+        return "1.3.0"
+    
+    @property
+    def dependencies(self) -> List[str]:
+        """List of required module names."""
+        return []  # No dependencies - this is a foundational module
+    
+    @property
+    def release_status(self) -> str:
+        """Release status: 'preview' for beta features."""
+        return "preview"
+    
+    def initialize(self, config: Dict[str, Any]) -> None:
+        """
+        Initialize the module with configuration.
+        
+        Args:
+            config: Configuration dictionary containing module settings
+        """
+        # Operation mode configuration
+        self.show_config = config.get("show_config", False)
+        self.interactive_setup = config.get("interactive_setup", True)
+        self.verbose = config.get("verbose", False)
+        self.auto_create_config = config.get("auto_create_config", False)
+        
+        # Directory configuration parameters
+        self.repo_root = config.get("repo_root")
+        self.include_dirs = config.get("include_dirs", [])
+        self.exclude_dirs = config.get("exclude_dirs", [])
+        self.config_location = config.get("config_location", "local")  # "local" or "home"
+        
+        # Feature enablement
+        self.enable_preview = config.get("enable_preview", os.getenv("ADT_ENABLE_DIRECTORY_CONFIG", "false").lower() == "true")
+        
+        # Initialize statistics
+        self.directories_processed = 0
+        self.files_filtered = 0
+        self.configs_created = 0
+        self.configs_updated = 0
+        self.warnings_generated = 0
+        
+        # Initialize manager
+        self.manager = DirectoryConfigManager()
+        
+        if self.verbose:
+            print(f"Initialized DirectoryConfig v{self.version}")
+            print(f"  Show config: {self.show_config}")
+            print(f"  Interactive setup: {self.interactive_setup}")
+            print(f"  Auto create config: {self.auto_create_config}")
+            print(f"  Preview enabled: {self.enable_preview}")
+            print(f"  Repo root: {self.repo_root}")
+            print(f"  Include dirs: {len(self.include_dirs)}")
+            print(f"  Exclude dirs: {len(self.exclude_dirs)}")
+    
+    def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Execute the directory configuration processing.
+        
+        Args:
+            context: Execution context containing parameters and results from dependencies
+        
+        Returns:
+            Dictionary with execution results
+        """
+        try:
+            # Check if preview feature is enabled
+            if not self.enable_preview:
+                error_msg = "Directory configuration is disabled. Enable with ADT_ENABLE_DIRECTORY_CONFIG=true"
+                if self.verbose:
+                    print(error_msg)
+                return {
+                    "module_name": self.name,
+                    "version": self.version,
+                    "error": error_msg,
+                    "success": False,
+                    "feature_enabled": False
+                }
+            
+            # Reset statistics
+            self.directories_processed = 0
+            self.files_filtered = 0
+            self.configs_created = 0
+            self.configs_updated = 0
+            self.warnings_generated = 0
+            
+            result = {
+                "module_name": self.name,
+                "version": self.version,
+                "success": True,
+                "feature_enabled": True
+            }
+            
+            if self.show_config:
+                # Show current configuration
+                result.update(self._show_configuration())
+            elif self.auto_create_config:
+                # Automatically create configuration without user interaction
+                result.update(self._auto_create_configuration())
+            elif self.interactive_setup:
+                # Run interactive setup
+                result.update(self._run_interactive_setup())
+            else:
+                # Load and apply existing configuration
+                result.update(self._load_and_apply_configuration(context))
+            
+            # Add statistics to result
+            result.update({
+                "directories_processed": self.directories_processed,
+                "files_filtered": self.files_filtered,
+                "configs_created": self.configs_created,
+                "configs_updated": self.configs_updated,
+                "warnings_generated": self.warnings_generated
+            })
+            
+            return result
+            
+        except Exception as e:
+            error_msg = f"Error in DirectoryConfig module: {e}"
+            if self.verbose:
+                print(error_msg)
+            return {
+                "module_name": self.name,
+                "version": self.version,
+                "error": str(e),
+                "success": False,
+                "directories_processed": self.directories_processed,
+                "files_filtered": self.files_filtered,
+                "configs_created": self.configs_created,
+                "configs_updated": self.configs_updated,
+                "warnings_generated": self.warnings_generated
+            }
+    
+    def _show_configuration(self) -> Dict[str, Any]:
+        """Show current directory configuration."""
+        try:
+            self.manager.show_current_config()
+            return {
+                "operation": "show_config",
+                "config_displayed": True
+            }
+        except Exception as e:
+            self.warnings_generated += 1
+            return {
+                "operation": "show_config",
+                "config_displayed": False,
+                "error": str(e)
+            }
+    
+    def _auto_create_configuration(self) -> Dict[str, Any]:
+        """Automatically create configuration without user interaction."""
+        try:
+            # Use provided parameters or defaults
+            repo_root = self.repo_root or os.getcwd()
+            
+            # Create configuration
+            config = self.manager.create_default_config(repo_root)
+            config = self.manager.core.update_config_paths(config, self.include_dirs, self.exclude_dirs)
+            
+            # Determine config path
+            config_path = "./.adtconfig.json" if self.config_location == "local" else "~/.adtconfig.json"
+            
+            # Save configuration
+            if save_config_file(config_path, config):
+                self.configs_created += 1
+                if self.verbose:
+                    print(f"✓ Configuration created at {config_path}")
+                return {
+                    "operation": "auto_create_config",
+                    "config_created": True,
+                    "config_path": config_path,
+                    "repo_root": repo_root,
+                    "include_dirs": len(self.include_dirs),
+                    "exclude_dirs": len(self.exclude_dirs)
+                }
+            else:
+                self.warnings_generated += 1
+                return {
+                    "operation": "auto_create_config",
+                    "config_created": False,
+                    "error": "Failed to save configuration"
+                }
+                
+        except Exception as e:
+            self.warnings_generated += 1
+            return {
+                "operation": "auto_create_config",
+                "config_created": False,
+                "error": str(e)
+            }
+    
+    def _run_interactive_setup(self) -> Dict[str, Any]:
+        """Run interactive setup wizard."""
+        try:
+            success = self.manager.interactive_setup()
+            if success:
+                self.configs_created += 1
+                return {
+                    "operation": "interactive_setup",
+                    "setup_completed": True
+                }
+            else:
+                self.warnings_generated += 1
+                return {
+                    "operation": "interactive_setup",
+                    "setup_completed": False,
+                    "error": "Interactive setup failed or was cancelled"
+                }
+        except Exception as e:
+            self.warnings_generated += 1
+            return {
+                "operation": "interactive_setup",
+                "setup_completed": False,
+                "error": str(e)
+            }
+    
+    def _load_and_apply_configuration(self, context: Dict[str, Any]) -> Dict[str, Any]:
+        """Load and apply existing configuration to context."""
+        try:
+            config = load_directory_config()
+            
+            if config:
+                # Apply directory filters to context
+                directory = context.get("directory", ".")
+                filtered_dirs = apply_directory_filters(directory, config)
+                
+                self.directories_processed = len(filtered_dirs)
+                
+                # If recursive processing is enabled, get filtered files
+                if context.get("recursive", False):
+                    filtered_files = get_filtered_adoc_files(directory, config)
+                    self.files_filtered = len(filtered_files)
+                
+                if self.verbose:
+                    print(f"Applied directory configuration:")
+                    print(f"  Directories processed: {self.directories_processed}")
+                    print(f"  Files filtered: {self.files_filtered}")
+                    print(f"  Include dirs: {len(config.get('includeDirs', []))}")
+                    print(f"  Exclude dirs: {len(config.get('excludeDirs', []))}")
+                
+                return {
+                    "operation": "apply_config",
+                    "config_applied": True,
+                    "config_found": True,
+                    "filtered_directories": filtered_dirs,
+                    "repo_root": config.get("repoRoot"),
+                    "include_dirs": len(config.get("includeDirs", [])),
+                    "exclude_dirs": len(config.get("excludeDirs", []))
+                }
+            else:
+                if self.verbose:
+                    print("No directory configuration found")
+                return {
+                    "operation": "apply_config",
+                    "config_applied": False,
+                    "config_found": False,
+                    "message": "No directory configuration found"
+                }
+                
+        except Exception as e:
+            self.warnings_generated += 1
+            return {
+                "operation": "apply_config",
+                "config_applied": False,
+                "error": str(e)
+            }
+    
+    def cleanup(self) -> None:
+        """Clean up module resources."""
+        if self.verbose:
+            print(f"DirectoryConfig cleanup complete")
+            print(f"  Total directories processed: {self.directories_processed}")
+            print(f"  Total files filtered: {self.files_filtered}")
+            print(f"  Total configs created: {self.configs_created}")
+            print(f"  Total configs updated: {self.configs_updated}")
+            print(f"  Total warnings generated: {self.warnings_generated}")
+            print(f"  Preview feature enabled: {self.enable_preview}")
 
 
 # Helper functions for path handling
@@ -688,26 +999,61 @@ def get_filtered_adoc_files(directory_path: str, config: Optional[dict],
 
 
 def run_directory_config(args):
-    """Main entry point for directory-config command."""
-    if not is_plugin_enabled("DirectoryConfig"):
-        print("Directory configuration is currently disabled.")
-        print("To enable this preview feature, run:")
-        print("  export ADT_ENABLE_DIRECTORY_CONFIG=true")
-        print("Then run the command again.")
-        sys.exit(1)
-
-    manager = DirectoryConfigManager()
-
-    if args.show:
-        manager.show_current_config()
-    else:
-        # Run interactive setup
-        if manager.interactive_setup():
-            print("\nDirectory configuration setup completed successfully!")
-            print("All ADT plugins will now use this directory configuration.")
-        else:
-            print("\nDirectory configuration setup failed.")
+    """Legacy main function for backward compatibility."""
+    if ADT_MODULE_AVAILABLE:
+        # Use the new ADTModule implementation
+        module = DirectoryConfigModule()
+        
+        # Initialize with configuration from args
+        config = {
+            "show_config": getattr(args, "show", False),
+            "interactive_setup": not getattr(args, "show", False),
+            "verbose": getattr(args, "verbose", False),
+            "auto_create_config": False,
+            "enable_preview": os.getenv("ADT_ENABLE_DIRECTORY_CONFIG", "false").lower() == "true"
+        }
+        
+        module.initialize(config)
+        
+        # Execute with context
+        context = {
+            "directory": ".",
+            "recursive": False
+        }
+        
+        result = module.execute(context)
+        
+        # Check if module execution was successful
+        if not result.get("success", False):
+            if result.get("error"):
+                print(f"Error: {result['error']}")
             sys.exit(1)
+        
+        # Cleanup
+        module.cleanup()
+        
+        return result
+    else:
+        # Fallback to legacy implementation
+        if not is_plugin_enabled("DirectoryConfig"):
+            print("Directory configuration is currently disabled.")
+            print("To enable this preview feature, run:")
+            print("  export ADT_ENABLE_DIRECTORY_CONFIG=true")
+            print("Then run the command again.")
+            sys.exit(1)
+
+        manager = DirectoryConfigManager()
+
+        if args.show:
+            manager.show_current_config()
+        else:
+            # Run interactive setup
+            if manager.interactive_setup():
+                print("\nDirectory configuration setup completed successfully!")
+                print("All ADT plugins will now use this directory configuration.")
+            else:
+                print("\nDirectory configuration setup failed.")
+                sys.exit(1)
 
 
 def register_subcommand(subparsers):
@@ -724,6 +1070,12 @@ def register_subcommand(subparsers):
         "--show",
         action="store_true",
         help="Display current directory configuration"
+    )
+
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Enable verbose output"
     )
 
     parser.set_defaults(func=run_directory_config)
