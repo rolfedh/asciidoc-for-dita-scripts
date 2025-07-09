@@ -207,3 +207,4 @@ Thumbs.db
 # Local development
 .local/
 local_settings.py
+test-pypi-install/
