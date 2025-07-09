@@ -11,7 +11,7 @@ Change from shipping just the core framework to shipping a complete toolkit.
 
 ## Required Changes
 
-### 1. Update `pyproject.toml`
+### 1. Update `pyproject.toml` Package Configuration
 
 **Current:**
 ```toml
@@ -31,50 +31,116 @@ where = ["src"]
 name = "adt"
 
 [tool.setuptools.packages.find]
-where = ["src", "."]
+where = ["."]
 include = ["adt_core*", "asciidoc_dita_toolkit*"]
+exclude = ["tests*", "build*", "dist*", "*.egg-info*"]
 
-[tool.setuptools.package-dir]
-"" = "src"
-"asciidoc_dita_toolkit" = "asciidoc_dita_toolkit"
+# Remove the package-dir section entirely - use root as source
 ```
 
-### 2. Update Main Script Reference
+### 2. Update Entry Points (Keep Current Module References)
 
 **Current:**
 ```toml
 [project.scripts]
 adt-core = "adt_core.cli:main"
+adg = "adt_core.cli:main"
+adt = "adt_core.cli:main"
+# ... other scripts
 ```
 
 **New:**
 ```toml
 [project.scripts]
 adt = "adt_core.cli:main"
+asciidoc-dita-toolkit = "adt_core.cli:main"
+# Remove adt-core (old name)
+# Keep adg if you want the short alias
 ```
 
-## Result
-- Users install one package: `pip install adt`
-- Package includes both core framework and all processing modules
-- Entry points can find their referenced modules
-- No more "Failed to load module" errors
+**Keep Current Module Entry Points (No Changes Needed):**
+```toml
+[project.entry-points."adt.modules"]
+EntityReference = "asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference:EntityReferenceModule"
+ContentType = "asciidoc_dita_toolkit.asciidoc_dita.plugins.ContentType:ContentTypeModule"
+DirectoryConfig = "asciidoc_dita_toolkit.asciidoc_dita.plugins.DirectoryConfig:DirectoryConfigModule"
+ContextAnalyzer = "asciidoc_dita_toolkit.asciidoc_dita.plugins.ContextAnalyzer:ContextAnalyzerModule"
+ContextMigrator = "asciidoc_dita_toolkit.asciidoc_dita.plugins.ContextMigrator:ContextMigratorModule"
+CrossReference = "asciidoc_dita_toolkit.asciidoc_dita.plugins.CrossReference:CrossReferenceModule"
+```
 
-## Testing Steps
-1. Backup current `pyproject.toml`
-2. Apply changes above
-3. Test locally: `pip install -e .`
-4. Verify: `adt --list-plugins` works without errors
-5. Build and test package: `python -m build`
+## Implementation Steps
+
+### Step 1: Backup Current Configuration
+```bash
+cp pyproject.toml pyproject.toml.backup
+```
+
+### Step 2: Edit pyproject.toml
+1. **Change package name**: `name = "adt-core"` → `name = "adt"`
+2. **Replace packages.find section**:
+   - Remove: `where = ["src"]`
+   - Add: `where = ["."]`
+   - Add: `include = ["adt_core*", "asciidoc_dita_toolkit*"]`
+   - Add: `exclude = ["tests*", "build*", "dist*", "*.egg-info*"]`
+3. **Remove package-dir section entirely**
+4. **Update main script**: Keep `adt = "adt_core.cli:main"`, remove `adt-core = ...`
+
+### Step 3: Update Version Bumping Scripts
+Update both:
+- `Makefile` bump-version target: Look for `name = "adt"` instead of `name = "adt-core"`
+- `.github/workflows/nightly-release.yml`: Update package name references
+
+### Step 4: Test Locally
+```bash
+# Clean old builds
+rm -rf dist/ build/ *.egg-info/
+
+# Test editable install
+pip uninstall adt-core  # Remove old package
+pip install -e .
+
+# Verify it works
+adt --list-plugins
+adt --help
+```
+
+### Step 5: Build and Test Package
+```bash
+python -m build
+pip install dist/adt-*.whl  # Test wheel installation
+```
 
 ## User Experience After Fix
 ```bash
-pip install adt
-adt --list-plugins    # Shows all available modules
-adt --help           # Shows full interface
+pip install adt                    # Single package installation
+adt --list-plugins                 # Shows all available modules (EntityReference, ContentType, etc.)
+adt --help                         # Shows full interface
+adt some-command                   # All functionality works
+asciidoc-dita-toolkit --version    # Backward compatibility alias
 ```
 
-## Key Benefits
-- Single package installation
-- All functionality included
-- No missing dependencies
-- Matches user expectations for complete toolkit
+## Critical Files to Update
+1. **`pyproject.toml`**: Main package configuration (detailed above)
+2. **`Makefile`**: Update version bumping to look for `name = "adt"`
+3. **`.github/workflows/nightly-release.yml`**: Update package name references
+4. **Documentation**: Update install instructions from `adt-core` to `adt`
+
+## Verification Checklist
+- [ ] Package builds without errors: `python -m build`
+- [ ] Both directories included in wheel: Check `dist/*.whl` contents
+- [ ] Entry points work: `adt --list-plugins` shows all modules
+- [ ] No import errors when loading modules
+- [ ] Version synchronization still works: `make bump-version`
+- [ ] All tests pass: `make test`
+
+<!--
+## Alternative Approach (More Complex - Not Recommended)
+Move all code to src/ directory first, then use:
+```toml
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["adt_core*", "asciidoc_dita_toolkit*"]
+```
+This requires moving asciidoc_dita_toolkit/ to src/asciidoc_dita_toolkit/ first.
+-->
