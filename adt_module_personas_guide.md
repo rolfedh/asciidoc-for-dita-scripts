@@ -12,7 +12,7 @@ As a **Plugin Developer**, you create reusable modules that extend ADT functiona
 
 **Key Responsibilities:**
 - Implement the `ADTModule` interface
-- Define module metadata (name, version, dependencies)
+- Define module metadata (name, actual version, dependencies)
 - Handle initialization and cleanup properly
 - Provide configuration schema
 - Ensure proper error handling
@@ -236,11 +236,11 @@ As a **Developer**, you configure the ADT system by defining which modules are a
 **Key Responsibilities:**
 - Define module execution sequence
 - Set module requirements (required vs optional)
-- Configure module dependencies and versions
+- Configure module dependencies and version constraints
 - Set up global configuration parameters
 - Ensure proper module compatibility
 
-**Note**: The ADT system uses a `ModuleSequencer` component that reads your configuration and handles the complex task of module discovery, dependency resolution, and proper initialization ordering.
+**Note**: The ADT system uses a `ModuleSequencer` component that reads your configuration and handles the complex task of module discovery, dependency resolution, and proper initialization ordering. You specify version constraints (e.g., ">=1.2.0") while plugin developers set the actual version numbers (e.g., "1.2.1") in their modules.
 
 ### Procedures
 
