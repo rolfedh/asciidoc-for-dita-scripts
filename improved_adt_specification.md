@@ -6,13 +6,14 @@ This document defines a complete, GenAI-friendly specification for managing modu
 
 ## 1. Key Concepts
 
-- **Plugin Metadata**: Defines each module's name, version, release status (GA/preview), and dependencies
-- **Developer Config** (`.adt-modules.json`): Specifies module execution order, requirements, dependencies, and versions
+- **Plugin Metadata**: Defines each module's name, actual version, release status (GA/preview), and dependencies
+- **Developer Config** (`.adt-modules.json`): Specifies module execution order, requirements, dependencies, and version constraints
 - **User Config** (`adt-user-config.json`): Enables or disables optional modules only
 - **CLI Flags**: Temporary command-line overrides for testing or one-off runs
 - **Module Dependencies**: Explicit dependency relationships between modules with version constraints
 - **Module Discovery**: Automatic detection via Python entry points and filesystem scanning
 - **Module Lifecycle**: Initialization, execution, and cleanup phases with proper error handling
+- **ModuleSequencer**: Main class that sequences, configures, and manages all modules including discovery, dependency resolution, and proper initialization ordering
 
 ---
 
@@ -366,7 +367,7 @@ class ModuleSequencer:
                 config={}
             ))
         
-                 return resolutions
+        return resolutions
 
 # Example Usage
 sequencer = ModuleSequencer()
