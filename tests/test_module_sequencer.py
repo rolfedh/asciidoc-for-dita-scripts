@@ -15,8 +15,8 @@ from src.adt_core.exceptions import (
 )
 
 
-class TestModule(ADTModule):
-    """Test module for testing."""
+class MockModule(ADTModule):
+    """Mock module for testing."""
     
     def __init__(self, name: str, version: str = "1.0.0", dependencies: list = None):
         self._name = name
@@ -51,9 +51,9 @@ class TestModuleSequencer(unittest.TestCase):
         
         # Create test modules
         self.test_modules = {
-            "ModuleA": TestModule("ModuleA", "1.0.0", []),
-            "ModuleB": TestModule("ModuleB", "1.0.0", ["ModuleA"]),
-            "ModuleC": TestModule("ModuleC", "1.0.0", ["ModuleB"]),
+            "ModuleA": MockModule("ModuleA", "1.0.0", []),
+            "ModuleB": MockModule("ModuleB", "1.0.0", ["ModuleA"]),
+            "ModuleC": MockModule("ModuleC", "1.0.0", ["ModuleB"]),
         }
         
         self.sequencer.available_modules = self.test_modules
@@ -242,9 +242,9 @@ class TestModuleSequencer(unittest.TestCase):
         mock_ep = MagicMock()
         mock_ep.name = "TestModule"
         
-        # Create a lambda that returns a properly initialized TestModule
+        # Create a lambda that returns a properly initialized MockModule
         def create_test_module():
-            return TestModule("TestModule", "1.0.0", [])
+            return MockModule("TestModule", "1.0.0", [])
         
         mock_ep.load.return_value = create_test_module
         
