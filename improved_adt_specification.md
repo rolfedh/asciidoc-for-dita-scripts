@@ -20,7 +20,7 @@ This document defines a complete, GenAI-friendly specification for managing modu
 
 ### Python Entry Points Integration
 ```python
-# setup.py or pyproject.toml integration
+# pyproject.toml integration
 [project.entry-points."adt.modules"]
 entity_reference = "adt_modules.entity_reference:EntityReferenceModule"
 content_type = "adt_modules.content_type:ContentTypeModule"
