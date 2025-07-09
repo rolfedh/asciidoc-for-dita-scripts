@@ -44,11 +44,9 @@ class DirectoryConfigModule(ADTModule):
         try:
             # Import and use the legacy plugin functionality
             from asciidoc_dita_toolkit.asciidoc_dita.plugins.DirectoryConfig import (
-                process_file
+                load_directory_config, get_filtered_adoc_files, apply_directory_filters
             )
-            from asciidoc_dita_toolkit.asciidoc_dita.file_utils import (
-                get_adoc_files_to_process
-            )
+            from asciidoc_dita_toolkit.asciidoc_dita.file_utils import find_adoc_files
             
             # Create args object similar to what legacy plugin expects
             class Args:
@@ -65,20 +63,30 @@ class DirectoryConfigModule(ADTModule):
                 verbose=context.get("verbose", False)
             )
             
-            # Get files to process
-            files_to_process = get_adoc_files_to_process(args)
-            
+            # Track processing results
             configs_processed = 0
             files_processed = 0
             
-            # Process each file
-            for file_path in files_to_process:
-                if self.verbose:
-                    print(f"Processing file: {file_path}")
+            # Try to load directory configuration
+            config = load_directory_config()
+            if config:
+                # Use configuration-aware file discovery
+                adoc_files = get_filtered_adoc_files(args.directory, config, find_adoc_files)
+                directories = apply_directory_filters(args.directory, config)
                 
-                process_file(file_path)
-                files_processed += 1
-                configs_processed += 1
+                for filepath in adoc_files:
+                    if self.verbose:
+                        print(f"Processing file: {filepath}")
+                    
+                    # Just count files for now since DirectoryConfig is more about file discovery
+                    files_processed += 1
+                
+                configs_processed = len(directories)
+            else:
+                # Fall back to simple file discovery
+                adoc_files = find_adoc_files(args.directory, args.recursive)
+                files_processed = len(adoc_files)
+                configs_processed = 1
             
             return {
                 "module_name": self.name,

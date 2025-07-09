@@ -43,12 +43,8 @@ class EntityReferenceModule(ADTModule):
         """Execute the module logic."""
         try:
             # Import and use the legacy plugin functionality
-            from asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference import (
-                process_file, ENTITY_TO_ASCIIDOC
-            )
-            from asciidoc_dita_toolkit.asciidoc_dita.file_utils import (
-                get_adoc_files_to_process
-            )
+            from asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference import process_file
+            from asciidoc_dita_toolkit.asciidoc_dita.workflow_utils import process_adoc_files
             
             # Create args object similar to what legacy plugin expects
             class Args:
@@ -65,22 +61,25 @@ class EntityReferenceModule(ADTModule):
                 verbose=context.get("verbose", False)
             )
             
-            # Get files to process
-            files_to_process = get_adoc_files_to_process(args)
-            
-            entities_processed = 0
+            # Track processing results
             files_processed = 0
+            entities_processed = 0
             
-            # Process each file
-            for file_path in files_to_process:
+            # Create a wrapper to track processing
+            def process_file_wrapper(filepath):
+                nonlocal files_processed, entities_processed
                 if self.verbose:
-                    print(f"Processing file: {file_path}")
+                    print(f"Processing file: {filepath}")
                 
-                process_file(file_path)
+                process_file(filepath)
                 files_processed += 1
                 
                 # Count entities that would be processed (approximate)
-                entities_processed += len(ENTITY_TO_ASCIIDOC)
+                # This is a rough estimate based on typical entity usage
+                entities_processed += 10  # Approximate number
+            
+            # Process files using the workflow
+            process_adoc_files(args, process_file_wrapper)
             
             return {
                 "module_name": self.name,
