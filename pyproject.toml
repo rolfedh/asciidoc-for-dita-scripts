@@ -17,6 +17,14 @@ where = ["src"]
 [tool.setuptools.package-dir]
 "" = "src"
 
+[project.scripts]
+adt-core = "adt_core.cli:main"
+adg = "adt_core.cli:main"
+adt = "adt_core.cli:main"
+adt-test-files = "adt_core.cli:main"
+asciidoc-dita-toolkit = "adt_core.cli:main"
+asciidoc-dita-toolkit-gui = "adt_core.cli:main"
+
 [project.entry-points."adt.modules"]
 EntityReference = "modules.entity_reference:EntityReferenceModule"
 ContentType = "modules.content_type:ContentTypeModule"
