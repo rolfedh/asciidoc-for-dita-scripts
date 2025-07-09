@@ -240,6 +240,8 @@ As a **Developer**, you configure the ADT system by defining which modules are a
 - Set up global configuration parameters
 - Ensure proper module compatibility
 
+**Note**: The ADT system uses a `ModuleSequencer` component that reads your configuration and handles the complex task of module discovery, dependency resolution, and proper initialization ordering.
+
 ### Procedures
 
 #### 1. Creating Developer Configuration

@@ -174,181 +174,217 @@ class ModuleResolution:
     config: Dict[str, Any]
     error_message: Optional[str] = None
 
-def resolve_module_dependencies(
-    available_modules: Dict[str, ADTModule],
-    dev_config: Dict[str, Any],
-    user_config: Dict[str, Any],
-    cli_overrides: Optional[Dict[str, bool]] = None
-) -> Tuple[List[ModuleResolution], List[str]]:
+class ModuleSequencer:
     """
-    Resolve module configuration with comprehensive dependency handling.
+    Main class responsible for sequencing, configuring, and managing ADT modules.
     
-    Returns:
-        Tuple of (resolved_modules, error_messages)
+    Handles module discovery, dependency resolution, configuration management,
+    and proper initialization sequencing.
     """
-    errors = []
-    resolutions = []
     
-    try:
-        # Step 1: Build dependency graph
-        dep_graph = _build_dependency_graph(available_modules, dev_config)
-        
-        # Step 2: Detect circular dependencies
-        _detect_circular_dependencies(dep_graph)
-        
-        # Step 3: Topological sort for initialization order
-        sorted_modules = _topological_sort(dep_graph)
-        
-        # Step 4: Apply user preferences and CLI overrides
-        final_modules = _apply_user_preferences(
-            sorted_modules, dev_config, user_config, cli_overrides
-        )
-        
-        # Step 5: Validate final configuration
-        resolutions = _validate_final_config(final_modules, available_modules)
-        
-    except (CircularDependencyError, MissingDependencyError, VersionConflictError) as e:
-        errors.append(str(e))
-        logging.error(f"Module resolution failed: {e}")
+    def __init__(self):
+        self.available_modules: Dict[str, ADTModule] = {}
+        self.dev_config: Dict[str, Any] = {}
+        self.user_config: Dict[str, Any] = {}
+        self.logger = logging.getLogger("adt.sequencer")
     
-    return resolutions, errors
+    def load_configurations(self, dev_config_path: str, user_config_path: str) -> None:
+        """Load developer and user configurations."""
+        # Implementation for loading JSON configurations
+        pass
+    
+    def discover_modules(self) -> None:
+        """Discover available modules via entry points."""
+        # Implementation for module discovery
+        pass
+    
+    def sequence_modules(
+        self,
+        cli_overrides: Optional[Dict[str, bool]] = None
+    ) -> Tuple[List[ModuleResolution], List[str]]:
+        """
+        Sequence modules with comprehensive dependency handling.
+        
+        Returns:
+            Tuple of (resolved_modules, error_messages)
+        """
+        errors = []
+        resolutions = []
+        
+        try:
+            # Step 1: Build dependency graph
+            dep_graph = self._build_dependency_graph()
+            
+            # Step 2: Detect circular dependencies
+            self._detect_circular_dependencies(dep_graph)
+            
+            # Step 3: Topological sort for initialization order
+            sorted_modules = self._topological_sort(dep_graph)
+            
+            # Step 4: Apply user preferences and CLI overrides
+            final_modules = self._apply_user_preferences(
+                sorted_modules, cli_overrides
+            )
+            
+            # Step 5: Validate final configuration
+            resolutions = self._validate_final_config(final_modules)
+            
+        except (CircularDependencyError, MissingDependencyError, VersionConflictError) as e:
+            errors.append(str(e))
+            self.logger.error(f"Module sequencing failed: {e}")
+        
+        return resolutions, errors
 
-def _build_dependency_graph(
-    available_modules: Dict[str, ADTModule], 
-    dev_config: Dict[str, Any]
-) -> Dict[str, Set[str]]:
-    """Build directed dependency graph."""
-    graph = {}
-    
-    for module_config in dev_config.get("modules", []):
-        module_name = module_config["name"]
-        dependencies = set(module_config.get("dependencies", []))
+    def _build_dependency_graph(self) -> Dict[str, Set[str]]:
+        """Build directed dependency graph."""
+        graph = {}
         
-        # Validate dependencies exist
-        for dep in dependencies:
-            if dep not in available_modules:
-                raise MissingDependencyError(f"Module '{module_name}' depends on missing module '{dep}'")
+        for module_config in self.dev_config.get("modules", []):
+            module_name = module_config["name"]
+            dependencies = set(module_config.get("dependencies", []))
+            
+            # Validate dependencies exist
+            for dep in dependencies:
+                if dep not in self.available_modules:
+                    raise MissingDependencyError(f"Module '{module_name}' depends on missing module '{dep}'")
+            
+            graph[module_name] = dependencies
         
-        graph[module_name] = dependencies
-    
-    return graph
+        return graph
 
-def _detect_circular_dependencies(graph: Dict[str, Set[str]]) -> None:
-    """Detect circular dependencies using DFS."""
-    WHITE, GRAY, BLACK = 0, 1, 2
-    colors = {node: WHITE for node in graph}
-    
-    def dfs(node: str, path: List[str]) -> None:
-        if colors[node] == GRAY:
-            cycle = path[path.index(node):] + [node]
-            raise CircularDependencyError(f"Circular dependency detected: {' -> '.join(cycle)}")
+    def _detect_circular_dependencies(self, graph: Dict[str, Set[str]]) -> None:
+        """Detect circular dependencies using DFS."""
+        WHITE, GRAY, BLACK = 0, 1, 2
+        colors = {node: WHITE for node in graph}
         
-        if colors[node] == BLACK:
-            return
+        def dfs(node: str, path: List[str]) -> None:
+            if colors[node] == GRAY:
+                cycle = path[path.index(node):] + [node]
+                raise CircularDependencyError(f"Circular dependency detected: {' -> '.join(cycle)}")
+            
+            if colors[node] == BLACK:
+                return
+            
+            colors[node] = GRAY
+            path.append(node)
+            
+            for neighbor in graph.get(node, set()):
+                dfs(neighbor, path.copy())
+            
+            colors[node] = BLACK
         
-        colors[node] = GRAY
-        path.append(node)
-        
-        for neighbor in graph.get(node, set()):
-            dfs(neighbor, path.copy())
-        
-        colors[node] = BLACK
-    
-    for node in graph:
-        if colors[node] == WHITE:
-            dfs(node, [])
+        for node in graph:
+            if colors[node] == WHITE:
+                dfs(node, [])
 
-def _topological_sort(graph: Dict[str, Set[str]]) -> List[str]:
-    """Return topologically sorted list of modules."""
-    in_degree = {node: 0 for node in graph}
-    
-    # Calculate in-degrees
-    for node in graph:
-        for neighbor in graph[node]:
-            in_degree[neighbor] = in_degree.get(neighbor, 0) + 1
-    
-    # Kahn's algorithm
-    queue = [node for node in in_degree if in_degree[node] == 0]
-    result = []
-    
-    while queue:
-        current = queue.pop(0)
-        result.append(current)
+    def _topological_sort(self, graph: Dict[str, Set[str]]) -> List[str]:
+        """Return topologically sorted list of modules."""
+        in_degree = {node: 0 for node in graph}
         
-        for neighbor in graph.get(current, set()):
-            in_degree[neighbor] -= 1
-            if in_degree[neighbor] == 0:
-                queue.append(neighbor)
-    
-    return result
+        # Calculate in-degrees
+        for node in graph:
+            for neighbor in graph[node]:
+                in_degree[neighbor] = in_degree.get(neighbor, 0) + 1
+        
+        # Kahn's algorithm
+        queue = [node for node in in_degree if in_degree[node] == 0]
+        result = []
+        
+        while queue:
+            current = queue.pop(0)
+            result.append(current)
+            
+            for neighbor in graph.get(current, set()):
+                in_degree[neighbor] -= 1
+                if in_degree[neighbor] == 0:
+                    queue.append(neighbor)
+        
+        return result
 
-def _apply_user_preferences(
-    sorted_modules: List[str],
-    dev_config: Dict[str, Any],
-    user_config: Dict[str, Any],
-    cli_overrides: Optional[Dict[str, bool]]
-) -> List[str]:
-    """Apply user preferences while respecting requirements."""
-    enabled_modules = []
-    user_enabled = set(user_config.get("enabledModules", []))
-    user_disabled = set(user_config.get("disabledModules", []))
-    cli_overrides = cli_overrides or {}
-    
-    # Build module requirements map
-    module_requirements = {}
-    for module_config in dev_config.get("modules", []):
-        module_requirements[module_config["name"]] = module_config.get("required", False)
-    
-    for module_name in sorted_modules:
-        is_required = module_requirements.get(module_name, False)
-        cli_override = cli_overrides.get(module_name)
+    def _apply_user_preferences(
+        self,
+        sorted_modules: List[str],
+        cli_overrides: Optional[Dict[str, bool]]
+    ) -> List[str]:
+        """Apply user preferences while respecting requirements."""
+        enabled_modules = []
+        user_enabled = set(self.user_config.get("enabledModules", []))
+        user_disabled = set(self.user_config.get("disabledModules", []))
+        cli_overrides = cli_overrides or {}
         
-        # Priority: CLI > User Config > Developer Config
-        if cli_override is not None:
-            if cli_override or is_required:
+        # Build module requirements map
+        module_requirements = {}
+        for module_config in self.dev_config.get("modules", []):
+            module_requirements[module_config["name"]] = module_config.get("required", False)
+        
+        for module_name in sorted_modules:
+            is_required = module_requirements.get(module_name, False)
+            cli_override = cli_overrides.get(module_name)
+            
+            # Priority: CLI > User Config > Developer Config
+            if cli_override is not None:
+                if cli_override or is_required:
+                    enabled_modules.append(module_name)
+            elif is_required:
                 enabled_modules.append(module_name)
-        elif is_required:
-            enabled_modules.append(module_name)
-            if module_name in user_disabled:
-                logging.warning(f"Ignoring user disable for required module: {module_name}")
-        elif module_name in user_enabled:
-            enabled_modules.append(module_name)
-        elif module_name not in user_disabled:
-            enabled_modules.append(module_name)  # Default: enabled
-    
-    return enabled_modules
+                if module_name in user_disabled:
+                    self.logger.warning(f"Ignoring user disable for required module: {module_name}")
+            elif module_name in user_enabled:
+                enabled_modules.append(module_name)
+            elif module_name not in user_disabled:
+                enabled_modules.append(module_name)  # Default: enabled
+        
+        return enabled_modules
 
-def _validate_final_config(
-    enabled_modules: List[str],
-    available_modules: Dict[str, ADTModule]
-) -> List[ModuleResolution]:
-    """Validate and create final module resolutions."""
-    resolutions = []
-    
-    for i, module_name in enumerate(enabled_modules):
-        if module_name not in available_modules:
+    def _validate_final_config(
+        self,
+        enabled_modules: List[str]
+    ) -> List[ModuleResolution]:
+        """Validate and create final module resolutions."""
+        resolutions = []
+        
+        for i, module_name in enumerate(enabled_modules):
+            if module_name not in self.available_modules:
+                resolutions.append(ModuleResolution(
+                    name=module_name,
+                    state=ModuleState.FAILED,
+                    version="unknown",
+                    dependencies=[],
+                    init_order=i,
+                    config={},
+                    error_message=f"Module '{module_name}' not found"
+                ))
+                continue
+            
+            module = self.available_modules[module_name]
             resolutions.append(ModuleResolution(
                 name=module_name,
-                state=ModuleState.FAILED,
-                version="unknown",
-                dependencies=[],
+                state=ModuleState.ENABLED,
+                version=module.version,
+                dependencies=module.dependencies,
                 init_order=i,
-                config={},
-                error_message=f"Module '{module_name}' not found"
+                config={}
             ))
-            continue
         
-        module = available_modules[module_name]
-        resolutions.append(ModuleResolution(
-            name=module_name,
-            state=ModuleState.ENABLED,
-            version=module.version,
-            dependencies=module.dependencies,
-            init_order=i,
-            config={}
-        ))
-    
-    return resolutions
+                 return resolutions
+
+# Example Usage
+sequencer = ModuleSequencer()
+sequencer.load_configurations('.adt-modules.json', 'adt-user-config.json')
+sequencer.discover_modules()
+
+# Sequence modules with optional CLI overrides
+resolutions, errors = sequencer.sequence_modules(
+    cli_overrides={"Analytics": False, "DebugModule": True}
+)
+
+# Initialize and run modules in the resolved order
+for resolution in resolutions:
+    if resolution.state == ModuleState.ENABLED:
+        module = sequencer.available_modules[resolution.name]
+        module.initialize(resolution.config)
+        result = module.execute({})
+        print(f"Module {resolution.name} executed successfully")
 ```
 
 ---
