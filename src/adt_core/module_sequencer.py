@@ -20,6 +20,12 @@ from .exceptions import (
     CircularDependencyError, MissingDependencyError, VersionConflictError
 )
 
+# Known legacy plugins that should not show warnings during transition
+LEGACY_PLUGINS = {
+    "EntityReference", "ContentType", "DirectoryConfig", 
+    "ContextAnalyzer", "ContextMigrator", "CrossReference"
+}
+
 
 class ModuleState(Enum):
     """Possible states for a module."""
@@ -94,6 +100,16 @@ class ModuleSequencer:
         self.dev_config: Dict[str, Any] = {}
         self.user_config: Dict[str, Any] = {}
         self.logger = logging.getLogger("adt.sequencer")
+        self.suppress_legacy_warnings = True  # Default to suppress warnings
+    
+    def set_suppress_legacy_warnings(self, suppress: bool = True) -> None:
+        """
+        Control whether to suppress warnings for legacy plugins.
+        
+        Args:
+            suppress: If True, suppress warnings for known legacy plugins
+        """
+        self.suppress_legacy_warnings = suppress
     
     def load_configurations(self, dev_config_path: str, user_config_path: str = None) -> None:
         """Load developer and user configurations."""
@@ -136,7 +152,11 @@ class ModuleSequencer:
                     module_instance = module_class()
                     
                     if not isinstance(module_instance, ADTModule):
-                        self.logger.warning(f"Module {entry_point.name} does not inherit from ADTModule")
+                        # Check if this is a known legacy plugin
+                        if self.suppress_legacy_warnings and entry_point.name in LEGACY_PLUGINS:
+                            self.logger.debug(f"Legacy plugin {entry_point.name} does not inherit from ADTModule (transition mode)")
+                        else:
+                            self.logger.warning(f"Module {entry_point.name} does not inherit from ADTModule")
                         continue
                     
                     self.available_modules[module_instance.name] = module_instance
