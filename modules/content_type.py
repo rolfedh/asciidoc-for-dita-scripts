@@ -44,11 +44,9 @@ class ContentTypeModule(ADTModule):
         try:
             # Import and use the legacy plugin functionality
             from asciidoc_dita_toolkit.asciidoc_dita.plugins.ContentType import (
-                process_file
+                process_content_type_file, create_processor
             )
-            from asciidoc_dita_toolkit.asciidoc_dita.file_utils import (
-                get_adoc_files_to_process
-            )
+            from asciidoc_dita_toolkit.asciidoc_dita.workflow_utils import process_adoc_files
             
             # Create args object similar to what legacy plugin expects
             class Args:
@@ -65,20 +63,27 @@ class ContentTypeModule(ADTModule):
                 verbose=context.get("verbose", False)
             )
             
-            # Get files to process
-            files_to_process = get_adoc_files_to_process(args)
-            
+            # Track processing results
             content_types_processed = 0
             files_processed = 0
             
-            # Process each file
-            for file_path in files_to_process:
+            # Create a processor instance for batch mode
+            processor = create_processor(batch_mode=True, quiet_mode=not self.verbose)
+            
+            # Create a wrapper to track processing
+            def content_type_wrapper(filepath):
+                nonlocal files_processed, content_types_processed
                 if self.verbose:
-                    print(f"Processing file: {file_path}")
+                    print(f"Processing file: {filepath}")
                 
-                process_file(file_path)
+                # Use the legacy plugin function
+                success = process_content_type_file(filepath, processor)
                 files_processed += 1
-                content_types_processed += 1
+                if success:
+                    content_types_processed += 1
+            
+            # Process files using the workflow
+            process_adoc_files(args, content_type_wrapper)
             
             return {
                 "module_name": self.name,
