@@ -22,8 +22,7 @@ from .exceptions import (
 
 # Known legacy plugins that should not show warnings during transition
 LEGACY_PLUGINS = {
-    "EntityReference", "ContentType", "DirectoryConfig", 
-    "ContextAnalyzer", "ContextMigrator", "CrossReference"
+    "DirectoryConfig", "ContextAnalyzer", "ContextMigrator", "CrossReference"
 }
 
 
