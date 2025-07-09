@@ -98,11 +98,11 @@ bump-version:
 	else \
 		sed -i '' 's/^version = ".*"/version = "'"$$new_version"'"/' pyproject.toml; \
 	fi; \
-	echo "Updating version in src/adt_core/__init__.py..."; \
+	echo "Updating version in adt_core/__init__.py..."; \
 	if sed --version >/dev/null 2>&1; then \
-		sed -i 's/^__version__ = ".*"/__version__ = "'"$$new_version"'"/' src/adt_core/__init__.py; \
+		sed -i 's/^__version__ = ".*"/__version__ = "'"$$new_version"'"/' adt_core/__init__.py; \
 	else \
-		sed -i '' 's/^__version__ = ".*"/__version__ = "'"$$new_version"'"/' src/adt_core/__init__.py; \
+		sed -i '' 's/^__version__ = ".*"/__version__ = "'"$$new_version"'"/' adt_core/__init__.py; \
 	fi; \
 	echo "Version bumped to $$new_version in both files"
 
@@ -250,11 +250,11 @@ release: check
 	else \
 		sed -i '' 's/^version = ".*"/version = "'"$$new_version"'"/' pyproject.toml; \
 	fi; \
-	echo "Updating version in src/adt_core/__init__.py..."; \
+	echo "Updating version in adt_core/__init__.py..."; \
 	if sed --version >/dev/null 2>&1; then \
-		sed -i 's/^__version__ = ".*"/__version__ = "'"$$new_version"'"/' src/adt_core/__init__.py; \
+		sed -i 's/^__version__ = ".*"/__version__ = "'"$$new_version"'"/' adt_core/__init__.py; \
 	else \
-		sed -i '' 's/^__version__ = ".*"/__version__ = "'"$$new_version"'"/' src/adt_core/__init__.py; \
+		sed -i '' 's/^__version__ = ".*"/__version__ = "'"$$new_version"'"/' adt_core/__init__.py; \
 	fi; \
 	echo "Generating changelog for version $$new_version..."; \
 	if [ -f "./scripts/generate-changelog.sh" ]; then \
@@ -263,7 +263,7 @@ release: check
 		echo "Changelog script not found, skipping changelog generation."; \
 	fi; \
 	echo "Committing version bump..."; \
-	git add pyproject.toml src/adt_core/__init__.py CHANGELOG.md; \
+	git add pyproject.toml adt_core/__init__.py CHANGELOG.md; \
 	git commit -m "Bump version to $$new_version"; \
 	echo "Pushing release branch..."; \
 	git push origin "$$release_branch"; \
