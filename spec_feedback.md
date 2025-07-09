@@ -206,10 +206,11 @@ def resolve_modules(
 ### **Section 10: Implementation Architecture**
 ```yaml
 Core Components:
-  - ModuleRegistry: Discovers and catalogs available modules
-  - ConfigurationManager: Loads and validates all config sources
-  - DependencyResolver: Handles module dependencies and ordering
-  - ModuleLoader: Initializes and manages module lifecycle
+  - ModuleSequencer: Main class that sequences, configures, and manages all modules
+    - Discovers and catalogs available modules
+    - Loads and validates all config sources  
+    - Handles module dependencies and ordering
+    - Initializes and manages module lifecycle
   - CLIInterface: Provides user-facing commands and output
 ```
 
