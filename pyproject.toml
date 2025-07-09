@@ -26,7 +26,7 @@ asciidoc-dita-toolkit = "adt_core.cli:main"
 asciidoc-dita-toolkit-gui = "adt_core.cli:main"
 
 [project.entry-points."adt.modules"]
-EntityReference = "modules.entity_reference:EntityReferenceModule"
+EntityReference = "asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference:EntityReferenceModule"
 ContentType = "modules.content_type:ContentTypeModule"
 DirectoryConfig = "modules.directory_config:DirectoryConfigModule"
 

@@ -91,6 +91,26 @@ def get_new_modules():
     return modules
 
 
+def get_new_modules_with_warnings_control(suppress_warnings: bool = True):
+    """Get available modules from the new module system with warning control."""
+    modules = {}
+    
+    try:
+        sequencer = ModuleSequencer()
+        sequencer.set_suppress_legacy_warnings(suppress_warnings)
+        sequencer.discover_modules()
+        
+        for name, module in sequencer.available_modules.items():
+            modules[name] = {
+                "module": module,
+                "description": f"New module system: {name} v{module.version}"
+            }
+    except Exception as e:
+        print(f"Warning: Could not load new modules: {e}", file=sys.stderr)
+    
+    return modules
+
+
 def print_plugin_list():
     """Print a list of all available plugins and modules."""
     print("Available plugins and modules:")
@@ -104,6 +124,28 @@ def print_plugin_list():
     
     # Get new modules
     new_modules = get_new_modules()
+    if new_modules:
+        print("\nNew modules:")
+        for name, info in new_modules.items():
+            print(f"  {name:20} {info['description']}")
+    
+    if not legacy_plugins and not new_modules:
+        print("  No plugins or modules available")
+
+
+def print_plugin_list_with_warnings_control(suppress_warnings: bool = True):
+    """Print a list of all available plugins and modules with warning control."""
+    print("Available plugins and modules:")
+    
+    # Get legacy plugins
+    legacy_plugins = get_legacy_plugins()
+    if legacy_plugins:
+        print("\nLegacy plugins:")
+        for name, info in legacy_plugins.items():
+            print(f"  {name:20} {info['description']}")
+    
+    # Get new modules
+    new_modules = get_new_modules_with_warnings_control(suppress_warnings)
     if new_modules:
         print("\nNew modules:")
         for name, info in new_modules.items():
@@ -214,6 +256,17 @@ def main(args=None):
         action="store_true",
         help="Show version information"
     )
+    parser.add_argument(
+        "--suppress-warnings",
+        action="store_true",
+        default=True,
+        help="Suppress warnings for legacy plugins during transition (default: True)"
+    )
+    parser.add_argument(
+        "--show-warnings",
+        action="store_true",
+        help="Show warnings for legacy plugins (overrides --suppress-warnings)"
+    )
     
     subparsers = parser.add_subparsers(dest="command", required=False)
     
@@ -222,8 +275,14 @@ def main(args=None):
     for name, info in legacy_plugins.items():
         create_legacy_subcommand(subparsers, name, info)
     
-    # Load new modules
-    new_modules = get_new_modules()
+    # Load new modules with warning control
+    suppress_warnings = True  # Default
+    if args:
+        # Pre-parse to get warning control flags
+        temp_args = parser.parse_args(args)
+        suppress_warnings = temp_args.suppress_warnings and not temp_args.show_warnings
+    
+    new_modules = get_new_modules_with_warnings_control(suppress_warnings)
     for name, info in new_modules.items():
         # Only add if not already added by legacy plugins
         if name not in legacy_plugins:
@@ -243,7 +302,8 @@ def main(args=None):
         sys.exit(0)
     
     if parsed_args.list_plugins:
-        print_plugin_list()
+        suppress_warnings = parsed_args.suppress_warnings and not parsed_args.show_warnings
+        print_plugin_list_with_warnings_control(suppress_warnings)
         sys.exit(0)
     
     # Execute the selected command
