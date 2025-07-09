@@ -1,4 +1,4 @@
-.PHONY: help test lint format clean install install-dev build publish changelog changelog-version release
+.PHONY: help test lint format clean install install-dev build publish changelog changelog-version release bump-version
 
 # Default target
 help:
@@ -11,7 +11,8 @@ help:
 	@echo "  install    - Install package in development mode"
 	@echo "  install-dev - Install package with development dependencies"
 	@echo "  build      - Build distribution packages"
-	@echo "  publish    - Publish to PyPI (MAINTAINERS ONLY - requires PYPI_API_TOKEN)"
+	@echo "  bump-version - Bump version in both pyproject.toml and __init__.py (VERSION=x.y.z to specify)"
+	@echo "  publish    - Bump version and publish to PyPI (MAINTAINERS ONLY - requires PYPI_API_TOKEN)"
 	@echo "  check      - Run comprehensive quality checks"
 	@echo "  changelog  - Generate changelog entry for latest version"
 	@echo "  changelog-version - Generate changelog for specific version (VERSION=x.y.z)"
@@ -76,7 +77,36 @@ build: clean
 	@echo "Building distribution packages..."
 	python3 -m build
 
-publish: build
+# Version bump target
+bump-version:
+	@if [ -z "$(VERSION)" ]; then \
+		current_version=$$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/'); \
+		echo "Current version: $$current_version"; \
+		major=$$(echo $$current_version | cut -d. -f1); \
+		minor=$$(echo $$current_version | cut -d. -f2); \
+		patch=$$(echo $$current_version | cut -d. -f3); \
+		new_patch=$$((patch + 1)); \
+		new_version="$$major.$$minor.$$new_patch"; \
+		echo "Auto-bumping patch version to: $$new_version"; \
+	else \
+		new_version="$(VERSION)"; \
+		echo "Using specified version: $$new_version"; \
+	fi; \
+	echo "Updating version in pyproject.toml..."; \
+	if sed --version >/dev/null 2>&1; then \
+		sed -i 's/^version = ".*"/version = "'"$$new_version"'"/' pyproject.toml; \
+	else \
+		sed -i '' 's/^version = ".*"/version = "'"$$new_version"'"/' pyproject.toml; \
+	fi; \
+	echo "Updating version in src/adt_core/__init__.py..."; \
+	if sed --version >/dev/null 2>&1; then \
+		sed -i 's/^__version__ = ".*"/__version__ = "'"$$new_version"'"/' src/adt_core/__init__.py; \
+	else \
+		sed -i '' 's/^__version__ = ".*"/__version__ = "'"$$new_version"'"/' src/adt_core/__init__.py; \
+	fi; \
+	echo "Version bumped to $$new_version in both files"
+
+publish: bump-version build
 	@echo "Publishing to PyPI..."
 	python3 -m twine upload dist/*
 
@@ -220,6 +250,12 @@ release: check
 	else \
 		sed -i '' 's/^version = ".*"/version = "'"$$new_version"'"/' pyproject.toml; \
 	fi; \
+	echo "Updating version in src/adt_core/__init__.py..."; \
+	if sed --version >/dev/null 2>&1; then \
+		sed -i 's/^__version__ = ".*"/__version__ = "'"$$new_version"'"/' src/adt_core/__init__.py; \
+	else \
+		sed -i '' 's/^__version__ = ".*"/__version__ = "'"$$new_version"'"/' src/adt_core/__init__.py; \
+	fi; \
 	echo "Generating changelog for version $$new_version..."; \
 	if [ -f "./scripts/generate-changelog.sh" ]; then \
 		./scripts/generate-changelog.sh $$new_version || true; \
@@ -227,7 +263,7 @@ release: check
 		echo "Changelog script not found, skipping changelog generation."; \
 	fi; \
 	echo "Committing version bump..."; \
-	git add pyproject.toml CHANGELOG.md; \
+	git add pyproject.toml src/adt_core/__init__.py CHANGELOG.md; \
 	git commit -m "Bump version to $$new_version"; \
 	echo "Pushing release branch..."; \
 	git push origin "$$release_branch"; \

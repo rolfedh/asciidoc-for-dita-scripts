@@ -2,8 +2,8 @@ name: Nightly Patch Release
 
 on:
   schedule:
-    # Run nightly at 2 AM UTC
-    - cron: '0 2 * * *'
+    # Run nightly at 4 AM UTC
+    - cron: '0 4 * * *'
   workflow_dispatch:  # Allow manual triggering
 
 jobs:
@@ -85,6 +85,20 @@ jobs:
           with open('pyproject.toml', 'w') as f:
               toml.dump(config, f)
           
+          # Update version in __init__.py
+          with open('src/adt_core/__init__.py', 'r') as f:
+              init_content = f.read()
+          
+          # Replace __version__ line
+          init_content = re.sub(
+              r'__version__ = "[^"]*"',
+              f'__version__ = "{new_version}"',
+              init_content
+          )
+          
+          with open('src/adt_core/__init__.py', 'w') as f:
+              f.write(init_content)
+          
           # Write new version to GitHub output
           with open('$GITHUB_OUTPUT', 'a') as f:
               f.write(f"new_version={new_version}\n")
@@ -93,7 +107,7 @@ jobs:
       - name: Commit version bump
         if: steps.check-changes.outputs.has_changes == 'true'
         run: |
-          git add pyproject.toml
+          git add pyproject.toml src/adt_core/__init__.py
           git commit -m "Bump version to ${{ steps.version-bump.outputs.new_version }} for nightly release"
 
       - name: Build package
