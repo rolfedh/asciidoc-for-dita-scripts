@@ -269,40 +269,40 @@ touch .adt-modules.json
   "version": "1.0",
   "modules": [
     {
-      "name": "EntityReference",
-      "required": true,
-      "version": ">=1.2.0",
-      "dependencies": [],
-      "init_order": 1,
-      "config": {
+      "name": "EntityReference",                    // REFERENCE: Must match module's actual name
+      "required": true,                            // CONSTRAINT: Developer decides if required
+      "version": ">=1.2.0",                       // CONSTRAINT: Version requirement (actual version comes from module)
+      "dependencies": ["Authentication"],          // CONSTRAINT: Additional dependencies (module's dependencies auto-detected)
+      "init_order": 1,                            // CONSTRAINT: Developer-controlled initialization order
+      "config": {                                 // CONFIGURATION: Values passed to module.initialize()
         "timeout_seconds": 30,
         "cache_size": 1000
       }
     },
     {
-      "name": "ContentType",
-      "required": false,
-      "version": ">=2.0.0",
-      "dependencies": ["EntityReference"],
-      "init_order": 2,
-      "config": {
+      "name": "ContentType",                       // REFERENCE: Must match module's actual name
+      "required": false,                           // CONSTRAINT: Developer decides if required
+      "version": ">=2.0.0",                       // CONSTRAINT: Version requirement
+      "dependencies": ["EntityReference"],         // CONSTRAINT: Additional dependencies
+      "init_order": 2,                            // CONSTRAINT: Developer-controlled initialization order
+      "config": {                                 // CONFIGURATION: Values passed to module.initialize()
         "cache_enabled": true,
         "supported_types": ["text", "image", "video"]
       }
     },
     {
-      "name": "DirectoryConfig",
-      "required": false,
-      "version": "~1.0.0",
-      "dependencies": ["ContentType", "EntityReference"],
-      "init_order": 3,
-      "config": {
+      "name": "DirectoryConfig",                   // REFERENCE: Must match module's actual name
+      "required": false,                           // CONSTRAINT: Developer decides if required
+      "version": "~1.0.0",                        // CONSTRAINT: Version requirement
+      "dependencies": ["ContentType", "EntityReference"], // CONSTRAINT: Additional dependencies
+      "init_order": 3,                            // CONSTRAINT: Developer-controlled initialization order
+      "config": {                                 // CONFIGURATION: Values passed to module.initialize()
         "scan_depth": 5,
         "exclude_patterns": ["*.tmp", "*.log"]
       }
     }
   ],
-  "global_config": {
+  "global_config": {                              // CONFIGURATION: Global settings for all modules
     "max_retries": 3,
     "log_level": "INFO",
     "timeout_seconds": 60
@@ -317,22 +317,22 @@ touch .adt-modules.json
 {
   "modules": [
     {
-      "name": "BaseModule",
-      "required": true,
-      "dependencies": [],
-      "init_order": 1
+      "name": "BaseModule",                        // REFERENCE: Must match module's actual name
+      "required": true,                            // CONSTRAINT: Developer decides if required
+      "dependencies": [],                          // CONSTRAINT: Additional dependencies (module's dependencies auto-detected)
+      "init_order": 1                             // CONSTRAINT: Developer-controlled initialization order
     },
     {
-      "name": "ProcessingModule",
-      "required": false,
-      "dependencies": ["BaseModule"],
-      "init_order": 2
+      "name": "ProcessingModule",                  // REFERENCE: Must match module's actual name
+      "required": false,                           // CONSTRAINT: Developer decides if required
+      "dependencies": ["BaseModule"],              // CONSTRAINT: Additional dependencies
+      "init_order": 2                             // CONSTRAINT: Developer-controlled initialization order
     },
     {
-      "name": "OutputModule",
-      "required": false,
-      "dependencies": ["ProcessingModule", "BaseModule"],
-      "init_order": 3
+      "name": "OutputModule",                      // REFERENCE: Must match module's actual name
+      "required": false,                           // CONSTRAINT: Developer decides if required
+      "dependencies": ["ProcessingModule", "BaseModule"], // CONSTRAINT: Additional dependencies
+      "init_order": 3                             // CONSTRAINT: Developer-controlled initialization order
     }
   ]
 }
@@ -345,19 +345,19 @@ touch .adt-modules.json
 {
   "modules": [
     {
-      "name": "StableModule",
-      "version": ">=2.0.0",          // At least version 2.0.0
-      "required": true
+      "name": "StableModule",                      // REFERENCE: Must match module's actual name
+      "version": ">=2.0.0",                       // CONSTRAINT: At least version 2.0.0 (actual version comes from module)
+      "required": true                             // CONSTRAINT: Developer decides if required
     },
     {
-      "name": "BetaModule",
-      "version": "~1.5.0",           // Compatible with 1.5.x
-      "required": false
+      "name": "BetaModule",                        // REFERENCE: Must match module's actual name
+      "version": "~1.5.0",                        // CONSTRAINT: Compatible with 1.5.x (actual version comes from module)
+      "required": false                            // CONSTRAINT: Developer decides if required
     },
     {
-      "name": "ExactModule",
-      "version": "1.0.0",            // Exact version
-      "required": true
+      "name": "ExactModule",                       // REFERENCE: Must match module's actual name
+      "version": "1.0.0",                         // CONSTRAINT: Exact version required (actual version comes from module)
+      "required": true                             // CONSTRAINT: Developer decides if required
     }
   ]
 }
@@ -371,47 +371,47 @@ touch .adt-modules.json
   "version": "1.0",
   "modules": [
     {
-      "name": "Authentication",
-      "required": true,
-      "version": ">=3.0.0",
-      "dependencies": [],
-      "init_order": 1,
-      "config": {
+      "name": "Authentication",                     // REFERENCE: Must match module's actual name
+      "required": true,                            // CONSTRAINT: Developer decides if required
+      "version": ">=3.0.0",                       // CONSTRAINT: Version requirement (actual version comes from module)
+      "dependencies": [],                          // CONSTRAINT: Additional dependencies (module's dependencies auto-detected)
+      "init_order": 1,                            // CONSTRAINT: Developer-controlled initialization order
+      "config": {                                 // CONFIGURATION: Values passed to module.initialize()
         "session_timeout": 3600,
         "max_login_attempts": 5
       }
     },
     {
-      "name": "Database",
-      "required": true,
-      "version": ">=2.1.0",
-      "dependencies": [],
-      "init_order": 2,
-      "config": {
+      "name": "Database",                          // REFERENCE: Must match module's actual name
+      "required": true,                            // CONSTRAINT: Developer decides if required
+      "version": ">=2.1.0",                       // CONSTRAINT: Version requirement
+      "dependencies": [],                          // CONSTRAINT: Additional dependencies
+      "init_order": 2,                            // CONSTRAINT: Developer-controlled initialization order
+      "config": {                                 // CONFIGURATION: Values passed to module.initialize()
         "pool_size": 10,
         "connection_timeout": 30
       }
     },
     {
-      "name": "UserManagement",
-      "required": true,
-      "version": ">=1.0.0",
-      "dependencies": ["Authentication", "Database"],
-      "init_order": 3
+      "name": "UserManagement",                    // REFERENCE: Must match module's actual name
+      "required": true,                            // CONSTRAINT: Developer decides if required
+      "version": ">=1.0.0",                       // CONSTRAINT: Version requirement
+      "dependencies": ["Authentication", "Database"], // CONSTRAINT: Additional dependencies
+      "init_order": 3                             // CONSTRAINT: Developer-controlled initialization order
     },
     {
-      "name": "Analytics",
-      "required": false,
-      "version": ">=1.2.0",
-      "dependencies": ["UserManagement"],
-      "init_order": 4,
-      "config": {
+      "name": "Analytics",                         // REFERENCE: Must match module's actual name
+      "required": false,                           // CONSTRAINT: Developer decides if required
+      "version": ">=1.2.0",                       // CONSTRAINT: Version requirement
+      "dependencies": ["UserManagement"],         // CONSTRAINT: Additional dependencies
+      "init_order": 4,                            // CONSTRAINT: Developer-controlled initialization order
+      "config": {                                 // CONFIGURATION: Values passed to module.initialize()
         "tracking_enabled": true,
         "retention_days": 90
       }
     }
   ],
-  "global_config": {
+  "global_config": {                              // CONFIGURATION: Global settings for all modules
     "max_retries": 3,
     "log_level": "INFO",
     "debug_mode": false
@@ -425,47 +425,47 @@ touch .adt-modules.json
   "version": "1.0",
   "modules": [
     {
-      "name": "DataIngestion",
-      "required": true,
-      "version": ">=1.0.0",
-      "dependencies": [],
-      "init_order": 1,
-      "config": {
+      "name": "DataIngestion",                     // REFERENCE: Must match module's actual name
+      "required": true,                            // CONSTRAINT: Developer decides if required
+      "version": ">=1.0.0",                       // CONSTRAINT: Version requirement (actual version comes from module)
+      "dependencies": [],                          // CONSTRAINT: Additional dependencies (module's dependencies auto-detected)
+      "init_order": 1,                            // CONSTRAINT: Developer-controlled initialization order
+      "config": {                                 // CONFIGURATION: Values passed to module.initialize()
         "batch_size": 1000,
         "input_format": "json"
       }
     },
     {
-      "name": "DataValidation",
-      "required": true,
-      "version": ">=2.0.0",
-      "dependencies": ["DataIngestion"],
-      "init_order": 2,
-      "config": {
+      "name": "DataValidation",                    // REFERENCE: Must match module's actual name
+      "required": true,                            // CONSTRAINT: Developer decides if required
+      "version": ">=2.0.0",                       // CONSTRAINT: Version requirement
+      "dependencies": ["DataIngestion"],          // CONSTRAINT: Additional dependencies
+      "init_order": 2,                            // CONSTRAINT: Developer-controlled initialization order
+      "config": {                                 // CONFIGURATION: Values passed to module.initialize()
         "strict_mode": true,
         "validation_rules": "rules/data_validation.json"
       }
     },
     {
-      "name": "DataTransformation",
-      "required": false,
-      "version": ">=1.5.0",
-      "dependencies": ["DataValidation"],
-      "init_order": 3
+      "name": "DataTransformation",                // REFERENCE: Must match module's actual name
+      "required": false,                           // CONSTRAINT: Developer decides if required
+      "version": ">=1.5.0",                       // CONSTRAINT: Version requirement
+      "dependencies": ["DataValidation"],         // CONSTRAINT: Additional dependencies
+      "init_order": 3                             // CONSTRAINT: Developer-controlled initialization order
     },
     {
-      "name": "DataExport",
-      "required": true,
-      "version": ">=1.0.0",
-      "dependencies": ["DataTransformation"],
-      "init_order": 4,
-      "config": {
+      "name": "DataExport",                        // REFERENCE: Must match module's actual name
+      "required": true,                            // CONSTRAINT: Developer decides if required
+      "version": ">=1.0.0",                       // CONSTRAINT: Version requirement
+      "dependencies": ["DataTransformation"],     // CONSTRAINT: Additional dependencies
+      "init_order": 4,                            // CONSTRAINT: Developer-controlled initialization order
+      "config": {                                 // CONFIGURATION: Values passed to module.initialize()
         "output_format": "parquet",
         "compression": "snappy"
       }
     }
   ],
-  "global_config": {
+  "global_config": {                              // CONFIGURATION: Global settings for all modules
     "max_retries": 5,
     "log_level": "DEBUG",
     "parallel_processing": true
