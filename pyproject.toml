@@ -28,7 +28,10 @@ asciidoc-dita-toolkit-gui = "adt_core.cli:main"
 [project.entry-points."adt.modules"]
 EntityReference = "asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference:EntityReferenceModule"
 ContentType = "asciidoc_dita_toolkit.asciidoc_dita.plugins.ContentType:ContentTypeModule"
-DirectoryConfig = "modules.directory_config:DirectoryConfigModule"
+DirectoryConfig = "asciidoc_dita_toolkit.asciidoc_dita.plugins.DirectoryConfig:DirectoryConfigModule"
+ContextAnalyzer = "asciidoc_dita_toolkit.asciidoc_dita.plugins.ContextAnalyzer:ContextAnalyzerModule"
+ContextMigrator = "asciidoc_dita_toolkit.asciidoc_dita.plugins.ContextMigrator:ContextMigratorModule"
+CrossReference = "asciidoc_dita_toolkit.asciidoc_dita.plugins.CrossReference:CrossReferenceModule"
 
 [project.optional-dependencies]
 dev = [
