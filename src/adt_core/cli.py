@@ -18,9 +18,14 @@ from .module_sequencer import ModuleSequencer
 def get_version():
     """Get the version of adt package."""
     try:
-        return importlib.metadata.version("adt")
+        return importlib.metadata.version("asciidoc-dita-toolkit")
     except importlib.metadata.PackageNotFoundError:
-        return "unknown"
+        # Fallback to module version for development/uninstalled package
+        try:
+            from . import __version__
+            return __version__
+        except ImportError:
+            return "unknown"
 
 
 def get_legacy_plugins():

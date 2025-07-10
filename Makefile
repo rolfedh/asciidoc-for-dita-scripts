@@ -1,10 +1,11 @@
-.PHONY: help test lint format clean install install-dev build publish-check publish changelog changelog-version release bump-version
+.PHONY: help test test-coverage lint format clean install install-dev build publish-check publish changelog changelog-version release bump-version dev container-build container-build-prod container-test container-shell container-push container-push-prod container-clean container-validate check
 
 # Default target
 help:
 	@echo "Available targets:"
 	@echo "  help       - Show this help message"
 	@echo "  test       - Run all tests"
+	@echo "  test-coverage - Run tests with coverage reporting"
 	@echo "  lint       - Run code linting with flake8"
 	@echo "  format     - Format code with black"
 	@echo "  clean      - Clean build artifacts"
@@ -18,6 +19,7 @@ help:
 	@echo "  changelog  - Generate changelog entry for latest version"
 	@echo "  changelog-version - Generate changelog for specific version (VERSION=x.y.z)"
 	@echo "  release    - Automated release: bump patch version, commit, tag, push (MAINTAINERS ONLY) (VERSION=x.y.z to override)"
+	@echo "  dev        - Complete development setup (install-dev + format + lint + test)"
 	@echo ""
 	@echo "Container targets:"
 	@echo "  container-build     - Build development container"
@@ -42,68 +44,62 @@ test-coverage:
 
 # Code quality targets
 lint:
-	@echo "Running flake8 linting..."
-	python3 -m flake8 asciidoc_dita_toolkit/ tests/ --max-line-length=100 --ignore=E203,W503
+	python3 -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+	python3 -m flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
 format:
-	@echo "Formatting code with black..."
-	python3 -m black asciidoc_dita_toolkit/ tests/ --line-length=100
+	python3 -m black .
 
-format-check:
-	@echo "Checking code formatting..."
-	python3 -m black asciidoc_dita_toolkit/ tests/ --line-length=100 --check
-
-# Installation targets
+# Development setup
 install:
-	@echo "Installing package in development mode..."
-	python3 -m pip install -e .
+	pip install -e .
 
 install-dev:
-	@echo "Installing development dependencies..."
-	python3 -m pip install -r requirements-dev.txt
-	python3 -m pip install -e .
+	pip install -e .
+	pip install -r requirements-dev.txt
 
-# Build and distribution targets
+# Development workflow target
+dev: install-dev format lint test
+	@echo "Development setup complete!"
+
+# Build and distribution
 clean:
-	@echo "Cleaning build artifacts..."
 	rm -rf build/
 	rm -rf dist/
 	rm -rf *.egg-info/
 	find . -type d -name __pycache__ -exec rm -rf {} +
 	find . -type f -name "*.pyc" -delete
-	rm -rf htmlcov/
-	rm -f .coverage
 
 build: clean
-	@echo "Building distribution packages..."
 	python3 -m build
 
-# Version bump target
+# Quality checks
+check: lint test
+	@echo "All quality checks passed!"
+
+# Changelog targets
+changelog:
+	@echo "Generating changelog entry..."
+	./scripts/generate-changelog.sh
+
+changelog-version:
+	@if [ -z "$(VERSION)" ]; then echo "Usage: make changelog-version VERSION=0.1.7"; exit 1; fi
+	@echo "Generating changelog for version $(VERSION)..."
+	./scripts/generate-changelog.sh $(VERSION)
+
+# Version management
 bump-version:
 	@if [ -z "$(VERSION)" ]; then \
-		current_version=$$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/'); \
-		echo "Current version: $$current_version"; \
-		major=$$(echo $$current_version | cut -d. -f1); \
-		minor=$$(echo $$current_version | cut -d. -f2); \
-		patch=$$(echo $$current_version | cut -d. -f3); \
-		new_patch=$$((patch + 1)); \
-		new_version="$$major.$$minor.$$new_patch"; \
-		echo "Auto-bumping patch version to: $$new_version"; \
-	else \
-		new_version="$(VERSION)"; \
-		echo "Using specified version: $$new_version"; \
+		echo "Error: VERSION is required. Usage: make bump-version VERSION=x.y.z"; \
+		exit 1; \
 	fi; \
-	echo "Updating version in pyproject.toml..."; \
-	if sed --version >/dev/null 2>&1; then \
-		sed -i 's/^version = ".*"/version = "'"$$new_version"'"/' pyproject.toml; \
+	new_version="$(VERSION)"; \
+	echo "Bumping version to $$new_version..."; \
+	sed -i 's/^version = .*/version = "'"$$new_version"'"/' pyproject.toml; \
+	if [ -f src/adt_core/__init__.py ]; then \
+		sed -i 's/^__version__ = .*/__version__ = "'"$$new_version"'"/' src/adt_core/__init__.py; \
 	else \
-		sed -i '' 's/^version = ".*"/version = "'"$$new_version"'"/' pyproject.toml; \
-	fi; \
-	echo "Updating version in src/adt_core/__init__.py..."; \
-	if sed --version >/dev/null 2>&1; then \
-		sed -i 's/^__version__ = ".*"/__version__ = "'"$$new_version"'"/' src/adt_core/__init__.py; \
-	else \
-		sed -i '' 's/^__version__ = ".*"/__version__ = "'"$$new_version"'"/' src/adt_core/__init__.py; \
+		echo "Warning: src/adt_core/__init__.py not found, skipping..."; \
 	fi; \
 	echo "Version bumped to $$new_version in both files"
 
@@ -125,30 +121,6 @@ publish-check:
 publish: bump-version build publish-check
 	@echo "Publishing to PyPI..."
 	python3 -m twine upload dist/*
-
-# Comprehensive quality check
-check: format-check lint test
-	@echo "All quality checks passed!"
-
-# CLI testing targets
-test-cli: install
-	@echo "Testing CLI functionality..."
-	asciidoc-dita-toolkit --list-plugins
-	@echo "CLI test completed successfully!"
-
-# Development workflow target
-dev: install-dev format lint test
-	@echo "Development setup complete!"
-
-# Changelog targets
-changelog:
-	@echo "Generating changelog entry..."
-	./scripts/generate-changelog.sh
-
-changelog-version:
-	@if [ -z "$(VERSION)" ]; then echo "Usage: make changelog-version VERSION=0.1.7"; exit 1; fi
-	@echo "Generating changelog for version $(VERSION)..."
-	./scripts/generate-changelog.sh $(VERSION)
 
 # Container targets
 container-build:
@@ -266,11 +238,11 @@ release: check
 	else \
 		sed -i '' 's/^version = ".*"/version = "'"$$new_version"'"/' pyproject.toml; \
 	fi; \
-	echo "Updating version in adt_core/__init__.py..."; \
+	echo "Updating version in src/adt_core/__init__.py..."; \
 	if sed --version >/dev/null 2>&1; then \
-		sed -i 's/^__version__ = ".*"/__version__ = "'"$$new_version"'"/' adt_core/__init__.py; \
+		sed -i 's/^__version__ = ".*"/__version__ = "'"$$new_version"'"/' src/adt_core/__init__.py; \
 	else \
-		sed -i '' 's/^__version__ = ".*"/__version__ = "'"$$new_version"'"/' adt_core/__init__.py; \
+		sed -i '' 's/^__version__ = ".*"/__version__ = "'"$$new_version"'"/' src/adt_core/__init__.py; \
 	fi; \
 	echo "Generating changelog for version $$new_version..."; \
 	if [ -f "./scripts/generate-changelog.sh" ]; then \
@@ -279,7 +251,7 @@ release: check
 		echo "Changelog script not found, skipping changelog generation."; \
 	fi; \
 	echo "Committing version bump..."; \
-	git add pyproject.toml adt_core/__init__.py CHANGELOG.md; \
+	git add pyproject.toml src/adt_core/__init__.py CHANGELOG.md; \
 	git commit -m "Bump version to $$new_version"; \
 	echo "Pushing release branch..."; \
 	git push origin "$$release_branch"; \
@@ -296,4 +268,3 @@ release: check
 	echo "   git tag v$$new_version"; \
 	echo "   git push origin v$$new_version"; \
 	echo "5. GitHub Actions will automatically build and publish to PyPI"
-
