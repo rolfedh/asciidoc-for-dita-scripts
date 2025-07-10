@@ -208,3 +208,7 @@ Thumbs.db
 .local/
 local_settings.py
 test-pypi-install/
+
+# Test environments for user experience testing
+test_user_install/
+test_pypi_install/
