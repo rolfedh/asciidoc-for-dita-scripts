@@ -1,4 +1,4 @@
-.PHONY: help test lint format clean install install-dev build publish changelog changelog-version release bump-version
+.PHONY: help test lint format clean install install-dev build publish-check publish changelog changelog-version release bump-version
 
 # Default target
 help:
@@ -11,6 +11,7 @@ help:
 	@echo "  install    - Install package in development mode"
 	@echo "  install-dev - Install package with development dependencies"
 	@echo "  build      - Build distribution packages"
+	@echo "  publish-check - Check publishing prerequisites (twine, credentials)"
 	@echo "  bump-version - Bump version in both pyproject.toml and __init__.py (VERSION=x.y.z to specify)"
 	@echo "  publish    - Bump version and publish to PyPI (MAINTAINERS ONLY - requires PYPI_API_TOKEN)"
 	@echo "  check      - Run comprehensive quality checks"
@@ -106,7 +107,22 @@ bump-version:
 	fi; \
 	echo "Version bumped to $$new_version in both files"
 
-publish: bump-version build
+# Publishing dependency check
+publish-check:
+	@echo "Checking publishing prerequisites..."
+	@if ! python3 -c "import twine" 2>/dev/null; then \
+		echo "❌ twine not installed. Run 'make install-dev' or 'pip install twine'"; \
+		exit 1; \
+	fi
+	@echo "✅ twine is available"
+	@if [ -z "$$PYPI_API_TOKEN" ] && [ ! -f ~/.pypirc ]; then \
+		echo "❌ No PyPI credentials found. Set PYPI_API_TOKEN or configure ~/.pypirc"; \
+		exit 1; \
+	fi
+	@echo "✅ PyPI credentials configured"
+	@echo "✅ Ready to publish"
+
+publish: bump-version build publish-check
 	@echo "Publishing to PyPI..."
 	python3 -m twine upload dist/*
 
