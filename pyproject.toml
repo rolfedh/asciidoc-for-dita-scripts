@@ -3,27 +3,55 @@ requires = ["setuptools>=45", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "adt"
+name = "asciidoc-dita-toolkit"
 version = "2.0.1"
-description = "ADT Module Configuration and Sequencing System"
+description = "AsciiDoc DITA Toolkit - unified package for technical documentation workflows"
+readme = "README.md"
 requires-python = ">=3.8"
+license = "MIT"
+authors = [
+    {name = "rolfedh", email = "rolfedh@users.noreply.github.com"},
+]
+maintainers = [
+    {name = "rolfedh", email = "rolfedh@users.noreply.github.com"},
+]
+keywords = ["asciidoc", "dita", "documentation", "technical-writing", "content-validation"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Topic :: Documentation",
+    "Topic :: Software Development :: Documentation",
+    "Topic :: Text Processing :: Markup",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+]
 dependencies = [
     "importlib-metadata>=1.0; python_version<'3.8'"
 ]
 
+[project.urls]
+"Homepage" = "https://github.com/rolfedh/asciidoc-dita-toolkit"
+"Bug Reports" = "https://github.com/rolfedh/asciidoc-dita-toolkit/issues"
+"Source" = "https://github.com/rolfedh/asciidoc-dita-toolkit"
+"Documentation" = "https://github.com/rolfedh/asciidoc-dita-toolkit/blob/main/docs/"
+
 [tool.setuptools.packages.find]
-where = ["."]
-include = ["src.adt_core*", "asciidoc_dita_toolkit*"]
+where = ["src", "."]
+include = ["adt_core*", "asciidoc_dita_toolkit*"]
 exclude = ["tests*", "build*", "dist*", "*.egg-info*"]
-
-
 
 [project.scripts]
 adt = "adt_core.cli:main"
-adg = "adt_core.cli:main"
-adt-test-files = "adt_core.cli:main"
+adg = "adt_core.cli:launch_gui"
+adt-test-files = "adt_core.cli:adt_test_files_main"
 asciidoc-dita-toolkit = "adt_core.cli:main"
-asciidoc-dita-toolkit-gui = "adt_core.cli:main"
+asciidoc-dita-toolkit-gui = "adt_core.cli:launch_gui"
 
 [project.entry-points."adt.modules"]
 EntityReference = "asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference:EntityReferenceModule"

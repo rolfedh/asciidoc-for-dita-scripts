@@ -85,11 +85,34 @@ make clean
 # Build distribution packages
 make build
 
+# Check publishing prerequisites (recommended before publishing)
+make publish-check
+
 # Publish to PyPI (MAINTAINERS ONLY - requires PYPI_API_TOKEN)
 make publish
 ```
 
 **Important**: Always run `make clean` before building to remove any obsolete build artifacts from previous versions. This prevents packaging outdated files that could cause version conflicts.
+
+**Publishing Prerequisites:**
+
+Before publishing, use `make publish-check` to verify:
+- ✅ `twine` is installed (for uploading to PyPI)
+- ✅ PyPI credentials are configured (either `PYPI_API_TOKEN` env var or `~/.pypirc` file)
+
+**Publishing Workflow Options:**
+
+**Option 1: Safe step-by-step (recommended):**
+```sh
+make install-dev     # Install all dev dependencies including twine
+make publish-check   # Verify everything is ready
+make publish         # Publish to PyPI
+```
+
+**Option 2: Auto-handling (the publish target now auto-installs twine if missing):**
+```sh
+make publish         # Will auto-install twine if needed, then publish
+```
 
 ### Container Development
 
@@ -391,21 +414,34 @@ To manually have the GitHub Actions workflow build and upload the package to PyP
 
 **Manual publishing (alternative):**
 
-1. Clean previous build artifacts:
+1. **Install development dependencies (includes twine):**
+
+   ```sh
+   make install-dev
+   # Or manually: python3 -m pip install -r requirements-dev.txt
+   ```
+
+2. **Clean previous build artifacts:**
 
    ```sh
    # Remove any obsolete build files that could cause version conflicts
-   rm -rf dist/ build/ *.egg-info/
+   make clean
    ```
 
-2. Build the package:
+3. **Build the package:**
 
    ```sh
-   python3 -m pip install --upgrade build twine
-   python3 -m build
+   make build
+   # Or manually: python3 -m build
    ```
 
-3. Upload to PyPI:
+4. **Check prerequisites before uploading:**
+
+   ```sh
+   make publish-check
+   ```
+
+5. **Upload to PyPI:**
 
    ```sh
    python3 -m twine upload dist/*

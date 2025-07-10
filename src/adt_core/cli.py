@@ -16,11 +16,16 @@ from .module_sequencer import ModuleSequencer
 
 
 def get_version():
-    """Get the version of adt-core package."""
+    """Get the version of adt package."""
     try:
-        return importlib.metadata.version("adt-core")
+        return importlib.metadata.version("asciidoc-dita-toolkit")
     except importlib.metadata.PackageNotFoundError:
-        return "unknown"
+        # Fallback to module version for development/uninstalled package
+        try:
+            from . import __version__
+            return __version__
+        except ImportError:
+            return "unknown"
 
 
 def get_legacy_plugins():
@@ -242,8 +247,8 @@ def create_new_module_subcommand(subparsers, name, module_info):
 def main(args=None):
     """Main entry point for the CLI."""
     parser = argparse.ArgumentParser(
-        description="ADT Core - AsciiDoc DITA Toolkit (adt-core)",
-        prog="adt-core"
+        description="ADT - AsciiDoc DITA Toolkit",
+        prog="adt"
     )
     
     parser.add_argument(
@@ -297,8 +302,8 @@ def main(args=None):
     # Handle special flags
     if parsed_args.version:
         version = get_version()
-        print(f"adt-core {version}")
-        print("(formerly asciidoc-dita-toolkit)")
+        print(f"adt {version}")
+        print("(AsciiDoc DITA Toolkit - unified package)")
         sys.exit(0)
     
     if parsed_args.list_plugins:

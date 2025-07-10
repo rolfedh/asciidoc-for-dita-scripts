@@ -54,6 +54,8 @@ Install the toolkit using pip:
 python3 -m pip install asciidoc-dita-toolkit
 ```
 
+> **📦 Unified Package**: This is the unified package that includes both the core framework and all plugins. The CLI command is the convenient short `adt` while the package name remains descriptive.
+
 > **🌙 Nightly Releases**: This project automatically publishes nightly patch releases to PyPI whenever there are new commits. These releases include the latest fixes and improvements. The nightly releases follow the pattern `x.y.z` where `z` is automatically incremented.
 
 ### Upgrading
@@ -84,13 +86,13 @@ python3 -m pip install --upgrade asciidoc-dita-toolkit
 ### List available plugins
 
 ```sh
-asciidoc-dita-toolkit --list-plugins
+adt --list-plugins
 ```
 
 ### Run a plugin
 
 ```sh
-asciidoc-dita-toolkit <plugin> [options]
+adt <plugin> [options]
 ```
 
 - `<plugin>`: Name of the plugin to run (e.g., `EntityReference`, `ContentType`)
@@ -109,19 +111,19 @@ All plugins support these options:
 #### Fix HTML entity references in a file
 
 ```sh
-asciidoc-dita-toolkit EntityReference -f path/to/file.adoc
+adt EntityReference -f path/to/file.adoc
 ```
 
 #### Add content type labels to all files recursively
 
 ```sh
-asciidoc-dita-toolkit ContentType -r
+adt ContentType -r
 ```
 
 #### Process all .adoc files in a specific directory
 
 ```sh
-asciidoc-dita-toolkit EntityReference -d /path/to/docs -r
+adt EntityReference -d /path/to/docs -r
 ```
 
 ### Container Usage
@@ -152,22 +154,22 @@ docker run --rm -it -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit:latest /b
 **Tip:** Create a shell alias to simplify container usage:
 
 ```sh
-alias asciidoc-dita-toolkit='docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit-prod:latest'
+alias adt='docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit-prod:latest'
 ```
 
 Then use it exactly like the PyPI version:
 
 ```sh
-asciidoc-dita-toolkit --list-plugins
-asciidoc-dita-toolkit EntityReference -r
+adt --list-plugins
+adt EntityReference -r
 ```
 
 ### 🔌 Available Plugins
 
 | Plugin | Description | Example Usage |
 |--------|-------------|---------------|
-| `EntityReference` | Replace unsupported HTML character entity references with AsciiDoc attribute references | `asciidoc-dita-toolkit EntityReference -f file.adoc` |
-| `ContentType` | Add `:_mod-docs-content-type:` labels where missing, based on filename | `asciidoc-dita-toolkit ContentType -r` |
+| `EntityReference` | Replace unsupported HTML character entity references with AsciiDoc attribute references | `adt EntityReference -f file.adoc` |
+| `ContentType` | Add `:_mod-docs-content-type:` labels where missing, based on filename | `adt ContentType -r` |
 
 > **📋 Technical Details**: For plugin internals and supported entity mappings, see [docs/asciidoc-dita-toolkit.md](docs/asciidoc-dita-toolkit.md).
 

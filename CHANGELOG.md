@@ -10,8 +10,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 🚨 MAJOR RELEASE: Unified Package v2.0.0
+
+- **NEW**: Complete unified package under familiar name `asciidoc-dita-toolkit`
+- **CLI**: Convenient short command `adt` while keeping descriptive package name
+- **COMPLETE**: Includes both core framework and all plugins in one installation
+- **SIMPLIFIED**: No more split packages or missing module issues
+- **INSTALL**: `pip install asciidoc-dita-toolkit` gives you everything you need
+
+### Package and Installation
+- Fixed package discovery to include both `adt_core` and `asciidoc_dita_toolkit` modules
+- Updated all entry points and CLI scripts for unified package
+- Enhanced version reporting and CLI help text
+- Comprehensive testing in both development and user environments
+
+### Documentation
+- Updated README.md with correct installation instructions and package information
+- Updated all CLI examples to use convenient `adt` command
+- Created comprehensive v2.0.0 information guide
+- Updated PyPI badge and links to reference correct package name
+
+### Testing and Quality
 - Enhanced testing system with colocated expected files
 - Modernized fixture-based testing infrastructure
+- Verified all 196 tests pass in unified package
+- Added comprehensive packaging and installation testing
 
 ## [0.1.6] - 2025-06-29
 
