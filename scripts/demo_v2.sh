@@ -38,12 +38,14 @@ NC='\033[0m' # No Color
 # Demo configuration
 DEMO_DIR="demo_presentation"
 PACKAGE_NAME="asciidoc-dita-toolkit"
-VERSION="2.0.2"
+VERSION="2.0.3"
 
 # Utility functions
 pause_for_narration() {
-    echo -e "\n${YELLOW}⏸️  [PAUSE FOR NARRATION] $1${NC}"
-    echo -e "${CYAN}Press ENTER when ready to continue...${NC}"
+    # Use dull grey for speaker prompts
+    local GREY='\033[1;30m'
+    echo -e "\n${GREY}⏸️  [PAUSE FOR NARRATION] $1${NC}"
+    echo -e "${GREY}Press ENTER when ready to continue...${NC}"
     read -r
 }
 
@@ -75,53 +77,56 @@ typing_effect() {
 command_demo() {
     local cmd="$1"
     local description="$2"
+    local BRIGHT_GREEN='\033[1;92m'
+    local BRIGHT_GREEN_BOLD='\033[1;92;1m'
     
-    echo -e "${YELLOW}${BOLD}💻 Running: ${NC}${CYAN}$cmd${NC}"
+    echo -e "${YELLOW}${BOLD}💻 Running: ${NC}${BRIGHT_GREEN_BOLD}$cmd${NC}"
     [ -n "$description" ] && echo -e "${WHITE}   └── $description${NC}"
     echo ""
     
-    # Simulate typing the command
-    echo -n "$ "
+    # Simulate typing the command in bright green
+    echo -ne "${BRIGHT_GREEN_BOLD}$ "
     typing_effect "$cmd" 0.05
+    echo -ne "${NC}"
     
-    # Execute the command
-    eval "$cmd"
-    echo ""
+    # Capture and print output in bright green
+    local output
+    output=$(eval "$cmd" 2>&1)
+    echo -e "${BRIGHT_GREEN}$output${NC}\n"
 }
 
 create_demo_file() {
     local filename="$1"
     local content="$2"
     
+    # Ensure current directory exists (should already be in $DEMO_DIR)
     echo -e "${GREEN}📝 Creating demo file: ${CYAN}$filename${NC}"
-    echo "$content" > "$DEMO_DIR/$filename"
+    echo "$content" > "$filename"
 }
 
 # Main demo functions
 demo_1_the_problem() {
-    section_header "1. THE PROBLEM - Before v2.0.x"
+    clear
+    section_header "1. Challenges Before v2.0.x"
     
     echo -e "${RED}${BOLD}The Old Experience:${NC}"
-    echo -e "${RED}❌ Multiple fragmented packages${NC}"
-    echo -e "${RED}❌ Confusing installation process${NC}"
+    echo -e "${RED}❌ Multiple isolated packages${NC}"
     echo -e "${RED}❌ Inconsistent CLI interfaces${NC}"
-    echo -e "${RED}❌ Missing modules and broken entry points${NC}"
+    echo -e "${RED}❌ Need for sequencing and dependency management${NC}"
     echo ""
     
-    echo -e "${YELLOW}Old installation attempts:${NC}"
-    echo -e "${CYAN}$ pip install adt-core${NC}  ${RED}# ❌ Missing actual functionality${NC}"
-    echo -e "${CYAN}$ pip install asciidoc-dita-toolkit${NC}  ${RED}# ❌ Old package structure${NC}"
     echo ""
     
-    echo -e "${YELLOW}Result:${NC} ${RED}Frustrated users, broken workflows, support tickets...${NC}"
+    echo -e "${YELLOW}Potential outcomes:${NC} ${RED}Frustrated users, unclear workflows, support tickets...${NC}"
     
     pause_for_narration "Explain the pain points your team experienced with the old fragmented approach"
 }
 
 demo_2_the_solution() {
+    clear
     section_header "2. THE SOLUTION - Unified Package v2.0.x"
     
-    echo -e "${GREEN}${BOLD}✨ The New Experience:${NC}"
+    echo -e "${GREEN}${BOLD}✨ The New Experience (aspirational):${NC}"
     echo -e "${GREEN}✅ Single unified package${NC}"
     echo -e "${GREEN}✅ Professional PyPI presence${NC}"
     echo -e "${GREEN}✅ Consistent CLI interface${NC}"
@@ -130,19 +135,29 @@ demo_2_the_solution() {
     
     pause_for_narration "Introduce the unified solution"
     
-    # Set up demo environment
-    echo -e "${BLUE}🏗️  Setting up demo environment...${NC}"
+    # Set up demo environment (silent, hidden from demo output)
     rm -rf "$DEMO_DIR"
     mkdir -p "$DEMO_DIR"
     cd "$DEMO_DIR"
-    
-    # Show PyPI installation
-    echo -e "${GREEN}${BOLD}Installation Demo:${NC}"
-    command_demo "python3 -m venv demo_env" "Create clean environment"
-    command_demo "source demo_env/bin/activate" "Activate environment"
-    
-    echo -e "${YELLOW}Installing from PyPI...${NC}"
-    command_demo "pip install $PACKAGE_NAME" "Single command installs everything!"
+    python3 -m venv demo_env > /dev/null 2>&1
+    source demo_env/bin/activate
+
+    # Show the recommended install/upgrade commands as text (not executed)
+    local GREY='\033[1;30m'
+    local BRIGHT_GREEN='\033[1;92m'
+    echo -e "${GREY}# Install the toolkit from PyPI (as shown to users)${NC}"
+    echo -e "${BOLD}${BRIGHT_GREEN}python3 -m pip install asciidoc-dita-toolkit${NC}"
+    echo -e "${GREY}# Upgrade to the latest version if needed${NC}"
+    echo -e "${BOLD}${BRIGHT_GREEN}python3 -m pip install --upgrade asciidoc-dita-toolkit${NC}"
+
+    # Always try to install the latest local code in editable mode first (silent)
+    if pip install -e .. > install.log 2>&1; then
+        : # Hide success output
+    else
+        echo -e "${RED}Local install failed. See install.log for details.${NC}"
+        echo -e "${YELLOW}Falling back to PyPI install...${NC}"
+        command_demo "pip install $PACKAGE_NAME" "Single command installs everything!"
+    fi
     
     pause_for_narration "Highlight how simple the installation is now"
     
@@ -155,12 +170,23 @@ demo_2_the_solution() {
 }
 
 demo_3_the_features() {
+    clear
     section_header "3. THE FEATURES - All 6 Plugins in Action"
     
     echo -e "${GREEN}${BOLD}🎯 Plugin Discovery:${NC}"
     command_demo "adt --list-plugins" "All plugins auto-discovered"
     
     pause_for_narration "Point out all 6 plugins are available and working"
+    
+    # Concise one-line descriptions for each module (static, since --describe is not supported)
+    echo -e "${CYAN}Module overview:${NC}"
+    echo -e "${WHITE}- CrossReference: Fix cross-references in AsciiDoc files by updating xref links to include proper file paths${NC}"
+    echo -e "${WHITE}- ContextAnalyzer: Analyze AsciiDoc documentation for context usage and migration complexity${NC}"
+    echo -e "${WHITE}- EntityReference: Replace unsupported HTML character entity references in .adoc files with AsciiDoc attribute references.${NC}"
+    echo -e "${WHITE}- ContextMigrator: Migrate AsciiDoc files from context-suffixed IDs to context-free IDs with validation and rollback${NC}"
+    echo -e "${WHITE}- ContentType: Add a :_mod-docs-content-type: label in .adoc files where those are missing, based on filename.${NC}"
+    echo -e "${WHITE}- DirectoryConfig: Configure directory scoping for AsciiDoc processing (preview)${NC}"
+    echo ""
     
     # Create demo content for each plugin
     echo -e "${BLUE}${BOLD}📁 Creating realistic demo content...${NC}"
@@ -211,7 +237,7 @@ docker run hello-world
 ----"
     
     echo -e "${GREEN}${BOLD}🎨 ContentType Plugin Demo:${NC}"
-    command_demo "adt ContentType -f procedure_example.adoc -v" "Auto-detect and add content type"
+    command_demo "adt ContentType -f procedure_example.adoc" "Auto-detect and add content type"
     
     echo -e "${CYAN}Let's see what was added:${NC}"
     command_demo "head -5 procedure_example.adoc" "Content type attribute added!"
@@ -299,6 +325,7 @@ For troubleshooting: xref:troubleshoot.adoc#issues[Common Issues]."
 }
 
 demo_4_developer_experience() {
+    clear
     section_header "4. THE DEVELOPER EXPERIENCE"
     
     echo -e "${GREEN}${BOLD}🔧 Professional Development Workflow:${NC}"
@@ -329,6 +356,7 @@ demo_4_developer_experience() {
 }
 
 demo_5_the_impact() {
+    clear
     section_header "5. THE IMPACT - What This Means for Our Team"
     
     echo -e "${GREEN}${BOLD}🎯 Business Impact:${NC}"
@@ -368,15 +396,15 @@ demo_5_the_impact() {
     echo -e "${YELLOW}🧹 Cleaning up demo environment...${NC}"
     rm -rf "$DEMO_DIR"
     
-    echo -e "${GREEN}${BOLD}"
-    echo "████████████████████████████████████████████████████████████████████"
-    echo "█                                                                  █"
-    echo "█                    DEMO COMPLETE! 🎉                            █"
-    echo "█                                                                  █"
-    echo "█          AsciiDoc DITA Toolkit v$VERSION                         █"
-    echo "█              Ready for Production Use!                          █"
-    echo "█                                                                  █"
-    echo "████████████████████████████████████████████████████████████████████"
+    echo -e "${GREEN}"
+    echo "┌───────────────────────────────────────────────────────────────┐"
+    echo "│                                                               │"
+    echo "│                  DEMO COMPLETE!  🎉                           │"
+    echo "│                                                               │"
+    echo "│        AsciiDoc DITA Toolkit v$VERSION                        │"
+    echo "│        Ready for Production Use!                              │"
+    echo "│                                                               │"
+    echo "└───────────────────────────────────────────────────────────────┘"
     echo -e "${NC}"
 }
 
