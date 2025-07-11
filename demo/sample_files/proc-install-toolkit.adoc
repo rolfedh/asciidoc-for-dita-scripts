@@ -1,0 +1,237 @@
+= How to Install the AsciiDoc DITA Toolkit
+:doctype: article
+
+== Overview
+
+This procedure shows you how to install the AsciiDoc DITA Toolkit v2.0.x on your system.
+
+== Prerequisites
+
+Before you begin, ensure you have:
+
+* Python 3.8 or newer installed
+* pip package manager available
+* Administrative privileges (for system-wide installation)
+
+== Installation Steps
+
+=== Option 1: PyPI Installation (Recommended)
+
+1. Open a terminal or command prompt.
+
+2. Install the toolkit using pip:
++
+[source,bash]
+----
+python3 -m pip install asciidoc-dita-toolkit
+----
+
+3. Verify the installation:
++
+[source,bash]
+----
+adt --version
+----
+
+4. List available plugins:
++
+[source,bash]
+----
+adt --list-plugins
+----
+
+=== Option 2: Container Installation
+
+1. Install Docker on your system if not already installed.
+
+2. Pull the production image:
++
+[source,bash]
+----
+docker pull rolfedh/asciidoc-dita-toolkit-prod:latest
+----
+
+3. Create a shell alias for convenience:
++
+[source,bash]
+----
+alias adt='docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit-prod:latest'
+----
+
+4. Test the installation:
++
+[source,bash]
+----
+adt --help
+----
+
+=== Option 3: Development Installation
+
+1. Clone the repository:
++
+[source,bash]
+----
+git clone https://github.com/rolfedh/asciidoc-dita-toolkit.git
+cd asciidoc-dita-toolkit
+----
+
+2. Install in development mode:
++
+[source,bash]
+----
+python3 -m pip install -e .
+----
+
+3. Install development dependencies:
++
+[source,bash]
+----
+python3 -m pip install -r requirements-dev.txt
+----
+
+4. Run the tests:
++
+[source,bash]
+----
+python3 -m pytest tests/
+----
+
+== Verification
+
+After installation, verify that all components are working:
+
+1. **Check the main command:**
++
+[source,bash]
+----
+adt --help
+----
+
+2. **List available plugins:**
++
+[source,bash]
+----
+adt --list-plugins
+----
++
+Expected output:
++
+----
+Available plugins:
+- EntityReference v1.2.1 (GA)
+- ContentType v2.1.0 (GA)
+- DirectoryConfig v1.0.0 (GA)
+- ContextAnalyzer v1.0.0 (GA)
+- ContextMigrator v1.0.0 (GA)
+- CrossReference v1.0.0 (GA)
+----
+
+3. **Test a simple operation:**
++
+[source,bash]
+----
+# Create a test file
+echo "= Test Document" > test.adoc
+echo "This is a test with &copy; symbol." >> test.adoc
+
+# Run EntityReference plugin
+adt EntityReference -f test.adoc
+
+# Check the result
+cat test.adoc
+----
+
+== Troubleshooting
+
+If you encounter issues:
+
+=== Python Version Issues
+
+**Problem:** "Python 3.8+ required" error
+
+**Solution:** 
+1. Check your Python version:
++
+[source,bash]
+----
+python3 --version
+----
+
+2. If needed, upgrade Python or use a virtual environment:
++
+[source,bash]
+----
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install asciidoc-dita-toolkit
+----
+
+=== Permission Issues
+
+**Problem:** Permission denied during installation
+
+**Solution:**
+1. Use user installation:
++
+[source,bash]
+----
+python3 -m pip install --user asciidoc-dita-toolkit
+----
+
+2. Or use a virtual environment (recommended):
++
+[source,bash]
+----
+python3 -m venv adt-env
+source adt-env/bin/activate
+pip install asciidoc-dita-toolkit
+----
+
+=== Container Issues
+
+**Problem:** Docker container fails to run
+
+**Solution:**
+1. Check Docker installation:
++
+[source,bash]
+----
+docker --version
+----
+
+2. Ensure Docker daemon is running
+
+3. Try pulling the image manually:
++
+[source,bash]
+----
+docker pull rolfedh/asciidoc-dita-toolkit-prod:latest
+----
+
+== Next Steps
+
+After successful installation:
+
+1. **Explore the documentation:**
+   - Read the main README.md
+   - Check the docs/ directory
+   - Review plugin-specific documentation
+
+2. **Try the demo:**
+   - Run the demo script: `python demo/enhanced_demo.py`
+   - Explore sample files in `demo/sample_files/`
+
+3. **Configure for your workflow:**
+   - Set up configuration files
+   - Customize plugin settings
+   - Integrate with your documentation pipeline
+
+== Support
+
+If you need help:
+
+* Check the [GitHub Issues](https://github.com/rolfedh/asciidoc-dita-toolkit/issues)
+* Review the [Documentation](https://github.com/rolfedh/asciidoc-dita-toolkit/blob/main/docs/)
+* See the [Contributing Guide](https://github.com/rolfedh/asciidoc-dita-toolkit/blob/main/docs/CONTRIBUTING.md)
+
+Congratulations! You now have the AsciiDoc DITA Toolkit v2.0.x installed and ready to use.
