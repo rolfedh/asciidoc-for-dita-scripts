@@ -1,0 +1,91 @@
+= Entity Reference Examples
+:doctype: article
+:toc: left
+:toclevels: 2
+
+== Introduction
+
+This document demonstrates the EntityReference plugin functionality. It contains various HTML character entity references that should be replaced with AsciiDoc attribute references.
+
+== Common HTML Entities (Before Processing)
+
+The following entities will be replaced by the EntityReference plugin:
+
+* Copyright symbol: &copy; 2024 Example Corp
+* Trademark symbol: MyProduct&trade; is amazing
+* Registered trademark: AnotherProduct&reg; works great
+* Degree symbol: The temperature is 25&deg;C
+* Em dash: This is a long sentence &mdash; with an em dash
+* En dash: Pages 10&ndash;20 contain the details
+* Ellipsis: And so on&hellip;
+
+== Quotation Marks
+
+* Left double quote: &ldquo;This is a quote&rdquo;
+* Left single quote: &lsquo;This is a quote&rsquo;
+* Right double quote: &rdquo;This is the end&rdquo;
+* Right single quote: &rsquo;This is the end&rsquo;
+
+== Mathematical and Technical Symbols
+
+* Plus sign: 5&plus;3=8
+* Multiplication: 5&times;3=15
+* Division: 15&divide;3=5
+* Paragraph symbol: See section &para;3.2
+* Section symbol: Reference &sect;4.1
+* Bullet point: Item 1 &bull; Item 2 &bull; Item 3
+* Middle dot: File&middot;name&middot;extension
+
+== Currency and Special Characters
+
+* Pound sterling: &pound;25.99
+* Broken bar: This&brvbar;that
+* Left angle quote: &laquo;French style quotes&raquo;
+* Right angle quote: &raquo;End of French quotes&laquo;
+* Single left angle: &lsaquo;Single angle&rsaquo;
+* Single right angle: &rsaquo;End single angle&lsaquo;
+
+== Daggers and References
+
+* Dagger: See footnote&dagger;
+* Double dagger: See footnote&Dagger;
+
+== Supported XML Entities (Should NOT be replaced)
+
+These entities are supported in DITA and should remain unchanged:
+
+* Ampersand: &amp; (should stay as &amp;)
+* Less than: &lt; (should stay as &lt;)
+* Greater than: &gt; (should stay as &gt;)
+* Apostrophe: &apos; (should stay as &apos;)
+* Quotation mark: &quot; (should stay as &quot;)
+
+== Comments Section
+
+// This is a single-line comment with entities that should NOT be processed
+// Copyright &copy; and trademark &trade; in comments should stay unchanged
+
+////
+This is a block comment with entities that should NOT be processed:
+- Copyright &copy; 2024
+- Trademark &trade; symbol
+- Registered &reg; mark
+- Degree &deg; symbol
+////
+
+== Mixed Content
+
+Here's a complex example with mixed content:
+
+The new MyProduct&trade; version 2.0 costs &pound;199.99 and includes a &copy; 2024 license. 
+Temperature range: -10&deg;C to +50&deg;C. 
+For more information, see pages 15&ndash;32 in the manual&hellip;
+
+// Comment: This &copy; should not be changed
+The software supports both &ldquo;automatic&rdquo; and &lsquo;manual&rsquo; modes.
+
+== Expected Results After Processing
+
+After running the EntityReference plugin, all the HTML entities above (except those in comments and the XML entities) should be replaced with their corresponding AsciiDoc attribute references like `{copy}`, `{trade}`, `{reg}`, etc.
+
+The comments should remain unchanged, and the XML entities (&amp;, &lt;, &gt;, &apos;, &quot;) should also remain unchanged as they are supported in DITA.

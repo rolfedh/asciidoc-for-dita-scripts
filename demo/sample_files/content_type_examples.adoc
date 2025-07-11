@@ -1,0 +1,172 @@
+= Content Type Detection Examples
+:doctype: article
+
+== Introduction
+
+This document demonstrates the ContentType plugin functionality. It shows how the plugin automatically detects and assigns appropriate content type labels based on filename patterns, titles, and content analysis.
+
+== Current Status
+
+NOTE: This file currently has no `:_mod-docs-content-type:` attribute set. The ContentType plugin should detect this and suggest an appropriate content type based on the filename and content.
+
+== Document Types the Plugin Can Detect
+
+=== Procedure Documents
+
+Files named with patterns like:
+* `proc-*` or `procedure-*`
+* `how-to-*` or `howto-*`
+* `*-procedure.adoc`
+* `*-steps.adoc`
+
+Content indicators:
+* Step-by-step instructions
+* Numbered procedures
+* "How to" titles
+
+=== Reference Documents
+
+Files named with patterns like:
+* `ref-*` or `reference-*`
+* `*-reference.adoc`
+* `*-api.adoc`
+* `*-spec.adoc`
+
+Content indicators:
+* API documentation
+* Configuration references
+* Specification documents
+
+=== Concept Documents
+
+Files named with patterns like:
+* `con-*` or `concept-*`
+* `*-concept.adoc`
+* `*-overview.adoc`
+* `about-*.adoc`
+
+Content indicators:
+* Explanatory content
+* Overview information
+* Conceptual topics
+
+=== Assembly Documents
+
+Files named with patterns like:
+* `assembly-*`
+* `*-assembly.adoc`
+* `guide-*`
+* `*-guide.adoc`
+
+Content indicators:
+* Collections of related topics
+* User guides
+* Multi-part documentation
+
+== Interactive Features
+
+The ContentType plugin offers different interaction modes:
+
+=== Quiet Mode
+* Automatically assigns "TBD" to unknown types
+* No user interaction required
+* Perfect for batch processing
+
+=== Interactive Mode
+* Prompts user for content type selection
+* Provides suggestions based on analysis
+* Allows custom content type input
+
+=== Legacy Mode
+* Enhanced UI with emojis and decorative elements
+* Detailed feedback and progress indication
+* Full-featured interactive experience
+
+== Content Analysis Features
+
+The plugin analyzes:
+
+1. **Filename patterns** - Automatically detects based on common naming conventions
+2. **Title analysis** - Looks for keywords in document titles
+3. **Content patterns** - Scans document content for type indicators
+4. **Existing attributes** - Respects manually set content types
+
+== Example Scenarios
+
+=== Scenario 1: Procedure Document
+```
+Filename: proc-install-software.adoc
+Title: How to Install the Software
+Content: Contains numbered steps and procedures
+Expected: :_mod-docs-content-type: procedure
+```
+
+=== Scenario 2: Reference Document
+```
+Filename: ref-api-endpoints.adoc
+Title: API Reference
+Content: Contains API documentation and specifications
+Expected: :_mod-docs-content-type: reference
+```
+
+=== Scenario 3: Concept Document
+```
+Filename: con-architecture-overview.adoc
+Title: Architecture Overview
+Content: Contains explanatory and conceptual information
+Expected: :_mod-docs-content-type: concept
+```
+
+=== Scenario 4: Assembly Document
+```
+Filename: assembly-user-guide.adoc
+Title: Complete User Guide
+Content: Contains multiple related topics
+Expected: :_mod-docs-content-type: assembly
+```
+
+== Detection Confidence Levels
+
+The plugin provides confidence levels for its suggestions:
+
+* **High Confidence** (90-100%): Clear filename pattern + matching content
+* **Medium Confidence** (70-89%): Partial pattern match or content indicators
+* **Low Confidence** (50-69%): Weak indicators, user input recommended
+* **Unknown** (<50%): No clear indicators, defaults to "TBD" or prompts user
+
+== Batch Processing Support
+
+The ContentType plugin supports:
+
+* **Recursive processing** - Processes entire directory trees
+* **Selective processing** - Processes only files matching patterns
+* **Backup creation** - Optional backup of original files
+* **Progress reporting** - Real-time processing feedback
+
+== Expected Plugin Behavior
+
+When this file is processed by the ContentType plugin:
+
+1. **Filename analysis**: `content_type_examples.adoc` doesn't match standard patterns
+2. **Title analysis**: "Content Type Detection Examples" suggests documentation/reference content
+3. **Content analysis**: Contains explanatory content about the plugin itself
+4. **Likely assignment**: `:_mod-docs-content-type: reference` or `:_mod-docs-content-type: concept`
+
+The plugin will add the appropriate content type attribute at the top of the file, after the title and before the first content section.
+
+== Integration with Other Plugins
+
+The ContentType plugin works well with:
+
+* **EntityReference**: Processes entity references before content type assignment
+* **DirectoryConfig**: Respects directory-specific content type configurations
+* **ContextAnalyzer**: Provides additional context for content type determination
+
+== Configuration Options
+
+The plugin can be configured with:
+
+* **Custom filename patterns** - Add organization-specific naming conventions
+* **Custom content patterns** - Define custom content type indicators
+* **Default content types** - Set fallback values for unknown types
+* **UI preferences** - Choose interaction mode (quiet, interactive, legacy)
