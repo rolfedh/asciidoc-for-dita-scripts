@@ -47,6 +47,8 @@ logger = logging.getLogger(__name__)
 
 
 class DirectoryConfigModule(ADTModule):
+    description = __description__
+
     """
     ADTModule implementation for DirectoryConfig plugin.
     

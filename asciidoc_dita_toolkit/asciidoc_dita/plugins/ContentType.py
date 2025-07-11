@@ -42,10 +42,8 @@ logger = logging.getLogger(__name__)
 class ContentTypeModule(ADTModule):
     """
     ADTModule implementation for ContentType plugin.
-    
-    This module adds content type labels to .adoc files based on filename patterns
-    and content analysis, with support for multiple UI modes and user interaction.
     """
+    description = __description__
     
     @property
     def name(self) -> str:

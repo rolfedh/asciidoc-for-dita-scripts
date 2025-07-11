@@ -76,6 +76,8 @@ class ValidationReport:
 
 
 class CrossReferenceModule(ADTModule):
+    description = __description__
+
     """
     ADTModule implementation for CrossReference plugin.
     

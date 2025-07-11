@@ -80,39 +80,45 @@ def get_legacy_plugins():
 def get_new_modules():
     """Get available modules from the new module system."""
     modules = {}
-    
     try:
         sequencer = ModuleSequencer()
         sequencer.discover_modules()
-        
         for name, module in sequencer.available_modules.items():
+            # Always fetch the class-level description
+            description = getattr(module.__class__, 'description', None)
+            if not description:
+                description = getattr(module.__class__, '__description__', None)
+            if not description:
+                description = f"{name} v{getattr(module, 'version', '')}".strip()
             modules[name] = {
                 "module": module,
-                "description": f"New module system: {name} v{module.version}"
+                "description": description
             }
     except Exception as e:
         print(f"Warning: Could not load new modules: {e}", file=sys.stderr)
-    
     return modules
 
 
 def get_new_modules_with_warnings_control(suppress_warnings: bool = True):
     """Get available modules from the new module system with warning control."""
     modules = {}
-    
     try:
         sequencer = ModuleSequencer()
         sequencer.set_suppress_legacy_warnings(suppress_warnings)
         sequencer.discover_modules()
-        
         for name, module in sequencer.available_modules.items():
+            # Always fetch the class-level description
+            description = getattr(module.__class__, 'description', None)
+            if not description:
+                description = getattr(module.__class__, '__description__', None)
+            if not description:
+                description = f"{name} v{getattr(module, 'version', '')}".strip()
             modules[name] = {
                 "module": module,
-                "description": f"New module system: {name} v{module.version}"
+                "description": description
             }
     except Exception as e:
         print(f"Warning: Could not load new modules: {e}", file=sys.stderr)
-    
     return modules
 
 
@@ -132,7 +138,10 @@ def print_plugin_list():
     if new_modules:
         print("\nNew modules:")
         for name, info in new_modules.items():
-            print(f"  {name:20} {info['description']}")
+            desc = info['description']
+            if not desc:
+                desc = f"{name} (no description)"
+            print(f"  {name:20} {desc}")
     
     if not legacy_plugins and not new_modules:
         print("  No plugins or modules available")
@@ -154,7 +163,10 @@ def print_plugin_list_with_warnings_control(suppress_warnings: bool = True):
     if new_modules:
         print("\nNew modules:")
         for name, info in new_modules.items():
-            print(f"  {name:20} {info['description']}")
+            desc = info['description']
+            if not desc:
+                desc = f"{name} (no description)"
+            print(f"  {name:20} {desc}")
     
     if not legacy_plugins and not new_modules:
         print("  No plugins or modules available")
@@ -191,7 +203,14 @@ def create_legacy_subcommand(subparsers, name, plugin_info):
 
 def create_new_module_subcommand(subparsers, name, module_info):
     """Create a subcommand for a new module."""
-    parser = subparsers.add_parser(name, help=module_info["description"])
+    # Try to get the real __description__ from the module object
+    module = module_info["module"]
+    description = getattr(module, "__description__", None)
+    if not description:
+        description = getattr(getattr(module, "__class__", object), "__description__", None)
+    if not description:
+        description = module_info["description"]
+    parser = subparsers.add_parser(name, help=description)
     
     # Add common arguments
     parser.add_argument(

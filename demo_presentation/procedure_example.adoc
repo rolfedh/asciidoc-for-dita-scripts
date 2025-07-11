@@ -1,0 +1,43 @@
+= Installing Docker
+
+This guide shows you how to install Docker on your system.
+
+== Prerequisites
+
+Before you begin, ensure you have:
+
+* Administrative access to your system
+* Internet connection
+* Supported operating system
+
+== Installation Steps
+
+. Download Docker Desktop:
++
+[source,bash]
+----
+curl -O https://desktop.docker.com/...
+----
+
+. Install the package:
++
+[source,bash]
+----
+sudo dpkg -i docker-desktop.deb
+----
+
+. Verify installation:
++
+[source,bash]
+----
+docker --version
+----
+
+== Verification
+
+Run the hello-world container to verify Docker is working:
+
+[source,bash]
+----
+docker run hello-world
+----

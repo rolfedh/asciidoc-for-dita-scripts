@@ -79,6 +79,8 @@ ENTITY_PATTERN = re.compile(r"&([a-zA-Z0-9]+);")
 
 
 class EntityReferenceModule(ADTModule):
+    description = __description__
+
     """
     ADTModule implementation for EntityReference plugin.
     

@@ -2,14 +2,16 @@
 
 ## 🎬 Demo Script Commands
 ```bash
-# Run the full interactive demo
-./scripts/demo_v2.sh
+# 1. Validate your environment before demo
+./scripts/pre_demo_check.sh
 
-# Test individual components (if needed)
-adt --version
-adt --list-plugins
-adt --help
+# 2. Run the full interactive demo
+./scripts/demo_v2.sh
 ```
+
+- The following files are for your preparation and reference only (not to be run):
+  - DEMO_PRESENTATION.md (slides)
+  - demo_quick_reference.md (this cheat sheet)
 
 ## 📝 Key Talking Points
 
@@ -43,6 +45,8 @@ adt --help
 2. **"See the intelligence"** - ContentType auto-detection 
 3. **"Look at the transformation"** - EntityReference conversions
 4. **"All 6 plugins, one interface"** - Plugin discovery
+   - **Legacy plugins**: These are the original, battle-tested tools from previous toolkit versions, now auto-discovered and fully integrated for backward compatibility.
+   - **New modules**: These are the modern, unified plugin classes designed for the new architecture, offering improved maintainability and a consistent interface.
 5. **"Professional quality"** - PyPI package metadata
 6. **"Zero functionality lost"** - All features preserved and enhanced
 

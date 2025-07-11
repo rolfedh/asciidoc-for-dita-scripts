@@ -54,6 +54,8 @@ class ContextMigratorModule(ADTModule):
     migration with safety checks and backups.
     """
     
+    description = __description__
+    
     @property
     def name(self) -> str:
         """Module name identifier."""
