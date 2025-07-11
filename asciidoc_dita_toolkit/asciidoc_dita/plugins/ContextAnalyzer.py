@@ -93,6 +93,7 @@ class AnalysisReport:
 
 
 class ContextAnalyzerModule(ADTModule):
+    description = __description__
     """
     ADTModule implementation for ContextAnalyzer plugin.
     
