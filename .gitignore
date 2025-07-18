@@ -133,6 +133,7 @@ celerybeat.pid
 env/
 venv/
 venv_*/
+debug_env/
 test_venv/
 test_*env*/
 ENV/
