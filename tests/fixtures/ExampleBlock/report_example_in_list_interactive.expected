@@ -1,20 +1,26 @@
-// Unsupported examples in sections:
-====
-An unsupported example.
-====
+// Unsupported examples in lists:
 
-
+// Moved example block from list
+====
+List-embedded example block.
+====
 
 //
 // ADT ExampleBlock: This is the end of the main body.
 // Example blocks should be placed above this point for DITA 1.3 compliance.
 //
-== Section title
 
+* First item
+* Second item
+** Sub-item
+* Third item
+** Sub-item
 //
 // ADT ExampleBlock: Move this example block to the main body of the topic 
 // (before the first section header) for DITA 1.3 compliance.
 //
 [example]
-An unsupported example.
-
+Another list-embedded example block.
+** Another sub-item
+* Fourth item
+** Sub-item

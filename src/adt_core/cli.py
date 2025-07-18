@@ -86,9 +86,11 @@ def get_new_modules():
         sequencer.discover_modules()
         
         for name, module in sequencer.available_modules.items():
+            # Use module's description property if available, otherwise use generic description
+            description = getattr(module, 'description', f"New module system: {name} v{module.version}")
             modules[name] = {
                 "module": module,
-                "description": f"New module system: {name} v{module.version}"
+                "description": description
             }
     except Exception as e:
         print(f"Warning: Could not load new modules: {e}", file=sys.stderr)
@@ -106,9 +108,11 @@ def get_new_modules_with_warnings_control(suppress_warnings: bool = True):
         sequencer.discover_modules()
         
         for name, module in sequencer.available_modules.items():
+            # Use module's description property if available, otherwise use generic description
+            description = getattr(module, 'description', f"New module system: {name} v{module.version}")
             modules[name] = {
                 "module": module,
-                "description": f"New module system: {name} v{module.version}"
+                "description": description
             }
     except Exception as e:
         print(f"Warning: Could not load new modules: {e}", file=sys.stderr)
