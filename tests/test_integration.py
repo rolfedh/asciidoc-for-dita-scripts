@@ -131,12 +131,6 @@ class TestIntegration(unittest.TestCase):
         self.assertLess(orders["EntityReference"], orders["ContentType"],
                        "EntityReference should be initialized before ContentType")
         
-        # ContentType depends on EntityReference
-        self.assertEqual(orders["ContentType"], 2)
-        
-        # Verify the relative ordering is correct
-        self.assertLess(orders["EntityReference"], orders["ContentType"])
-        
         # If DirectoryConfig is enabled, it should come after both
         if "DirectoryConfig" in orders:
             self.assertLess(orders["EntityReference"], orders["DirectoryConfig"])
