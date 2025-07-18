@@ -803,4 +803,28 @@ When developing new plugins:
 
 The ModuleSequencer provides a robust foundation for plugin development, ensuring consistent behavior, proper dependency management, and reliable initialization across all ADT modules.
 
+### O. CLI Description Enhancement and Test Configuration Update
+
+**CLI Description Improvement**: Updated the plugin description to be more informative and user-friendly.
+
+**Changes Made**:
+1. **Plugin Description**: Updated from generic "New module system: ExampleBlock v1.0.0" to descriptive "Detects and fixes example blocks in problematic locations for DITA 1.3 compliance"
+2. **Module Description Property**: Added `description` property to `ExampleBlockModule` class for better CLI integration
+3. **CLI Integration**: Modified CLI code to use module's description property when available, falling back to generic description
+4. **Filename Display**: Changed filename display to show in both verbose and non-verbose modes for better user feedback
+
+**Test Configuration Fix**: Updated integration test to account for the addition of ExampleBlock module.
+
+**Test Update**:
+```python
+# Fixed test_load_real_configurations expectation
+self.assertEqual(len(self.sequencer.dev_config["modules"]), 4)  # Updated from 3 to 4
+```
+
+**Impact**: 
+- Users now see meaningful plugin descriptions in `adt --help` output
+- Better user experience with consistent filename display across all modes
+- All tests now pass successfully (196/196 tests passing)
+- Plugin fully integrated with improved usability and reliable testing
+
 
