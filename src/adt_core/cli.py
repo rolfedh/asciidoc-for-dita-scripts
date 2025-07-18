@@ -70,8 +70,10 @@ EXAMPLES:
   adt CrossReference -f myfile.adoc     # Process specific file
   adt EntityReference -d docs/          # Process files in docs/ directory
 
-For plugin-specific help: adt <plugin> -h"""
-    
+For plugin-specific help: adt <plugin> -h
+
+Report bugs or request features: https://github.com/rolfedh/asciidoc-dita-toolkit/issues
+"""
     print(help_text)
 
 
