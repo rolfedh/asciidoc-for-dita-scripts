@@ -69,3 +69,10 @@ dev = [
     "black>=21.0",
     "flake8>=3.8",
 ]
+
+[tool.pytest.ini_options]
+# Suppress common warnings that don't affect functionality
+filterwarnings = [
+    "ignore::pytest.PytestReturnNotNoneWarning",
+    "ignore::DeprecationWarning:asciidoc_dita_toolkit.*",
+]
