@@ -16,6 +16,24 @@ from .module_sequencer import ModuleSequencer
 
 
 # =============================================================================
+# UTILITY FUNCTIONS
+# =============================================================================
+
+def handle_system_exit(component_name: str, component_type: str, exit_exception: SystemExit) -> None:
+    """
+    Handle SystemExit exceptions from plugins and modules gracefully.
+    
+    Args:
+        component_name: Name of the plugin/module that exited
+        component_type: Type of component ('plugin' or 'module')
+        exit_exception: The SystemExit exception that was caught
+    """
+    if exit_exception.code != 0:
+        print(f"{component_type.title()} {component_name} exited with code {exit_exception.code}", file=sys.stderr)
+    sys.exit(exit_exception.code)
+
+
+# =============================================================================
 # PLUGIN DESCRIPTIONS
 # =============================================================================
 
@@ -341,10 +359,7 @@ def create_legacy_subcommand(subparsers, name, plugin_info):
         try:
             plugin_info["module"].main(args)
         except SystemExit as e:
-            # Catch sys.exit() calls and handle gracefully
-            if e.code != 0:
-                print(f"Plugin {name} exited with code {e.code}", file=sys.stderr)
-            sys.exit(e.code)
+            handle_system_exit(name, "plugin", e)
         except Exception as e:
             print(f"Error running plugin {name}: {e}", file=sys.stderr)
             sys.exit(1)
@@ -399,10 +414,7 @@ def create_new_module_subcommand(subparsers, name, module_info):
             module.cleanup()
 
         except SystemExit as e:
-            # Catch sys.exit() calls and handle gracefully
-            if e.code != 0:
-                print(f"Module {name} exited with code {e.code}", file=sys.stderr)
-            sys.exit(e.code)
+            handle_system_exit(name, "module", e)
         except Exception as e:
             print(f"Error running module {name}: {e}", file=sys.stderr)
             sys.exit(1)
