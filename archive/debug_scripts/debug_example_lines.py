@@ -3,9 +3,12 @@
 
 import sys
 from pathlib import Path
+
 sys.path.insert(0, '.')
 
-from asciidoc_dita_toolkit.asciidoc_dita.plugins.ExampleBlock import ExampleBlockDetector
+from asciidoc_dita_toolkit.asciidoc_dita.plugins.ExampleBlock import (
+    ExampleBlockDetector,
+)
 
 content = Path('tests/fixtures/ExampleBlock/ignore_code_blocks.adoc').read_text()
 lines = content.split('\n')
@@ -22,11 +25,11 @@ print(f"Line 19: {repr(lines[18])}")  # line 19 is index 18
 print(f"Is in code block: {detector._is_in_code_block_or_comment(lines, 18)}")
 
 print("\nShowing context around line 6:")
-for i in range(max(0, 5-2), min(len(lines), 5+3)):
+for i in range(max(0, 5 - 2), min(len(lines), 5 + 3)):
     marker = " -> " if i == 5 else "    "
     print(f"{marker}{i+1}: {repr(lines[i])}")
 
 print("\nShowing context around line 19:")
-for i in range(max(0, 18-2), min(len(lines), 18+3)):
+for i in range(max(0, 18 - 2), min(len(lines), 18 + 3)):
     marker = " -> " if i == 18 else "    "
     print(f"{marker}{i+1}: {repr(lines[i])}")

@@ -49,7 +49,7 @@ class TestDirectoryConfigManager(unittest.TestCase):
     def test_create_default_config(self):
         """Test creating a default configuration."""
         config = self.manager.create_default_config()
-        
+
         self.assertEqual(config["version"], "1.0")
         self.assertIn("repoRoot", config)
         self.assertIn("includeDirs", config)
@@ -64,7 +64,7 @@ class TestDirectoryConfigManager(unittest.TestCase):
             # Create a subdirectory
             subdir = os.path.join(tmpdir, "subdir")
             os.makedirs(subdir)
-            
+
             is_valid, message = self.manager.validate_directory("subdir", tmpdir)
             self.assertTrue(is_valid)
 
@@ -92,7 +92,7 @@ class TestFileUtilityFunctions(unittest.TestCase):
             "repoRoot": "/test/repo",
             "includeDirs": ["docs", "content"],
             "excludeDirs": ["drafts", "temp"],
-            "lastUpdated": "2023-01-01T00:00:00"
+            "lastUpdated": "2023-01-01T00:00:00",
         }
 
     def test_save_and_load_config_file(self):
@@ -101,10 +101,10 @@ class TestFileUtilityFunctions(unittest.TestCase):
             try:
                 # Save config
                 save_config_file(tmp.name, self.test_config)
-                
+
                 # Load it back
                 loaded_config = load_config_file(tmp.name)
-                
+
                 self.assertEqual(loaded_config["version"], "1.0")
                 self.assertEqual(loaded_config["repoRoot"], "/test/repo")
                 self.assertIn("docs", loaded_config["includeDirs"])
@@ -117,10 +117,12 @@ class TestFileUtilityFunctions(unittest.TestCase):
         with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as tmp:
             tmp.write("invalid json content")
             tmp.flush()
-            
+
             try:
                 # Test that logger.warning is called instead of print (improvement #4 from issue #87)
-                with patch('asciidoc_dita_toolkit.asciidoc_dita.config_utils.logger.warning') as mock_warning:
+                with patch(
+                    'asciidoc_dita_toolkit.asciidoc_dita.config_utils.logger.warning'
+                ) as mock_warning:
                     config = load_config_file(tmp.name)
                     self.assertIsNone(config)
                     mock_warning.assert_called()
@@ -160,7 +162,7 @@ class TestDirectoryFiltering(unittest.TestCase):
             "repoRoot": "/test/repo",
             "includeDirs": ["docs", "content"],
             "excludeDirs": ["drafts", "temp"],
-            "lastUpdated": "2023-01-01T00:00:00"
+            "lastUpdated": "2023-01-01T00:00:00",
         }
 
     def test_apply_directory_filters_include_only(self):
@@ -170,20 +172,20 @@ class TestDirectoryFiltering(unittest.TestCase):
             docs_dir = os.path.join(tmpdir, "docs")
             content_dir = os.path.join(tmpdir, "content")
             other_dir = os.path.join(tmpdir, "other")
-            
+
             for d in [docs_dir, content_dir, other_dir]:
                 os.makedirs(d)
                 # Create test files
                 test_file = os.path.join(d, "test.adoc")
                 with open(test_file, 'w') as f:
                     f.write("= Test Document\n\nContent here.")
-            
+
             # Update config with actual temp directory
             config = self.test_config.copy()
             config["repoRoot"] = tmpdir
-            
+
             filtered_dirs = apply_directory_filters(tmpdir, config)
-            
+
             # Should only include docs and content directories
             expected_dirs = [docs_dir, content_dir]
             self.assertEqual(set(filtered_dirs), set(expected_dirs))
@@ -194,36 +196,41 @@ class TestDirectoryFiltering(unittest.TestCase):
             # Create directory structure
             good_dir = os.path.join(tmpdir, "good")
             drafts_dir = os.path.join(tmpdir, "drafts")
-            
+
             for d in [good_dir, drafts_dir]:
                 os.makedirs(d)
                 # Create test files
                 test_file = os.path.join(d, "test.adoc")
                 with open(test_file, 'w') as f:
                     f.write("= Test Document\n\nContent here.")
-            
+
             # Config with exclude dirs
             config = {
                 "version": "1.0",
                 "repoRoot": tmpdir,
                 "includeDirs": [],
                 "excludeDirs": ["drafts"],
-                "lastUpdated": "2023-01-01T00:00:00"
+                "lastUpdated": "2023-01-01T00:00:00",
             }
-            
+
             # Test that the good directory is not excluded when we process it
             filtered_dirs = apply_directory_filters(good_dir, config)
             self.assertIn(good_dir, filtered_dirs)
-            
+
             # Test that the drafts directory would be excluded
             # The function logs a warning but still returns the path since there's no alternative
-            with patch('asciidoc_dita_toolkit.asciidoc_dita.plugins.DirectoryConfig.logger') as mock_logger:
+            with patch(
+                'asciidoc_dita_toolkit.asciidoc_dita.plugins.DirectoryConfig.logger'
+            ) as mock_logger:
                 filtered_dirs = apply_directory_filters(drafts_dir, config)
                 # Check that the excluded directory warning was logged
                 mock_logger.warning.assert_called()
                 # Check that warning was called with exclusion message
-                warning_calls = [call for call in mock_logger.warning.call_args_list 
-                               if 'excluded by configuration' in str(call)]
+                warning_calls = [
+                    call
+                    for call in mock_logger.warning.call_args_list
+                    if 'excluded by configuration' in str(call)
+                ]
                 self.assertGreater(len(warning_calls), 0)
 
 
@@ -238,37 +245,39 @@ class TestDirectoryConfigFixtures(unittest.TestCase):
     def test_fixture_files_exist(self):
         """Test that required fixture files exist."""
         sample_config = os.path.join(FIXTURE_DIR, "sample_config.json")
-        
+
         # Skip if file doesn't exist instead of failing
         if not os.path.exists(sample_config):
             self.skipTest(f"Sample config not found: {sample_config}")
-        
+
         with open(sample_config, 'r') as f:
             config = json.load(f)
-        
+
         self.assertIn("adt_directory_config", config)
         self.assertIn("version", config["adt_directory_config"])
 
     def test_fixture_adoc_files(self):
         """Test that fixture AsciiDoc files are properly formatted."""
-        fixture_pairs = list(get_same_dir_fixture_pairs(
-            FIXTURE_DIR, ".adoc", ".expected"
-        ))
-        
+        fixture_pairs = list(
+            get_same_dir_fixture_pairs(FIXTURE_DIR, ".adoc", ".expected")
+        )
+
         # Skip if no fixtures found instead of failing
         if len(fixture_pairs) == 0:
-            self.skipTest("No fixture pairs found - this is expected in CI environments")
-        
+            self.skipTest(
+                "No fixture pairs found - this is expected in CI environments"
+            )
+
         for input_path, expected_path in fixture_pairs:
             with self.subTest(file=os.path.basename(input_path)):
                 self.assertTrue(os.path.exists(input_path))
                 self.assertTrue(os.path.exists(expected_path))
-                
+
                 # Verify files have content
                 with open(input_path, 'r') as f:
                     input_content = f.read().strip()
                 self.assertGreater(len(input_content), 0)
-                
+
                 with open(expected_path, 'r') as f:
                     expected_content = f.read().strip()
                 self.assertGreater(len(expected_content), 0)
@@ -279,17 +288,17 @@ def run_tests():
     # Create test suite
     loader = unittest.TestLoader()
     suite = unittest.TestSuite()
-    
+
     # Add test classes
     suite.addTests(loader.loadTestsFromTestCase(TestDirectoryConfigManager))
     suite.addTests(loader.loadTestsFromTestCase(TestFileUtilityFunctions))
     suite.addTests(loader.loadTestsFromTestCase(TestDirectoryFiltering))
     suite.addTests(loader.loadTestsFromTestCase(TestDirectoryConfigFixtures))
-    
+
     # Run tests
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)
-    
+
     return result.wasSuccessful()
 
 

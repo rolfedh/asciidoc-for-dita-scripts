@@ -44,7 +44,7 @@ def print_plugin_list():
         # Only show enabled plugins in the list
         if not is_plugin_enabled(modname):
             continue
-            
+
         try:
             module = importlib.import_module(
                 f".plugins.{modname}", package="asciidoc_dita_toolkit.asciidoc_dita"
@@ -81,7 +81,7 @@ def main():
         # Only register enabled plugins as CLI subcommands
         if not is_plugin_enabled(modname):
             continue
-            
+
         try:
             module = importlib.import_module(
                 f".plugins.{modname}", package="asciidoc_dita_toolkit.asciidoc_dita"

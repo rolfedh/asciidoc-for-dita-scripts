@@ -30,7 +30,9 @@ def common_arg_parser(parser: argparse.ArgumentParser) -> None:
         default=".",
         help="Root directory to search (default: current directory)",
     )
-    sources.add_argument("-f", "--file", type=str, help="Scan only the specified .adoc file")
+    sources.add_argument(
+        "-f", "--file", type=str, help="Scan only the specified .adoc file"
+    )
     parser.add_argument(
         "-r",
         "--recursive",

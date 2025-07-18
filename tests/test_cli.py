@@ -34,7 +34,9 @@ class TestCLI(unittest.TestCase):
         self.assertIn("Available plugins:", output)
         # Should list at least one plugin
         lines = output.strip().split('\n')
-        self.assertGreater(len(lines), 1, "Should list at least the header and one plugin")
+        self.assertGreater(
+            len(lines), 1, "Should list at least the header and one plugin"
+        )
 
     @patch("sys.argv", ["toolkit", "--list-plugins"])
     @patch("sys.exit")
@@ -58,7 +60,9 @@ class TestCLI(unittest.TestCase):
         """Test handling of plugins missing register_subcommand function."""
         with patch("sys.argv", ["toolkit"]), patch(
             "sys.stderr", new_callable=StringIO
-        ) as mock_stderr, patch("sys.stdout", new_callable=StringIO) as mock_stdout, patch(
+        ) as mock_stderr, patch(
+            "sys.stdout", new_callable=StringIO
+        ) as mock_stdout, patch(
             "asciidoc_dita_toolkit.asciidoc_dita.toolkit.discover_plugins"
         ) as mock_discover, patch(
             "importlib.import_module"
@@ -77,7 +81,9 @@ class TestCLI(unittest.TestCase):
         """Test handling of plugin import errors."""
         with patch("sys.argv", ["toolkit"]), patch(
             "sys.stderr", new_callable=StringIO
-        ) as mock_stderr, patch("sys.stdout", new_callable=StringIO) as mock_stdout, patch(
+        ) as mock_stderr, patch(
+            "sys.stdout", new_callable=StringIO
+        ) as mock_stdout, patch(
             "asciidoc_dita_toolkit.asciidoc_dita.toolkit.discover_plugins"
         ) as mock_discover, patch(
             "importlib.import_module", side_effect=ImportError("Test import error")
@@ -98,21 +104,23 @@ class TestCLI(unittest.TestCase):
                     toolkit.main()
                 except SystemExit:
                     pass  # argparse calls sys.exit after showing help
-        
+
         help_output = mock_stdout.getvalue()
-        
+
         # Extract available subcommands from help output using regex
         # Look for the subcommands section in argparse help output
         subcommand_match = re.search(r'\{([^}]+)\}', help_output)
         if not subcommand_match:
             self.skipTest("No subcommands found in CLI help to test help functionality")
-        
+
         # Parse available plugins from the subcommands list
-        available_plugins = [plugin.strip() for plugin in subcommand_match.group(1).split(',')]
-        
+        available_plugins = [
+            plugin.strip() for plugin in subcommand_match.group(1).split(',')
+        ]
+
         if not available_plugins:
             self.skipTest("No plugins available in CLI to test help functionality")
-        
+
         # Test with the first available plugin
         test_plugin = available_plugins[0]
         with patch("sys.argv", ["toolkit", test_plugin, "--help"]):

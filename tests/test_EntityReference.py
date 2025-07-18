@@ -21,9 +21,14 @@ from unittest.mock import patch
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference import (
-    process_file, replace_entities)
-from tests.asciidoc_testkit import (get_same_dir_fixture_pairs,
-                                    run_file_based_test, run_linewise_test)
+    process_file,
+    replace_entities,
+)
+from tests.asciidoc_testkit import (
+    get_same_dir_fixture_pairs,
+    run_file_based_test,
+    run_linewise_test,
+)
 
 FIXTURE_DIR = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "fixtures", "EntityReference")
@@ -66,7 +71,9 @@ class TestEntityReference(unittest.TestCase):
         """Test that unknown entities generate warnings but remain unchanged."""
         with patch("builtins.print") as mock_print:
             result = replace_entities("Unknown &unknown; entity")
-            mock_print.assert_called_with("Warning: No AsciiDoc attribute for &unknown;")
+            mock_print.assert_called_with(
+                "Warning: No AsciiDoc attribute for &unknown;"
+            )
             self.assertEqual(result, "Unknown &unknown; entity")
 
     def test_multiple_entities_in_line(self):
@@ -100,9 +107,13 @@ class TestEntityReference(unittest.TestCase):
                     # (ignore_* fixtures need comment handling)
                     fixture_name = os.path.basename(input_path)
                     if fixture_name.startswith("ignore_"):
-                        success = run_file_based_test(input_path, expected_path, process_file)
+                        success = run_file_based_test(
+                            input_path, expected_path, process_file
+                        )
                     else:
-                        success = run_linewise_test(input_path, expected_path, replace_entities)
+                        success = run_linewise_test(
+                            input_path, expected_path, replace_entities
+                        )
                     self.assertTrue(success, f"Fixture test failed for {input_path}")
 
             if fixture_count > 0:
