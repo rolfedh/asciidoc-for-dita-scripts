@@ -15,6 +15,49 @@ from pathlib import Path
 from .module_sequencer import ModuleSequencer
 
 
+def print_custom_help():
+    """Print custom help message with clear usage patterns."""
+    help_text = """Usage: adt <plugin> [options]
+       adt --list-plugins
+       adt --version
+       adt --help
+
+ADT - AsciiDoc DITA Toolkit
+
+PLUGINS:
+  Run one plugin at a time to process your AsciiDoc files:
+
+    ContentType       Add/update content type attributes
+    ContextAnalyzer   Analyze context IDs and references
+    ContextMigrator   Migrate context-dependent IDs
+    CrossReference    Validate and fix cross-references
+    DirectoryConfig   Manage directory-specific configurations
+    EntityReference   Convert HTML entities to AsciiDoc
+    ExampleBlock      Detect and process example blocks
+
+TARGET FILES:
+  -f, --file FILE       Process a specific file
+  -r, --recursive       Process all .adoc files recursively
+  -d, --directory DIR   Specify root directory (default: current)
+
+VERBOSITY:
+  -v, --verbose         Enable verbose output
+
+OTHER OPTIONS:
+  -h, --help            Show this help message and exit
+  --list-plugins        List detailed plugin information
+  --version             Show version information
+
+EXAMPLES:
+  adt ContentType -r                    # Process all .adoc files recursively
+  adt CrossReference -f myfile.adoc     # Process specific file
+  adt EntityReference -d docs/          # Process files in docs/ directory
+
+For plugin-specific help: adt <plugin> -h"""
+    
+    print(help_text)
+
+
 def get_version():
     """Get the version of adt package."""
     try:
@@ -142,6 +185,66 @@ def print_plugin_list():
         print("  No plugins or modules available")
 
 
+def print_detailed_plugin_list(suppress_warnings: bool = True):
+    """Print a detailed, well-formatted list of all available plugins and modules."""
+    print("AVAILABLE PLUGINS:\n")
+    
+    # Get legacy plugins
+    legacy_plugins = get_legacy_plugins()
+    
+    # Get new modules
+    new_modules = get_new_modules_with_warnings_control(suppress_warnings)
+    
+    # Combine and sort all plugins
+    all_plugins = {}
+    
+    # Add legacy plugins
+    for name, info in legacy_plugins.items():
+        all_plugins[name] = {
+            "description": info['description'], 
+            "type": "legacy"
+        }
+    
+    # Add new modules (avoid duplicates)
+    for name, info in new_modules.items():
+        if name not in all_plugins:
+            all_plugins[name] = {
+                "description": info['description'],
+                "type": "module"
+            }
+    
+    if not all_plugins:
+        print("  No plugins available")
+        return
+    
+    # Plugin descriptions for better help
+    plugin_descriptions = {
+        "ContentType": "Add/update content type attributes in AsciiDoc files",
+        "ContextAnalyzer": "Analyze context IDs and cross-references",
+        "ContextMigrator": "Migrate context-dependent IDs to context-free format", 
+        "CrossReference": "Validate and fix cross-references between files",
+        "DirectoryConfig": "Manage directory-specific plugin configurations",
+        "EntityReference": "Convert HTML entities to AsciiDoc equivalents",
+        "ExampleBlock": "Detect and process example blocks in documentation"
+    }
+    
+    # Print plugins with clear descriptions
+    for name in sorted(all_plugins.keys()):
+        desc = plugin_descriptions.get(name, all_plugins[name]['description'])
+        print(f"  {name:<16} {desc}")
+    
+    print(f"\nUSAGE EXAMPLES:")
+    print(f"  adt ContentType -r                    # Process all .adoc files recursively")
+    print(f"  adt CrossReference -f myfile.adoc     # Process specific file") 
+    print(f"  adt EntityReference -d docs/          # Process files in docs/ directory")
+    print(f"\nOPTIONS FOR EACH PLUGIN:")
+    print(f"  -f, --file FILE       Process a specific file")
+    print(f"  -r, --recursive       Process all .adoc files recursively")  
+    print(f"  -d, --directory DIR   Specify root directory (default: current)")
+    print(f"  -v, --verbose         Enable verbose output")
+    print(f"\nFor plugin-specific help: adt <plugin> -h")
+
+
 def print_plugin_list_with_warnings_control(suppress_warnings: bool = True):
     """Print a list of all available plugins and modules with warning control."""
     print("Available plugins and modules:")
@@ -166,7 +269,19 @@ def print_plugin_list_with_warnings_control(suppress_warnings: bool = True):
 
 def create_legacy_subcommand(subparsers, name, plugin_info):
     """Create a subcommand for a legacy plugin."""
-    parser = subparsers.add_parser(name, help=plugin_info["description"])
+    # Use cleaner descriptions
+    plugin_descriptions = {
+        "ContentType": "Add/update content type attributes in AsciiDoc files",
+        "ContextAnalyzer": "Analyze context IDs and cross-references", 
+        "ContextMigrator": "Migrate context-dependent IDs to context-free format",
+        "CrossReference": "Validate and fix cross-references between files",
+        "DirectoryConfig": "Manage directory-specific plugin configurations",
+        "EntityReference": "Convert HTML entities to AsciiDoc equivalents",
+        "ExampleBlock": "Detect and process example blocks in documentation"
+    }
+    
+    description = plugin_descriptions.get(name, plugin_info["description"])
+    parser = subparsers.add_parser(name, help=description)
     
     # Add common arguments that legacy plugins expect
     parser.add_argument(
@@ -176,7 +291,7 @@ def create_legacy_subcommand(subparsers, name, plugin_info):
     parser.add_argument(
         "-r", "--recursive", 
         action="store_true",
-        help="Process all .adoc files recursively"
+        help="Process all .adoc files recursively in the current directory"
     )
     parser.add_argument(
         "-d", "--directory", 
@@ -195,7 +310,19 @@ def create_legacy_subcommand(subparsers, name, plugin_info):
 
 def create_new_module_subcommand(subparsers, name, module_info):
     """Create a subcommand for a new module."""
-    parser = subparsers.add_parser(name, help=module_info["description"])
+    # Use cleaner descriptions
+    plugin_descriptions = {
+        "ContentType": "Add/update content type attributes in AsciiDoc files",
+        "ContextAnalyzer": "Analyze context IDs and cross-references", 
+        "ContextMigrator": "Migrate context-dependent IDs to context-free format",
+        "CrossReference": "Validate and fix cross-references between files",
+        "DirectoryConfig": "Manage directory-specific plugin configurations",
+        "EntityReference": "Convert HTML entities to AsciiDoc equivalents",
+        "ExampleBlock": "Detect and process example blocks in documentation"
+    }
+    
+    description = plugin_descriptions.get(name, module_info["description"])
+    parser = subparsers.add_parser(name, help=description)
     
     # Add common arguments
     parser.add_argument(
@@ -205,7 +332,7 @@ def create_new_module_subcommand(subparsers, name, module_info):
     parser.add_argument(
         "-r", "--recursive", 
         action="store_true",
-        help="Process all .adoc files recursively"
+        help="Process all .adoc files recursively in the current directory"
     )
     parser.add_argument(
         "-d", "--directory", 
@@ -248,17 +375,37 @@ def create_new_module_subcommand(subparsers, name, module_info):
     parser.set_defaults(func=run_new_module)
 
 
+class CustomHelpAction(argparse.Action):
+    """Custom help action that prints our formatted help."""
+    
+    def __init__(self, option_strings, dest=argparse.SUPPRESS, default=argparse.SUPPRESS, help=None):
+        super().__init__(option_strings, dest, nargs=0, default=default, help=help)
+    
+    def __call__(self, parser, namespace, values, option_string=None):
+        print_custom_help()
+        parser.exit()
+
+
 def main(args=None):
     """Main entry point for the CLI."""
+    
     parser = argparse.ArgumentParser(
         description="ADT - AsciiDoc DITA Toolkit",
-        prog="adt"
+        prog="adt",
+        add_help=False  # We handle help ourselves
+    )
+    
+    # Add custom help action
+    parser.add_argument(
+        "-h", "--help",
+        action=CustomHelpAction,
+        help="Show this help message and exit"
     )
     
     parser.add_argument(
         "--list-plugins",
         action="store_true",
-        help="List all available plugins and modules"
+        help="List all available plugins with detailed descriptions"
     )
     parser.add_argument(
         "--version",
@@ -269,7 +416,7 @@ def main(args=None):
         "--suppress-warnings",
         action="store_true",
         default=True,
-        help="Suppress warnings for legacy plugins during transition (default: True)"
+        help="Suppress warnings for legacy plugins during transition (default)"
     )
     parser.add_argument(
         "--show-warnings",
@@ -277,7 +424,7 @@ def main(args=None):
         help="Show warnings for legacy plugins (overrides --suppress-warnings)"
     )
     
-    subparsers = parser.add_subparsers(dest="command", required=False)
+    subparsers = parser.add_subparsers(dest="command", required=False, metavar="<plugin>")
     
     # Load legacy plugins
     legacy_plugins = get_legacy_plugins()
@@ -287,9 +434,12 @@ def main(args=None):
     # Load new modules with warning control
     suppress_warnings = True  # Default
     if args:
-        # Pre-parse to get warning control flags
-        temp_args = parser.parse_args(args)
-        suppress_warnings = temp_args.suppress_warnings and not temp_args.show_warnings
+        try:
+            # Pre-parse to get warning control flags
+            temp_args, _ = parser.parse_known_args(args)
+            suppress_warnings = temp_args.suppress_warnings and not temp_args.show_warnings
+        except:
+            pass  # Use default if parsing fails
     
     new_modules = get_new_modules_with_warnings_control(suppress_warnings)
     for name, info in new_modules.items():
@@ -301,18 +451,24 @@ def main(args=None):
     if args is None:
         args = sys.argv[1:]
     
+    # Check for no arguments - show help
+    if not args:
+        print_custom_help()
+        sys.exit(1)
+    
     parsed_args = parser.parse_args(args)
     
-    # Handle special flags
+    # Handle special flags       
     if parsed_args.version:
         version = get_version()
         print(f"adt {version}")
-        print("(AsciiDoc DITA Toolkit - unified package)")
+        print("AsciiDoc DITA Toolkit - unified package for technical documentation workflows")
+        print("https://github.com/rolfedh/asciidoc-dita-toolkit")
         sys.exit(0)
     
     if parsed_args.list_plugins:
         suppress_warnings = parsed_args.suppress_warnings and not parsed_args.show_warnings
-        print_plugin_list_with_warnings_control(suppress_warnings)
+        print_detailed_plugin_list(suppress_warnings)
         sys.exit(0)
     
     # Execute the selected command
@@ -323,7 +479,9 @@ def main(args=None):
             print(f"Error executing command: {e}", file=sys.stderr)
             sys.exit(1)
     else:
-        parser.print_help()
+        # Show help if no command provided
+        print_custom_help()
+        sys.exit(1)
 
 
 if __name__ == "__main__":
