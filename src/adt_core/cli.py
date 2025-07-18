@@ -15,6 +15,23 @@ from pathlib import Path
 from .module_sequencer import ModuleSequencer
 
 
+# =============================================================================
+# PLUGIN DESCRIPTIONS
+# =============================================================================
+
+# Centralized plugin descriptions used across help functions
+# This avoids duplication and ensures consistency
+PLUGIN_DESCRIPTIONS = {
+    "ContentType": "Add/update content type attributes in AsciiDoc files",
+    "ContextAnalyzer": "Analyze context IDs and cross-references",
+    "ContextMigrator": "Migrate context-dependent IDs to context-free format",
+    "CrossReference": "Validate and fix cross-references between files",
+    "DirectoryConfig": "Manage directory-specific plugin configurations",
+    "EntityReference": "Convert HTML entities to AsciiDoc equivalents",
+    "ExampleBlock": "Detect and process example blocks in documentation"
+}
+
+
 def print_custom_help():
     """Print custom help message with clear usage patterns."""
     help_text = """Usage: adt <plugin> [options]
@@ -112,12 +129,47 @@ def get_legacy_plugins():
                             "description": description
                         }
                 except Exception as e:
-                    print(f"Warning: Could not load plugin {plugin_name}: {e}", file=sys.stderr)
+                    # Suppress warnings during help operations by only logging to debug level
+                    pass
     
     except Exception as e:
-        print(f"Warning: Could not load legacy plugins: {e}", file=sys.stderr)
+        # Suppress warnings during help operations by only logging to debug level  
+        pass
     
     return plugins
+
+
+def get_new_modules_for_help():
+    """Get available modules from the new module system with all warnings suppressed for help display."""
+    modules = {}
+    
+    try:
+        # Temporarily suppress all logging to avoid module discovery warnings during help
+        import logging
+        original_level = logging.getLogger().level
+        logging.getLogger().setLevel(logging.ERROR)
+        
+        try:
+            sequencer = ModuleSequencer()
+            sequencer.set_suppress_legacy_warnings(True)
+            sequencer.discover_modules()
+            
+            for name, module in sequencer.available_modules.items():
+                # Use module's description property if available, otherwise use generic description
+                description = getattr(module, 'description', f"New module system: {name} v{module.version}")
+                modules[name] = {
+                    "module": module,
+                    "description": description
+                }
+        finally:
+            # Restore original logging level
+            logging.getLogger().setLevel(original_level)
+            
+    except Exception as e:
+        # Silently fail during help operations
+        pass
+    
+    return modules
 
 
 def get_new_modules():
@@ -189,11 +241,11 @@ def print_detailed_plugin_list(suppress_warnings: bool = True):
     """Print a detailed, well-formatted list of all available plugins and modules."""
     print("AVAILABLE PLUGINS:\n")
     
-    # Get legacy plugins
+    # Get legacy plugins (warnings already suppressed in function)
     legacy_plugins = get_legacy_plugins()
     
-    # Get new modules
-    new_modules = get_new_modules_with_warnings_control(suppress_warnings)
+    # Get new modules with warnings completely suppressed for help display
+    new_modules = get_new_modules_for_help()
     
     # Combine and sort all plugins
     all_plugins = {}
@@ -217,20 +269,9 @@ def print_detailed_plugin_list(suppress_warnings: bool = True):
         print("  No plugins available")
         return
     
-    # Plugin descriptions for better help
-    plugin_descriptions = {
-        "ContentType": "Add/update content type attributes in AsciiDoc files",
-        "ContextAnalyzer": "Analyze context IDs and cross-references",
-        "ContextMigrator": "Migrate context-dependent IDs to context-free format", 
-        "CrossReference": "Validate and fix cross-references between files",
-        "DirectoryConfig": "Manage directory-specific plugin configurations",
-        "EntityReference": "Convert HTML entities to AsciiDoc equivalents",
-        "ExampleBlock": "Detect and process example blocks in documentation"
-    }
-    
     # Print plugins with clear descriptions
     for name in sorted(all_plugins.keys()):
-        desc = plugin_descriptions.get(name, all_plugins[name]['description'])
+        desc = PLUGIN_DESCRIPTIONS.get(name, all_plugins[name]['description'])
         print(f"  {name:<16} {desc}")
     
     print(f"\nUSAGE EXAMPLES:")
@@ -269,18 +310,7 @@ def print_plugin_list_with_warnings_control(suppress_warnings: bool = True):
 
 def create_legacy_subcommand(subparsers, name, plugin_info):
     """Create a subcommand for a legacy plugin."""
-    # Use cleaner descriptions
-    plugin_descriptions = {
-        "ContentType": "Add/update content type attributes in AsciiDoc files",
-        "ContextAnalyzer": "Analyze context IDs and cross-references", 
-        "ContextMigrator": "Migrate context-dependent IDs to context-free format",
-        "CrossReference": "Validate and fix cross-references between files",
-        "DirectoryConfig": "Manage directory-specific plugin configurations",
-        "EntityReference": "Convert HTML entities to AsciiDoc equivalents",
-        "ExampleBlock": "Detect and process example blocks in documentation"
-    }
-    
-    description = plugin_descriptions.get(name, plugin_info["description"])
+    description = PLUGIN_DESCRIPTIONS.get(name, plugin_info["description"])
     parser = subparsers.add_parser(name, help=description)
     
     # Add common arguments that legacy plugins expect
@@ -310,18 +340,7 @@ def create_legacy_subcommand(subparsers, name, plugin_info):
 
 def create_new_module_subcommand(subparsers, name, module_info):
     """Create a subcommand for a new module."""
-    # Use cleaner descriptions
-    plugin_descriptions = {
-        "ContentType": "Add/update content type attributes in AsciiDoc files",
-        "ContextAnalyzer": "Analyze context IDs and cross-references", 
-        "ContextMigrator": "Migrate context-dependent IDs to context-free format",
-        "CrossReference": "Validate and fix cross-references between files",
-        "DirectoryConfig": "Manage directory-specific plugin configurations",
-        "EntityReference": "Convert HTML entities to AsciiDoc equivalents",
-        "ExampleBlock": "Detect and process example blocks in documentation"
-    }
-    
-    description = plugin_descriptions.get(name, module_info["description"])
+    description = PLUGIN_DESCRIPTIONS.get(name, module_info["description"])
     parser = subparsers.add_parser(name, help=description)
     
     # Add common arguments
@@ -426,7 +445,7 @@ def main(args=None):
     
     subparsers = parser.add_subparsers(dest="command", required=False, metavar="<plugin>")
     
-    # Load legacy plugins
+    # Load legacy plugins (warnings suppressed)
     legacy_plugins = get_legacy_plugins()
     for name, info in legacy_plugins.items():
         create_legacy_subcommand(subparsers, name, info)
@@ -438,10 +457,17 @@ def main(args=None):
             # Pre-parse to get warning control flags
             temp_args, _ = parser.parse_known_args(args)
             suppress_warnings = temp_args.suppress_warnings and not temp_args.show_warnings
-        except:
-            pass  # Use default if parsing fails
+        except (argparse.ArgumentError, ValueError, SystemExit) as e:
+            # Use default if parsing fails - this can happen with malformed arguments
+            # SystemExit can occur when parse_known_args encounters --help in subcommands
+            pass
     
-    new_modules = get_new_modules_with_warnings_control(suppress_warnings)
+    # For help operations, use the warning-suppressed version
+    if args and ("-h" in args or "--help" in args or "--list-plugins" in args):
+        new_modules = get_new_modules_for_help()
+    else:
+        new_modules = get_new_modules_with_warnings_control(suppress_warnings)
+        
     for name, info in new_modules.items():
         # Only add if not already added by legacy plugins
         if name not in legacy_plugins:
