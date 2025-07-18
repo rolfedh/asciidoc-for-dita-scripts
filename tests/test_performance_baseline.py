@@ -12,6 +12,7 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Tuple
 import statistics
+import pytest
 
 # Add necessary paths
 workspace_root = Path(__file__).parent.parent  # Go up from tests/ to project root
@@ -51,6 +52,18 @@ def create_test_files(num_files: int = 10, entities_per_file: int = 20) -> List[
     
     return test_files
 
+@pytest.fixture(scope="function")
+def test_files():
+    """Pytest fixture to create test files for performance testing."""
+    files = create_test_files(num_files=5, entities_per_file=10)  # Smaller for faster tests
+    yield files
+    # Cleanup after test
+    for file_path in files:
+        try:
+            os.unlink(file_path)
+        except (OSError, FileNotFoundError):
+            pass
+
 def cleanup_test_files(test_files: List[str]) -> None:
     """Clean up test files."""
     for file_path in test_files:
@@ -66,7 +79,7 @@ def measure_execution_time(func, *args, **kwargs) -> Tuple[float, any]:
     end_time = time.perf_counter()
     return end_time - start_time, result
 
-def test_legacy_performance(test_files: List[str]) -> Dict[str, float]:
+def test_legacy_performance(test_files) -> None:
     """Test legacy plugin performance."""
     try:
         from asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference import main
@@ -78,6 +91,7 @@ def test_legacy_performance(test_files: List[str]) -> Dict[str, float]:
                 self.recursive = False
                 self.directory = "."
                 self.verbose = False
+                self.silent = True  # Reduce output during testing
                 self.files = files
         
         # Backup original files (copy them to restore later)
@@ -88,7 +102,7 @@ def test_legacy_performance(test_files: List[str]) -> Dict[str, float]:
         
         # Measure legacy performance
         times = []
-        for i in range(5):  # Run 5 times for statistical relevance
+        for i in range(3):  # Run 3 times for statistical relevance
             # Restore files to original state
             for file_path, content in backup_files.items():
                 with open(file_path, 'w') as f:
@@ -115,7 +129,7 @@ def test_legacy_performance(test_files: List[str]) -> Dict[str, float]:
                 # Restore ADTModule availability
                 er_module.ADT_MODULE_AVAILABLE = original_available
         
-        return {
+        stats = {
             "mean": statistics.mean(times),
             "median": statistics.median(times),
             "stdev": statistics.stdev(times) if len(times) > 1 else 0,
@@ -124,11 +138,15 @@ def test_legacy_performance(test_files: List[str]) -> Dict[str, float]:
             "times": times
         }
         
+        # Basic performance assertions
+        assert stats["mean"] > 0, "Legacy performance test should take some time"
+        assert stats["mean"] < 10.0, "Legacy performance should complete within 10 seconds"
+        assert len(stats["times"]) == 3, "Should have 3 performance measurements"
+        
     except Exception as e:
-        print(f"Error testing legacy performance: {e}")
-        return {"error": str(e)}
+        pytest.fail(f"Error testing legacy performance: {e}")
 
-def test_adtmodule_performance(test_files: List[str]) -> Dict[str, float]:
+def test_adtmodule_performance(test_files) -> None:
     """Test ADTModule plugin performance."""
     try:
         from asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference import EntityReferenceModule
@@ -141,7 +159,7 @@ def test_adtmodule_performance(test_files: List[str]) -> Dict[str, float]:
         
         # Measure ADTModule performance
         times = []
-        for i in range(5):  # Run 5 times for statistical relevance
+        for i in range(3):  # Run 3 times for statistical relevance
             # Restore files to original state
             for file_path, content in backup_files.items():
                 with open(file_path, 'w') as f:
@@ -174,7 +192,7 @@ def test_adtmodule_performance(test_files: List[str]) -> Dict[str, float]:
             module.cleanup()
             times.append(execution_time)
         
-        return {
+        stats = {
             "mean": statistics.mean(times),
             "median": statistics.median(times),
             "stdev": statistics.stdev(times) if len(times) > 1 else 0,
@@ -183,9 +201,13 @@ def test_adtmodule_performance(test_files: List[str]) -> Dict[str, float]:
             "times": times
         }
         
+        # Basic performance assertions
+        assert stats["mean"] > 0, "ADTModule performance test should take some time"
+        assert stats["mean"] < 10.0, "ADTModule performance should complete within 10 seconds"
+        assert len(stats["times"]) == 3, "Should have 3 performance measurements"
+        
     except Exception as e:
-        print(f"Error testing ADTModule performance: {e}")
-        return {"error": str(e)}
+        pytest.fail(f"Error testing ADTModule performance: {e}")
 
 def calculate_performance_metrics(legacy_stats: Dict, adtmodule_stats: Dict) -> Dict:
     """Calculate performance comparison metrics."""
