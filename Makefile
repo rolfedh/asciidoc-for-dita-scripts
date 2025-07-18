@@ -6,7 +6,9 @@ help:
 	@echo "  help       - Show this help message"
 	@echo "  test       - Run all tests"
 	@echo "  test-coverage - Run tests with coverage reporting"
-	@echo "  lint       - Run code linting with flake8"
+	@echo "  lint       - Run comprehensive code linting with flake8"
+	@echo "  lint-clean - Run linting on main codebase (excludes archive/debug)"
+	@echo "  quick-lint - Run critical error checks only"
 	@echo "  format     - Format code with black"
 	@echo "  clean      - Clean build artifacts"
 	@echo "  venv       - Create virtual environment (.venv)"
@@ -46,8 +48,12 @@ test-coverage:
 
 # Code quality targets
 lint:
-	python3 -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-	python3 -m flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+	python3 -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude=.venv,venv,debug_env,build,dist,*.egg-info,.git,__pycache__
+	python3 -m flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude=.venv,venv,debug_env,build,dist,*.egg-info,.git,__pycache__
+
+lint-clean:
+	python3 -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude=.venv,venv,debug_env,build,dist,*.egg-info,.git,__pycache__,archive
+	python3 -m flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude=.venv,venv,debug_env,build,dist,*.egg-info,.git,__pycache__,archive
 
 format:
 	python3 -m black .
@@ -87,8 +93,8 @@ setup: venv
 	@echo "🎨 Formatting code..."
 	@.venv/bin/python -m black .
 	@echo "🔍 Running linting..."
-	@.venv/bin/python -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics || true
-	@.venv/bin/python -m flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics || true
+	@.venv/bin/python -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude=.venv,venv,debug_env,build,dist,*.egg-info,.git,__pycache__ || true
+	@.venv/bin/python -m flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude=.venv,venv,debug_env,build,dist,*.egg-info,.git,__pycache__ || true
 	@echo "🧪 Running tests..."
 	@.venv/bin/python -m unittest discover -s tests -v || true
 	@echo ""
