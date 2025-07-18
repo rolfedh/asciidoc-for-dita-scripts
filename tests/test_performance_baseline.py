@@ -102,7 +102,7 @@ def test_legacy_performance(test_files) -> None:
         
         # Measure legacy performance
         times = []
-        for i in range(3):  # Run 3 times for statistical relevance
+        for i in range(5):  # Run 5 times for better statistical relevance
             # Restore files to original state
             for file_path, content in backup_files.items():
                 with open(file_path, 'w') as f:
@@ -141,7 +141,7 @@ def test_legacy_performance(test_files) -> None:
         # Basic performance assertions
         assert stats["mean"] > 0, "Legacy performance test should take some time"
         assert stats["mean"] < 10.0, "Legacy performance should complete within 10 seconds"
-        assert len(stats["times"]) == 3, "Should have 3 performance measurements"
+        assert len(stats["times"]) == 5, "Should have 5 performance measurements"
         
     except Exception as e:
         pytest.fail(f"Error testing legacy performance: {e}")
@@ -159,7 +159,7 @@ def test_adtmodule_performance(test_files) -> None:
         
         # Measure ADTModule performance
         times = []
-        for i in range(3):  # Run 3 times for statistical relevance
+        for i in range(5):  # Run 5 times for better statistical relevance
             # Restore files to original state
             for file_path, content in backup_files.items():
                 with open(file_path, 'w') as f:
@@ -204,7 +204,7 @@ def test_adtmodule_performance(test_files) -> None:
         # Basic performance assertions
         assert stats["mean"] > 0, "ADTModule performance test should take some time"
         assert stats["mean"] < 10.0, "ADTModule performance should complete within 10 seconds"
-        assert len(stats["times"]) == 3, "Should have 3 performance measurements"
+        assert len(stats["times"]) == 5, "Should have 5 performance measurements"
         
     except Exception as e:
         pytest.fail(f"Error testing ADTModule performance: {e}")

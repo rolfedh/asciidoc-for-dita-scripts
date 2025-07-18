@@ -128,6 +128,8 @@ class TestIntegration(unittest.TestCase):
         self.assertIn("ContentType", orders, "ContentType should be enabled")
         
         # ContentType depends on EntityReference, so EntityReference should have lower init_order
+        logging.debug("EntityReference init_order: %s, ContentType init_order: %s", 
+                     orders["EntityReference"], orders["ContentType"])
         self.assertLess(orders["EntityReference"], orders["ContentType"],
                        "EntityReference should be initialized before ContentType")
         
