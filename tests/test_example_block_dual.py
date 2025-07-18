@@ -14,8 +14,9 @@ import unittest.mock as mock
 from pathlib import Path
 from typing import List, Dict, Any
 
-# Add the current directory to Python path
-sys.path.insert(0, '.')
+# Add the project root to Python path
+sys.path.insert(0, '..')
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 # Import the plugin components
 from asciidoc_dita_toolkit.asciidoc_dita.plugins.ExampleBlock import ExampleBlockDetector, ExampleBlockProcessor

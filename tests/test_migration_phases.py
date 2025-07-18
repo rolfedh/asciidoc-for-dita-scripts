@@ -12,7 +12,7 @@ import os
 from pathlib import Path
 
 # Add necessary paths
-workspace_root = Path(__file__).parent
+workspace_root = Path(__file__).parent.parent  # Go up from tests/ to project root
 src_path = workspace_root / "src"
 sys.path.insert(0, str(src_path))
 sys.path.insert(0, str(workspace_root))
