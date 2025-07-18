@@ -109,6 +109,48 @@ def get_version():
             return "unknown"
 
 
+def print_version_with_plugins():
+    """Print version information including plugin versions."""
+    # Print main tool version
+    version = get_version()
+    print(f"adt {version}")
+    print("AsciiDoc DITA Toolkit - unified package for technical documentation workflows")
+    print("https://github.com/rolfedh/asciidoc-dita-toolkit")
+    print()
+    
+    # Get plugin information
+    legacy_plugins = get_legacy_plugins()
+    new_modules = get_new_modules_for_help()
+    
+    # Combine and sort all plugins with version info
+    all_plugins = []
+    
+    # Add new modules first (they have proper version info)
+    for name, info in new_modules.items():
+        desc = PLUGIN_DESCRIPTIONS.get(name, info['description'])
+        version_str = info['module'].version
+        all_plugins.append((name, version_str, desc))
+    
+    # Add legacy plugins only if they don't exist in new modules
+    for name, info in legacy_plugins.items():
+        if name not in new_modules:
+            desc = PLUGIN_DESCRIPTIONS.get(name, info['description'])
+            # Try to get version from module, fallback to 'legacy'
+            version_str = getattr(info.get('module'), '__version__', 'legacy')
+            all_plugins.append((name, version_str, desc))
+    
+    if all_plugins:
+        print("AVAILABLE PLUGINS:")
+        # Sort by plugin name
+        all_plugins.sort(key=lambda x: x[0])
+        
+        # Print in table format
+        for name, version_str, desc in all_plugins:
+            print(f"  {name:<18} v{version_str:<8} {desc}")
+    else:
+        print("No plugins available")
+
+
 def get_legacy_plugins():
     """Get available legacy plugins from the old system."""
     plugins = {}
@@ -520,12 +562,7 @@ def main(args=None):
 
     # Handle special flags
     if parsed_args.version:
-        version = get_version()
-        print(f"adt {version}")
-        print(
-            "AsciiDoc DITA Toolkit - unified package for technical documentation workflows"
-        )
-        print("https://github.com/rolfedh/asciidoc-dita-toolkit")
+        print_version_with_plugins()
         sys.exit(0)
 
     if parsed_args.list_plugins:
