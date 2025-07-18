@@ -63,8 +63,8 @@ def test_fixture(fixture_name: str):
         
         else:
             # For report fixtures, content should match expected
-            # Use interactive mode to actually move blocks
-            processor = ExampleBlockProcessor(detector, interactive=True)
+            # Use non-interactive mode to add comments by default
+            processor = ExampleBlockProcessor(detector, interactive=False)
             success = process_example_block_file(tmp_path, processor)
             
             with open(tmp_path, 'r') as f:

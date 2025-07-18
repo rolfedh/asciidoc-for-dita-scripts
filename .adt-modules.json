@@ -33,6 +33,17 @@
         "scan_depth": 5,
         "exclude_patterns": ["*.tmp", "*.log"]
       }
+    },
+    {
+      "name": "ExampleBlock",
+      "required": false,
+      "version": ">=1.0.0",
+      "dependencies": [],
+      "init_order": 4,
+      "config": {
+        "interactive": true,
+        "verbose": false
+      }
     }
   ],
   "global_config": {

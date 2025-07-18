@@ -1,21 +1,33 @@
 // Unsupported examples in list items:
-
+* A list item.
++
+//
+// ADT ExampleBlock: Move this example block to the main body of the topic 
+// (before the first section header) for DITA 1.3 compliance.
+//
 .An example title
 ====
 An unsupported example.
 ====
 
+- A list item.
++
+
+//
+// ADT ExampleBlock: Move this example block to the main body of the topic 
+// (before the first section header) for DITA 1.3 compliance.
+//
 [example]
 An unsupported example.
-
-====
-An unsupported example.
-====
-
-* A list item.
-
-- A list item.
 
 . A list item.
 +
 A paragraph.
++
+//
+// ADT ExampleBlock: Move this example block to the main body of the topic 
+// (before the first section header) for DITA 1.3 compliance.
+//
+====
+An unsupported example.
+====

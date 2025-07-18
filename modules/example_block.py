@@ -3,7 +3,21 @@
 import sys
 from pathlib import Path
 from typing import List, Dict, Any
-from src.adt_core.module_sequencer import ADTModule
+
+# Try to import ADTModule for the new pattern
+try:
+    # Add the path to find the ADTModule
+    package_root = Path(__file__).parent.parent
+    if str(package_root / "src") not in sys.path:
+        sys.path.insert(0, str(package_root / "src"))
+    
+    from adt_core.module_sequencer import ADTModule
+    ADT_MODULE_AVAILABLE = True
+except ImportError:
+    ADT_MODULE_AVAILABLE = False
+    # Create a dummy ADTModule for backward compatibility
+    class ADTModule:
+        pass
 
 
 class ExampleBlockModule(ADTModule):
@@ -16,6 +30,10 @@ class ExampleBlockModule(ADTModule):
     @property
     def version(self) -> str:
         return "1.0.0"
+    
+    @property
+    def description(self) -> str:
+        return "Flag or fix example blocks in problematic locations."
     
     @property
     def dependencies(self) -> List[str]:
@@ -73,8 +91,8 @@ class ExampleBlockModule(ADTModule):
             # Create a wrapper to track processing
             def example_block_wrapper(filepath):
                 nonlocal files_processed, example_blocks_processed
-                if self.verbose:
-                    print(f"Processing file: {filepath}")
+                # Always show the filename being processed
+                print(f"Processing file: {filepath}")
                 
                 # Use the legacy plugin function
                 success = process_example_block_file(filepath, processor)

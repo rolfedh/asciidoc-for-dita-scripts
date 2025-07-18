@@ -1,0 +1,42 @@
+title: AsciiDoc DITA Toolkit - User Guide
+description: Documentation for technical writers preparing AsciiDoc content for DITA migration
+baseurl: "/asciidoc-dita-toolkit/user-guide"
+url: "https://rolfedh.github.io"
+
+# GitHub Pages configuration
+remote_theme: pages-themes/minimal@v0.2.0
+plugins:
+  - jekyll-remote-theme
+
+# Markdown configuration
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+
+# Navigation
+nav_links:
+  - name: Home
+    url: /
+  - name: Plugins
+    url: /plugins/
+  - name: GitHub
+    url: https://github.com/rolfedh/asciidoc-dita-toolkit
+
+# Collections
+collections:
+  plugins:
+    output: true
+    permalink: /plugins/:name/
+
+# Exclude from processing
+exclude:
+  - _README.md
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
+
+# Include in processing
+include:
+  - _pages

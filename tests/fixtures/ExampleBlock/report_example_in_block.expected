@@ -1,19 +1,25 @@
 // An unsupported example in a sidebar block:
+****
+A paragraph.
 
+//
+// ADT ExampleBlock: Move this example block to the main body of the topic 
+// (before the first section header) for DITA 1.3 compliance.
+//
 ====
 An unsupported example.
 ====
-
-****
-A paragraph.
 ****
 
 // An unsupported example in a delimited block:
+--
+A paragraph.
 
+//
+// ADT ExampleBlock: Move this example block to the main body of the topic 
+// (before the first section header) for DITA 1.3 compliance.
+//
 ====
 An unsupported example.
 ====
-
---
-A paragraph.
 --

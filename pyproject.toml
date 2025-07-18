@@ -60,6 +60,7 @@ DirectoryConfig = "asciidoc_dita_toolkit.asciidoc_dita.plugins.DirectoryConfig:D
 ContextAnalyzer = "asciidoc_dita_toolkit.asciidoc_dita.plugins.ContextAnalyzer:ContextAnalyzerModule"
 ContextMigrator = "asciidoc_dita_toolkit.asciidoc_dita.plugins.ContextMigrator:ContextMigratorModule"
 CrossReference = "asciidoc_dita_toolkit.asciidoc_dita.plugins.CrossReference:CrossReferenceModule"
+ExampleBlock = "modules.example_block:ExampleBlockModule"
 
 [project.optional-dependencies]
 dev = [
