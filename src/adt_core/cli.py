@@ -337,7 +337,19 @@ def create_legacy_subcommand(subparsers, name, plugin_info):
     )
 
     # Set the function to call
-    parser.set_defaults(func=lambda args: plugin_info["module"].main(args))
+    def run_legacy_plugin(args):
+        try:
+            plugin_info["module"].main(args)
+        except SystemExit as e:
+            # Catch sys.exit() calls and handle gracefully
+            if e.code != 0:
+                print(f"Plugin {name} exited with code {e.code}", file=sys.stderr)
+            sys.exit(e.code)
+        except Exception as e:
+            print(f"Error running plugin {name}: {e}", file=sys.stderr)
+            sys.exit(1)
+    
+    parser.set_defaults(func=run_legacy_plugin)
 
 
 def create_new_module_subcommand(subparsers, name, module_info):
@@ -386,6 +398,11 @@ def create_new_module_subcommand(subparsers, name, module_info):
             # Cleanup
             module.cleanup()
 
+        except SystemExit as e:
+            # Catch sys.exit() calls and handle gracefully
+            if e.code != 0:
+                print(f"Module {name} exited with code {e.code}", file=sys.stderr)
+            sys.exit(e.code)
         except Exception as e:
             print(f"Error running module {name}: {e}", file=sys.stderr)
             sys.exit(1)
