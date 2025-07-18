@@ -37,15 +37,32 @@ logger = logging.getLogger(__name__)
 
 
 class ExampleBlockDetector:
-    """Detects example blocks in AsciiDoc content and determines their validity."""
+    """
+    Detects example blocks in AsciiDoc content and determines their validity.
+    
+    This class uses regex patterns to identify and validate example blocks in AsciiDoc files.
+    It supports two types of example blocks:
+    1. Delimited example blocks, which are enclosed by `====` lines.
+    2. Styled example blocks, which are marked with `[example]`.
+    
+    Regex patterns used:
+    - `example_block_delimited_start`: Matches the start of a delimited example block (`====`).
+    - `example_block_style`: Matches the `[example]` style block marker.
+    - `section_header`: Matches section headers (e.g., `== Section`).
+    - `list_item`: Matches list items (e.g., `*`, `-`, `1.`, `a.`, `i.`).
+    - `admonition_styles`: Matches admonition blocks (e.g., `[NOTE]`, `[TIP]`).
+    
+    These patterns help identify the context and structure of example blocks to ensure they
+    are placed in valid locations according to the DITA 1.3 specification.
+    """
     
     def __init__(self):
         # More precise regex patterns
         self.example_block_delimited_start = re.compile(r'^====\s*$', re.MULTILINE)
         self.example_block_style = re.compile(r'^\[example\]', re.MULTILINE)
         self.section_header = re.compile(r'^==+\s+', re.MULTILINE)
-        self.list_item = re.compile(r'^[*\-+]|\d+\.|[a-zA-Z]\.|[ivxIVX]+\)', re.MULTILINE)
-        self.admonition_styles = re.compile(r'^\[(NOTE|TIP|IMPORTANT|WARNING|CAUTION|source|literal)\]', re.MULTILINE)
+        self.list_item = re.compile(r'^(?:[*\-+]|\d+\.|[a-zA-Z]\.|[ivxIVX]+\))', re.MULTILINE)
+        self.admonition_styles = re.compile(r'^\[(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]', re.MULTILINE)
     
     def find_example_blocks(self, content: str) -> List[Dict[str, Any]]:
         """Find all example blocks in the content."""
@@ -289,9 +306,10 @@ class ExampleBlockDetector:
 class ExampleBlockProcessor:
     """Processes example blocks and applies fixes."""
     
-    def __init__(self, detector: ExampleBlockDetector, interactive: bool = True):
+    def __init__(self, detector: ExampleBlockDetector, interactive: bool = True, quiet_mode: bool = False):
         self.detector = detector
         self.interactive = interactive
+        self.quiet_mode = quiet_mode
         self.comment_template = """//
 // ADT ExampleBlock: Move this example block to the main body of the topic 
 // (before the first section header) for DITA 1.3 compliance.
@@ -565,6 +583,7 @@ class ExampleBlockProcessor:
             return choice
         except (ImportError, AttributeError):
             # Fallback for systems without termios/tty (e.g., Windows)
+            # Note: This fallback doesn't match the single-character behavior of the termios version
             user_input = input().strip()
             return user_input[:1] if user_input else '\r'
     
@@ -614,7 +633,7 @@ def process_example_block_file(filepath: str, processor: ExampleBlockProcessor) 
 def create_processor(batch_mode: bool = False, quiet_mode: bool = False) -> ExampleBlockProcessor:
     """Create an ExampleBlockProcessor with appropriate settings."""
     detector = ExampleBlockDetector()
-    return ExampleBlockProcessor(detector, interactive=not batch_mode)
+    return ExampleBlockProcessor(detector, interactive=not batch_mode, quiet_mode=quiet_mode)
 
 
 def main():
