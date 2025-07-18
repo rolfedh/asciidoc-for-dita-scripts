@@ -91,8 +91,9 @@ class ExampleBlockModule(ADTModule):
             # Create a wrapper to track processing
             def example_block_wrapper(filepath):
                 nonlocal files_processed, example_blocks_processed
-                # Always show the filename being processed
-                print(f"Processing file: {filepath}")
+                # Show the filename being processed if not in quiet_mode
+                if not self.quiet_mode:
+                    print(f"Processing file: {filepath}")
                 
                 # Use the legacy plugin function
                 success = process_example_block_file(filepath, processor)
