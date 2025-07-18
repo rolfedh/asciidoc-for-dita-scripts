@@ -24,10 +24,18 @@ import re
 
 # For backward compatibility - import from new modules
 from .cli_utils import common_arg_parser
-from .config_utils import load_json_config as load_config_file, save_json_config as save_config_file
+from .config_utils import (
+    load_json_config as load_config_file,
+    save_json_config as save_config_file,
+)
 from .plugin_manager import is_plugin_enabled
-from .security_utils import sanitize_directory_path, validate_directory_path, _is_subpath
+from .security_utils import (
+    sanitize_directory_path,
+    validate_directory_path,
+    _is_subpath,
+)
 from .user_interface import DEFAULT_TIMESTAMP, ADT_CONFIG_CHOICE_ENV
+
 # Note: workflow_utils import moved to avoid circular dependency
 
 # Configure logging
@@ -127,7 +135,11 @@ def is_valid_adoc_file(filepath):
     Returns:
         True if the path is a valid .adoc file, False otherwise
     """
-    return os.path.isfile(filepath) and filepath.endswith(".adoc") and not os.path.islink(filepath)
+    return (
+        os.path.isfile(filepath)
+        and filepath.endswith(".adoc")
+        and not os.path.islink(filepath)
+    )
 
 
 # =============================================================================
@@ -135,7 +147,7 @@ def is_valid_adoc_file(filepath):
 # =============================================================================
 # These functions are deprecated and will be removed in a future version.
 # They are maintained for backward compatibility and delegate to new modules.
-# 
+#
 # Migration Guide:
 # - CLI functions → cli_utils.py
 # - Security functions → security_utils.py
@@ -147,16 +159,27 @@ def is_valid_adoc_file(filepath):
 def _validate_config_structure(config):
     """Deprecated: Use config_utils.validate_config_structure instead."""
     import warnings
-    warnings.warn("_validate_config_structure is deprecated. Use config_utils.validate_config_structure instead.",
-                  DeprecationWarning, stacklevel=2)
+
+    warnings.warn(
+        "_validate_config_structure is deprecated. Use config_utils.validate_config_structure instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     from .config_utils import validate_config_structure
-    required_fields = ['version', 'repoRoot', 'includeDirs', 'excludeDirs', 'lastUpdated']
+
+    required_fields = [
+        'version',
+        'repoRoot',
+        'includeDirs',
+        'excludeDirs',
+        'lastUpdated',
+    ]
     field_types = {
         'includeDirs': list,
         'excludeDirs': list,
         'repoRoot': str,
         'version': str,
-        'lastUpdated': str
+        'lastUpdated': str,
     }
     return validate_config_structure(config, required_fields, field_types)
 
@@ -164,10 +187,15 @@ def _validate_config_structure(config):
 def load_directory_config():
     """Deprecated: Use plugins.DirectoryConfig.load_directory_config instead."""
     import warnings
-    warnings.warn("load_directory_config is deprecated. Use plugins.DirectoryConfig.load_directory_config instead.",
-                  DeprecationWarning, stacklevel=2)
+
+    warnings.warn(
+        "load_directory_config is deprecated. Use plugins.DirectoryConfig.load_directory_config instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     try:
         from .plugins.DirectoryConfig import load_directory_config as load_dir_config
+
         return load_dir_config()
     except ImportError:
         return None
@@ -176,10 +204,15 @@ def load_directory_config():
 def apply_directory_filters(base_path, config):
     """Deprecated: Use plugins.DirectoryConfig.apply_directory_filters instead."""
     import warnings
-    warnings.warn("apply_directory_filters is deprecated. Use plugins.DirectoryConfig.apply_directory_filters instead.",
-                  DeprecationWarning, stacklevel=2)
+
+    warnings.warn(
+        "apply_directory_filters is deprecated. Use plugins.DirectoryConfig.apply_directory_filters instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     try:
         from .plugins.DirectoryConfig import apply_directory_filters as apply_filters
+
         return apply_filters(base_path, config)
     except ImportError:
         return [base_path]
@@ -188,10 +221,17 @@ def apply_directory_filters(base_path, config):
 def get_filtered_adoc_files(directory_path, config):
     """Deprecated: Use plugins.DirectoryConfig.get_filtered_adoc_files instead."""
     import warnings
-    warnings.warn("get_filtered_adoc_files is deprecated. Use plugins.DirectoryConfig.get_filtered_adoc_files instead.",
-                  DeprecationWarning, stacklevel=2)
+
+    warnings.warn(
+        "get_filtered_adoc_files is deprecated. Use plugins.DirectoryConfig.get_filtered_adoc_files instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     try:
-        from .plugins.DirectoryConfig import get_filtered_adoc_files as get_filtered_files
+        from .plugins.DirectoryConfig import (
+            get_filtered_adoc_files as get_filtered_files,
+        )
+
         return get_filtered_files(directory_path, config, find_adoc_files)
     except ImportError:
         return find_adoc_files(directory_path, True)
@@ -200,7 +240,12 @@ def get_filtered_adoc_files(directory_path, config):
 def process_adoc_files(args, process_file_func):
     """Deprecated: Use workflow_utils.process_adoc_files instead."""
     import warnings
-    warnings.warn("process_adoc_files is deprecated. Use workflow_utils.process_adoc_files instead.", 
-                  DeprecationWarning, stacklevel=2)
+
+    warnings.warn(
+        "process_adoc_files is deprecated. Use workflow_utils.process_adoc_files instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     from .workflow_utils import process_adoc_files as process_files
+
     return process_files(args, process_file_func)

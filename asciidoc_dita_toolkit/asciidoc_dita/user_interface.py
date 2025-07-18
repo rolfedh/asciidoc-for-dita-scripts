@@ -7,10 +7,10 @@ Contains constants and utilities for interactive CLI experiences.
 Usage Examples:
     # Import constants for default values
     from .user_interface import DEFAULT_TIMESTAMP, ADT_CONFIG_CHOICE_ENV
-    
+
     # Use default timestamp for missing fields
     timestamp = config.get('lastUpdated', DEFAULT_TIMESTAMP)
-    
+
     # Check for non-interactive configuration choice
     choice = os.environ.get(ADT_CONFIG_CHOICE_ENV)
     if choice:

@@ -1,4 +1,4 @@
-.PHONY: help test test-coverage lint format clean install install-dev build publish-check publish changelog changelog-version release bump-version dev container-build container-build-prod container-test container-shell container-push container-push-prod container-clean container-validate check
+.PHONY: help test test-coverage lint format clean install install-dev build publish-check publish changelog changelog-version release bump-version dev venv setup container-build container-build-prod container-test container-shell container-push container-push-prod container-clean container-validate check
 
 # Default target
 help:
@@ -9,6 +9,8 @@ help:
 	@echo "  lint       - Run code linting with flake8"
 	@echo "  format     - Format code with black"
 	@echo "  clean      - Clean build artifacts"
+	@echo "  venv       - Create virtual environment (.venv)"
+	@echo "  setup      - Complete setup: venv + install-dev + format + lint + test"
 	@echo "  install    - Install package in development mode"
 	@echo "  install-dev - Install package with development dependencies"
 	@echo "  build      - Build distribution packages"
@@ -51,14 +53,49 @@ format:
 	python3 -m black .
 
 # Development setup
+venv:
+	@if [ ! -d ".venv" ]; then \
+		echo "Creating virtual environment..."; \
+		python3 -m venv .venv; \
+		echo "Virtual environment created in .venv"; \
+		echo "To activate: source .venv/bin/activate"; \
+	else \
+		echo "Virtual environment .venv already exists"; \
+	fi
+
 install:
+	@if [ -z "$$VIRTUAL_ENV" ]; then \
+		echo "❌ No virtual environment active. Run 'make venv && source .venv/bin/activate' first"; \
+		exit 1; \
+	fi
 	pip install -e .
 
 install-dev:
+	@if [ -z "$$VIRTUAL_ENV" ]; then \
+		echo "❌ No virtual environment active. Run 'make venv && source .venv/bin/activate' first"; \
+		exit 1; \
+	fi
 	pip install -e .
 	pip install -r requirements-dev.txt
 
 # Development workflow target
+setup: venv
+	@echo "🚀 Starting complete development setup..."
+	@echo "📦 Installing development dependencies..."
+	@.venv/bin/pip install -e .
+	@.venv/bin/pip install -r requirements-dev.txt
+	@echo "🎨 Formatting code..."
+	@.venv/bin/python -m black .
+	@echo "🔍 Running linting..."
+	@.venv/bin/python -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics || true
+	@.venv/bin/python -m flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics || true
+	@echo "🧪 Running tests..."
+	@.venv/bin/python -m unittest discover -s tests -v || true
+	@echo ""
+	@echo "✅ Development setup complete!"
+	@echo "💡 To activate the virtual environment: source .venv/bin/activate"
+	@echo "🔧 Then you can use: adt -h"
+
 dev: install-dev format lint test
 	@echo "Development setup complete!"
 

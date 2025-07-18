@@ -3,9 +3,14 @@
 
 import sys
 from pathlib import Path
+
 sys.path.insert(0, '.')
 
-from asciidoc_dita_toolkit.asciidoc_dita.plugins.ExampleBlock import ExampleBlockDetector, ExampleBlockProcessor
+from asciidoc_dita_toolkit.asciidoc_dita.plugins.ExampleBlock import (
+    ExampleBlockDetector,
+    ExampleBlockProcessor,
+)
+
 
 def test_interactive_flow():
     content = """// Test file with example blocks in various locations
@@ -27,24 +32,25 @@ Example content
 ====
 ****
 """
-    
+
     detector = ExampleBlockDetector()
     processor = ExampleBlockProcessor(detector, interactive=True)
-    
+
     print("Testing interactive flow...")
     print("Original content:")
     print(content)
     print("=" * 50)
-    
+
     modified_content, issues = processor.process_content(content)
-    
+
     print("\nModified content:")
     print(modified_content)
     print("=" * 50)
-    
+
     print(f"\nIssues found: {len(issues)}")
     for issue in issues:
         print(f"  - {issue}")
+
 
 if __name__ == "__main__":
     test_interactive_flow()

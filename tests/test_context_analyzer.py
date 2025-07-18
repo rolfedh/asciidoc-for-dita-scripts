@@ -22,15 +22,22 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 try:
     from asciidoc_dita_toolkit.asciidoc_dita.plugins.ContextAnalyzer import (
-        ContextAnalyzer, IDWithContext, XrefUsage, CollisionReport, 
-        FileAnalysis, AnalysisReport, format_text_report
+        ContextAnalyzer,
+        IDWithContext,
+        XrefUsage,
+        CollisionReport,
+        FileAnalysis,
+        AnalysisReport,
+        format_text_report,
     )
 except ImportError as e:
     print(f"Warning: Could not import ContextAnalyzer plugin: {e}")
     ContextAnalyzer = None
 
 
-@unittest.skipIf(ContextAnalyzer is None, "ContextAnalyzer plugin could not be imported")
+@unittest.skipIf(
+    ContextAnalyzer is None, "ContextAnalyzer plugin could not be imported"
+)
 class TestContextAnalyzer(unittest.TestCase):
     """Test cases for the ContextAnalyzer class."""
 
@@ -69,7 +76,10 @@ class TestContextAnalyzer(unittest.TestCase):
         """Test xref regex pattern matching."""
         test_cases = [
             ('xref:topic_id[Link Text]', ('topic_id', None, '[Link Text]')),
-            ('xref:file.adoc#section_id[Section]', ('file.adoc', 'section_id', '[Section]')),
+            (
+                'xref:file.adoc#section_id[Section]',
+                ('file.adoc', 'section_id', '[Section]'),
+            ),
             ('See xref:overview[Overview]', ('overview', None, '[Overview]')),
         ]
 
@@ -84,7 +94,10 @@ class TestContextAnalyzer(unittest.TestCase):
     def test_link_regex(self):
         """Test link regex pattern matching."""
         test_cases = [
-            ('link:https://example.com#section[Link]', ('https://example.com', 'section', '[Link]')),
+            (
+                'link:https://example.com#section[Link]',
+                ('https://example.com', 'section', '[Link]'),
+            ),
             ('link:file.html#anchor[Text]', ('file.html', 'anchor', '[Text]')),
         ]
 
@@ -113,7 +126,8 @@ class TestContextAnalyzer(unittest.TestCase):
     def test_analyze_file_with_context_ids(self):
         """Test analyzing a file with context IDs."""
         with tempfile.NamedTemporaryFile(mode='w', suffix='.adoc', delete=False) as f:
-            f.write("""= Test Document
+            f.write(
+                """= Test Document
 
 :context: banana
 
@@ -128,19 +142,20 @@ Some content here.
 More content.
 
 See xref:other_topic[Other Topic].
-""")
+"""
+            )
             f.flush()
-            
+
             try:
                 result = self.analyzer.analyze_file(f.name)
-                
+
                 # Check file analysis results
                 self.assertEqual(result.filepath, f.name)
                 self.assertEqual(len(result.context_attributes), 1)
                 self.assertEqual(result.context_attributes[0], 'banana')
                 self.assertEqual(len(result.ids_with_context), 2)
                 self.assertEqual(len(result.xref_usages), 1)
-                
+
                 # Check ID analysis
                 ids = result.ids_with_context
                 self.assertEqual(ids[0].id_value, 'topic_banana')
@@ -149,19 +164,20 @@ See xref:other_topic[Other Topic].
                 self.assertEqual(ids[1].id_value, 'section_banana')
                 self.assertEqual(ids[1].base_id, 'section')
                 self.assertEqual(ids[1].context_value, 'banana')
-                
+
                 # Check xref analysis
                 xref = result.xref_usages[0]
                 self.assertEqual(xref.target_id, 'other_topic')
                 self.assertEqual(xref.full_match, 'xref:other_topic[Other Topic]')
-                
+
             finally:
                 os.unlink(f.name)
 
     def test_analyze_file_without_context_ids(self):
         """Test analyzing a file without context IDs."""
         with tempfile.NamedTemporaryFile(mode='w', suffix='.adoc', delete=False) as f:
-            f.write("""= Test Document
+            f.write(
+                """= Test Document
 
 [id="simpletopic"]
 == Topic
@@ -169,18 +185,19 @@ See xref:other_topic[Other Topic].
 Some content here.
 
 See xref:other_topic[Other Topic].
-""")
+"""
+            )
             f.flush()
-            
+
             try:
                 result = self.analyzer.analyze_file(f.name)
-                
+
                 # Check file analysis results
                 self.assertEqual(result.filepath, f.name)
                 self.assertEqual(len(result.context_attributes), 0)
                 self.assertEqual(len(result.ids_with_context), 0)
                 self.assertEqual(len(result.xref_usages), 1)
-                
+
             finally:
                 os.unlink(f.name)
 
@@ -198,20 +215,20 @@ See xref:other_topic[Other Topic].
             ],
             'unique': [
                 IDWithContext('unique_banana', 'unique', 'banana', 'file1.adoc', 15),
-            ]
+            ],
         }
-        
+
         collisions = self.analyzer.detect_id_collisions()
-        
+
         # Should find 2 collisions (topic and section)
         self.assertEqual(len(collisions), 2)
-        
+
         # Check collision details
         topic_collision = next(c for c in collisions if c.base_id == 'topic')
         self.assertEqual(len(topic_collision.conflicting_files), 2)
         self.assertIn('file1.adoc', topic_collision.conflicting_files)
         self.assertIn('file2.adoc', topic_collision.conflicting_files)
-        
+
         section_collision = next(c for c in collisions if c.base_id == 'section')
         self.assertEqual(len(section_collision.conflicting_files), 1)
         self.assertIn('file1.adoc', section_collision.conflicting_files)
@@ -227,24 +244,24 @@ See xref:other_topic[Other Topic].
                     IDWithContext('topic_banana', 'topic', 'banana', 'file1.adoc', 1)
                 ],
                 xref_usages=[
-                    XrefUsage('other_topic', '', 'file1.adoc', 5, 'xref:other_topic[Other]')
+                    XrefUsage(
+                        'other_topic', '', 'file1.adoc', 5, 'xref:other_topic[Other]'
+                    )
                 ],
-                link_usages=[]
+                link_usages=[],
             )
         ]
-        
+
         self.analyzer.all_ids = {
-            'topic': [
-                IDWithContext('topic_banana', 'topic', 'banana', 'file1.adoc', 1)
-            ]
+            'topic': [IDWithContext('topic_banana', 'topic', 'banana', 'file1.adoc', 1)]
         }
-        
+
         self.analyzer.all_xrefs = [
             XrefUsage('other_topic', '', 'file1.adoc', 5, 'xref:other_topic[Other]')
         ]
-        
+
         report = self.analyzer.generate_report()
-        
+
         # Check report contents
         self.assertEqual(report.total_files_scanned, 1)
         self.assertEqual(report.files_with_context_ids, 1)
@@ -267,7 +284,7 @@ See xref:other_topic[Other Topic].
                 CollisionReport(
                     base_id='topic',
                     conflicting_files=['file1.adoc', 'file2.adoc'],
-                    suggested_resolution='Consider renaming to topic-1, topic-2, etc.'
+                    suggested_resolution='Consider renaming to topic-1, topic-2, etc.',
                 )
             ],
             file_analyses=[
@@ -275,14 +292,16 @@ See xref:other_topic[Other Topic].
                     filepath='file1.adoc',
                     context_attributes=['banana'],
                     ids_with_context=[
-                        IDWithContext('topic_banana', 'topic', 'banana', 'file1.adoc', 1)
+                        IDWithContext(
+                            'topic_banana', 'topic', 'banana', 'file1.adoc', 1
+                        )
                     ],
                     xref_usages=[],
-                    link_usages=[]
+                    link_usages=[],
                 )
-            ]
+            ],
         )
-        
+
         # Test basic report
         text_report = format_text_report(report)
         self.assertIn('=== Context Migration Analysis Report ===', text_report)
@@ -292,13 +311,13 @@ See xref:other_topic[Other Topic].
         self.assertIn('Total xrefs found: 5', text_report)
         self.assertIn('Total links found: 2', text_report)
         self.assertIn('Base ID \'topic\'', text_report)
-        
+
         # Test detailed report
         detailed_report = format_text_report(report, detailed=True)
         self.assertIn('=== Files Requiring Migration ===', detailed_report)
         self.assertIn('file1.adoc:', detailed_report)
         self.assertIn('[id="topic_banana"] → [id="topic"] (line 1)', detailed_report)
-        
+
         # Test collisions-only report
         collisions_report = format_text_report(report, collisions_only=True)
         self.assertIn('=== Context Migration Collision Analysis ===', collisions_report)
@@ -306,7 +325,9 @@ See xref:other_topic[Other Topic].
         self.assertNotIn('Files Scanned:', collisions_report)
 
 
-@unittest.skipIf(ContextAnalyzer is None, "ContextAnalyzer plugin could not be imported")
+@unittest.skipIf(
+    ContextAnalyzer is None, "ContextAnalyzer plugin could not be imported"
+)
 class TestDataStructures(unittest.TestCase):
     """Test cases for the data structures used by ContextAnalyzer."""
 
@@ -317,9 +338,9 @@ class TestDataStructures(unittest.TestCase):
             base_id='topic',
             context_value='banana',
             filepath='test.adoc',
-            line_number=1
+            line_number=1,
         )
-        
+
         self.assertEqual(id_obj.id_value, 'topic_banana')
         self.assertEqual(id_obj.base_id, 'topic')
         self.assertEqual(id_obj.context_value, 'banana')
@@ -333,9 +354,9 @@ class TestDataStructures(unittest.TestCase):
             target_file='file.adoc',
             filepath='test.adoc',
             line_number=5,
-            full_match='xref:file.adoc#section_id[Link]'
+            full_match='xref:file.adoc#section_id[Link]',
         )
-        
+
         self.assertEqual(xref_obj.target_id, 'section_id')
         self.assertEqual(xref_obj.target_file, 'file.adoc')
         self.assertEqual(xref_obj.filepath, 'test.adoc')
@@ -347,9 +368,9 @@ class TestDataStructures(unittest.TestCase):
         collision_obj = CollisionReport(
             base_id='topic',
             conflicting_files=['file1.adoc', 'file2.adoc'],
-            suggested_resolution='Consider renaming'
+            suggested_resolution='Consider renaming',
         )
-        
+
         self.assertEqual(collision_obj.base_id, 'topic')
         self.assertEqual(collision_obj.conflicting_files, ['file1.adoc', 'file2.adoc'])
         self.assertEqual(collision_obj.suggested_resolution, 'Consider renaming')
@@ -361,9 +382,9 @@ class TestDataStructures(unittest.TestCase):
             context_attributes=['banana'],
             ids_with_context=[],
             xref_usages=[],
-            link_usages=[]
+            link_usages=[],
         )
-        
+
         self.assertEqual(file_analysis.filepath, 'test.adoc')
         self.assertEqual(file_analysis.context_attributes, ['banana'])
         self.assertEqual(len(file_analysis.ids_with_context), 0)
@@ -379,9 +400,9 @@ class TestDataStructures(unittest.TestCase):
             total_xrefs=30,
             total_links=8,
             potential_collisions=[],
-            file_analyses=[]
+            file_analyses=[],
         )
-        
+
         self.assertEqual(analysis_report.total_files_scanned, 10)
         self.assertEqual(analysis_report.files_with_context_ids, 5)
         self.assertEqual(analysis_report.total_context_ids, 15)
@@ -391,7 +412,9 @@ class TestDataStructures(unittest.TestCase):
         self.assertEqual(len(analysis_report.file_analyses), 0)
 
 
-@unittest.skipIf(ContextAnalyzer is None, "ContextAnalyzer plugin could not be imported")
+@unittest.skipIf(
+    ContextAnalyzer is None, "ContextAnalyzer plugin could not be imported"
+)
 class TestIntegration(unittest.TestCase):
     """Integration tests for the ContextAnalyzer plugin."""
 
@@ -399,15 +422,17 @@ class TestIntegration(unittest.TestCase):
         """Test analyzing a directory with multiple files."""
         # Create temporary directory within current working directory
         import tempfile
+
         temp_dir = tempfile.mkdtemp(dir='.')
-        
+
         try:
             # Create test files
             file1_path = os.path.join(temp_dir, 'file1.adoc')
             file2_path = os.path.join(temp_dir, 'file2.adoc')
-            
+
             with open(file1_path, 'w') as f:
-                f.write("""= File 1
+                f.write(
+                    """= File 1
 
 :context: banana
 
@@ -415,10 +440,12 @@ class TestIntegration(unittest.TestCase):
 == Topic
 
 See xref:section_apple[Section].
-""")
-            
+"""
+                )
+
             with open(file2_path, 'w') as f:
-                f.write("""= File 2
+                f.write(
+                    """= File 2
 
 :context: apple
 
@@ -426,64 +453,72 @@ See xref:section_apple[Section].
 == Section
 
 See xref:topic_banana[Topic].
-""")
-            
+"""
+                )
+
             analyzer = ContextAnalyzer()
             report = analyzer.analyze_directory(temp_dir)
-            
+
             # Check results
             self.assertEqual(report.total_files_scanned, 2)
             self.assertEqual(report.files_with_context_ids, 2)
             self.assertEqual(report.total_context_ids, 2)
             self.assertEqual(report.total_xrefs, 2)
             self.assertEqual(len(report.potential_collisions), 0)
-            
+
         finally:
             # Clean up
             import shutil
+
             shutil.rmtree(temp_dir, ignore_errors=True)
 
     def test_analyze_directory_with_collisions(self):
         """Test analyzing a directory with ID collisions."""
         # Create temporary directory within current working directory
         import tempfile
+
         temp_dir = tempfile.mkdtemp(dir='.')
-        
+
         try:
             # Create test files with colliding IDs
             file1_path = os.path.join(temp_dir, 'file1.adoc')
             file2_path = os.path.join(temp_dir, 'file2.adoc')
-            
+
             with open(file1_path, 'w') as f:
-                f.write("""= File 1
+                f.write(
+                    """= File 1
 
 :context: banana
 
 [id="topic_banana"]
 == Topic
-""")
-            
+"""
+                )
+
             with open(file2_path, 'w') as f:
-                f.write("""= File 2
+                f.write(
+                    """= File 2
 
 :context: apple
 
 [id="topic_apple"]
 == Topic
-""")
-            
+"""
+                )
+
             analyzer = ContextAnalyzer()
             report = analyzer.analyze_directory(temp_dir)
-            
+
             # Check for collision detection
             self.assertEqual(len(report.potential_collisions), 1)
             collision = report.potential_collisions[0]
             self.assertEqual(collision.base_id, 'topic')
             self.assertEqual(len(collision.conflicting_files), 2)
-            
+
         finally:
             # Clean up
             import shutil
+
             shutil.rmtree(temp_dir, ignore_errors=True)
 
 

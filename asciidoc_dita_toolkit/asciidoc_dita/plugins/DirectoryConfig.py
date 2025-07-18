@@ -18,7 +18,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Optional, Tuple, Dict, Any
 
-from ..config_utils import save_json_config as save_config_file, load_json_config as load_config_file
+from ..config_utils import (
+    save_json_config as save_config_file,
+    load_json_config as load_config_file,
+)
 from ..plugin_manager import is_plugin_enabled
 from ..security_utils import validate_directory_path
 
@@ -28,14 +31,17 @@ try:
     package_root = Path(__file__).parent.parent.parent.parent
     if str(package_root / "src") not in sys.path:
         sys.path.insert(0, str(package_root / "src"))
-    
+
     from adt_core.module_sequencer import ADTModule
+
     ADT_MODULE_AVAILABLE = True
 except ImportError:
     ADT_MODULE_AVAILABLE = False
+
     # Create a dummy ADTModule for backward compatibility
     class ADTModule:
         pass
+
 
 # Constants
 CONFIG_VERSION = "1.0"
@@ -49,36 +55,36 @@ logger = logging.getLogger(__name__)
 class DirectoryConfigModule(ADTModule):
     """
     ADTModule implementation for DirectoryConfig plugin.
-    
+
     This module provides directory-scoped processing capabilities for AsciiDoc files,
     allowing users to configure which directories to include/exclude during processing.
     Supports both interactive setup and automated configuration management.
     """
-    
+
     @property
     def name(self) -> str:
         """Module name identifier."""
         return "DirectoryConfig"
-    
+
     @property
     def version(self) -> str:
         """Module version using semantic versioning."""
         return "1.3.0"
-    
+
     @property
     def dependencies(self) -> List[str]:
         """List of required module names."""
         return []  # No dependencies - this is a foundational module
-    
+
     @property
     def release_status(self) -> str:
         """Release status: 'preview' for beta features."""
         return "preview"
-    
+
     def initialize(self, config: Dict[str, Any]) -> None:
         """
         Initialize the module with configuration.
-        
+
         Args:
             config: Configuration dictionary containing module settings
         """
@@ -87,26 +93,31 @@ class DirectoryConfigModule(ADTModule):
         self.interactive_setup = config.get("interactive_setup", True)
         self.verbose = config.get("verbose", False)
         self.auto_create_config = config.get("auto_create_config", False)
-        
+
         # Directory configuration parameters
         self.repo_root = config.get("repo_root")
         self.include_dirs = config.get("include_dirs", [])
         self.exclude_dirs = config.get("exclude_dirs", [])
-        self.config_location = config.get("config_location", "local")  # "local" or "home"
-        
+        self.config_location = config.get(
+            "config_location", "local"
+        )  # "local" or "home"
+
         # Feature enablement
-        self.enable_preview = config.get("enable_preview", os.getenv("ADT_ENABLE_DIRECTORY_CONFIG", "false").lower() == "true")
-        
+        self.enable_preview = config.get(
+            "enable_preview",
+            os.getenv("ADT_ENABLE_DIRECTORY_CONFIG", "false").lower() == "true",
+        )
+
         # Initialize statistics
         self.directories_processed = 0
         self.files_filtered = 0
         self.configs_created = 0
         self.configs_updated = 0
         self.warnings_generated = 0
-        
+
         # Initialize manager
         self.manager = DirectoryConfigManager()
-        
+
         if self.verbose:
             print(f"Initialized DirectoryConfig v{self.version}")
             print(f"  Show config: {self.show_config}")
@@ -116,14 +127,14 @@ class DirectoryConfigModule(ADTModule):
             print(f"  Repo root: {self.repo_root}")
             print(f"  Include dirs: {len(self.include_dirs)}")
             print(f"  Exclude dirs: {len(self.exclude_dirs)}")
-    
+
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
         """
         Execute the directory configuration processing.
-        
+
         Args:
             context: Execution context containing parameters and results from dependencies
-        
+
         Returns:
             Dictionary with execution results
         """
@@ -138,23 +149,23 @@ class DirectoryConfigModule(ADTModule):
                     "version": self.version,
                     "error": error_msg,
                     "success": False,
-                    "feature_enabled": False
+                    "feature_enabled": False,
                 }
-            
+
             # Reset statistics
             self.directories_processed = 0
             self.files_filtered = 0
             self.configs_created = 0
             self.configs_updated = 0
             self.warnings_generated = 0
-            
+
             result = {
                 "module_name": self.name,
                 "version": self.version,
                 "success": True,
-                "feature_enabled": True
+                "feature_enabled": True,
             }
-            
+
             if self.show_config:
                 # Show current configuration
                 result.update(self._show_configuration())
@@ -167,18 +178,20 @@ class DirectoryConfigModule(ADTModule):
             else:
                 # Load and apply existing configuration
                 result.update(self._load_and_apply_configuration(context))
-            
+
             # Add statistics to result
-            result.update({
-                "directories_processed": self.directories_processed,
-                "files_filtered": self.files_filtered,
-                "configs_created": self.configs_created,
-                "configs_updated": self.configs_updated,
-                "warnings_generated": self.warnings_generated
-            })
-            
+            result.update(
+                {
+                    "directories_processed": self.directories_processed,
+                    "files_filtered": self.files_filtered,
+                    "configs_created": self.configs_created,
+                    "configs_updated": self.configs_updated,
+                    "warnings_generated": self.warnings_generated,
+                }
+            )
+
             return result
-            
+
         except Exception as e:
             error_msg = f"Error in DirectoryConfig module: {e}"
             if self.verbose:
@@ -192,38 +205,41 @@ class DirectoryConfigModule(ADTModule):
                 "files_filtered": self.files_filtered,
                 "configs_created": self.configs_created,
                 "configs_updated": self.configs_updated,
-                "warnings_generated": self.warnings_generated
+                "warnings_generated": self.warnings_generated,
             }
-    
+
     def _show_configuration(self) -> Dict[str, Any]:
         """Show current directory configuration."""
         try:
             self.manager.show_current_config()
-            return {
-                "operation": "show_config",
-                "config_displayed": True
-            }
+            return {"operation": "show_config", "config_displayed": True}
         except Exception as e:
             self.warnings_generated += 1
             return {
                 "operation": "show_config",
                 "config_displayed": False,
-                "error": str(e)
+                "error": str(e),
             }
-    
+
     def _auto_create_configuration(self) -> Dict[str, Any]:
         """Automatically create configuration without user interaction."""
         try:
             # Use provided parameters or defaults
             repo_root = self.repo_root or os.getcwd()
-            
+
             # Create configuration
             config = self.manager.create_default_config(repo_root)
-            config = self.manager.core.update_config_paths(config, self.include_dirs, self.exclude_dirs)
-            
+            config = self.manager.core.update_config_paths(
+                config, self.include_dirs, self.exclude_dirs
+            )
+
             # Determine config path
-            config_path = "./.adtconfig.json" if self.config_location == "local" else "~/.adtconfig.json"
-            
+            config_path = (
+                "./.adtconfig.json"
+                if self.config_location == "local"
+                else "~/.adtconfig.json"
+            )
+
             # Save configuration
             if save_config_file(config_path, config):
                 self.configs_created += 1
@@ -235,73 +251,70 @@ class DirectoryConfigModule(ADTModule):
                     "config_path": config_path,
                     "repo_root": repo_root,
                     "include_dirs": len(self.include_dirs),
-                    "exclude_dirs": len(self.exclude_dirs)
+                    "exclude_dirs": len(self.exclude_dirs),
                 }
             else:
                 self.warnings_generated += 1
                 return {
                     "operation": "auto_create_config",
                     "config_created": False,
-                    "error": "Failed to save configuration"
+                    "error": "Failed to save configuration",
                 }
-                
+
         except Exception as e:
             self.warnings_generated += 1
             return {
                 "operation": "auto_create_config",
                 "config_created": False,
-                "error": str(e)
+                "error": str(e),
             }
-    
+
     def _run_interactive_setup(self) -> Dict[str, Any]:
         """Run interactive setup wizard."""
         try:
             success = self.manager.interactive_setup()
             if success:
                 self.configs_created += 1
-                return {
-                    "operation": "interactive_setup",
-                    "setup_completed": True
-                }
+                return {"operation": "interactive_setup", "setup_completed": True}
             else:
                 self.warnings_generated += 1
                 return {
                     "operation": "interactive_setup",
                     "setup_completed": False,
-                    "error": "Interactive setup failed or was cancelled"
+                    "error": "Interactive setup failed or was cancelled",
                 }
         except Exception as e:
             self.warnings_generated += 1
             return {
                 "operation": "interactive_setup",
                 "setup_completed": False,
-                "error": str(e)
+                "error": str(e),
             }
-    
+
     def _load_and_apply_configuration(self, context: Dict[str, Any]) -> Dict[str, Any]:
         """Load and apply existing configuration to context."""
         try:
             config = load_directory_config()
-            
+
             if config:
                 # Apply directory filters to context
                 directory = context.get("directory", ".")
                 filtered_dirs = apply_directory_filters(directory, config)
-                
+
                 self.directories_processed = len(filtered_dirs)
-                
+
                 # If recursive processing is enabled, get filtered files
                 if context.get("recursive", False):
                     filtered_files = get_filtered_adoc_files(directory, config)
                     self.files_filtered = len(filtered_files)
-                
+
                 if self.verbose:
                     print(f"Applied directory configuration:")
                     print(f"  Directories processed: {self.directories_processed}")
                     print(f"  Files filtered: {self.files_filtered}")
                     print(f"  Include dirs: {len(config.get('includeDirs', []))}")
                     print(f"  Exclude dirs: {len(config.get('excludeDirs', []))}")
-                
+
                 return {
                     "operation": "apply_config",
                     "config_applied": True,
@@ -309,7 +322,7 @@ class DirectoryConfigModule(ADTModule):
                     "filtered_directories": filtered_dirs,
                     "repo_root": config.get("repoRoot"),
                     "include_dirs": len(config.get("includeDirs", [])),
-                    "exclude_dirs": len(config.get("excludeDirs", []))
+                    "exclude_dirs": len(config.get("excludeDirs", [])),
                 }
             else:
                 if self.verbose:
@@ -318,17 +331,17 @@ class DirectoryConfigModule(ADTModule):
                     "operation": "apply_config",
                     "config_applied": False,
                     "config_found": False,
-                    "message": "No directory configuration found"
+                    "message": "No directory configuration found",
                 }
-                
+
         except Exception as e:
             self.warnings_generated += 1
             return {
                 "operation": "apply_config",
                 "config_applied": False,
-                "error": str(e)
+                "error": str(e),
             }
-    
+
     def cleanup(self) -> None:
         """Clean up module resources."""
         if self.verbose:
@@ -387,11 +400,15 @@ def _is_path_under_directory(file_path: str, dir_path: str) -> bool:
         common_path = os.path.commonpath([normalized_file, normalized_dir])
         return common_path == normalized_dir
     except (ValueError, OSError) as e:
-        logger.debug(f"Error checking path relationship between {file_path} and {dir_path}: {e}")
+        logger.debug(
+            f"Error checking path relationship between {file_path} and {dir_path}: {e}"
+        )
         return False
 
 
-def _validate_path_list(paths: List[str], base_path: str, description: str) -> List[str]:
+def _validate_path_list(
+    paths: List[str], base_path: str, description: str
+) -> List[str]:
     """
     Validate and normalize a list of paths.
 
@@ -409,7 +426,9 @@ def _validate_path_list(paths: List[str], base_path: str, description: str) -> L
         try:
             normalized = _normalize_path(path, base_path)
             validated_paths.append(os.path.relpath(normalized, base_path))
-            logger.debug(f"Validated {description} path: {path} -> {validated_paths[-1]}")
+            logger.debug(
+                f"Validated {description} path: {path} -> {validated_paths[-1]}"
+            )
         except (ValueError, OSError) as e:
             logger.warning(f"Invalid {description} path '{path}': {e}")
             continue
@@ -417,8 +436,9 @@ def _validate_path_list(paths: List[str], base_path: str, description: str) -> L
     return validated_paths
 
 
-def _detect_path_conflicts(include_dirs: List[str], exclude_dirs: List[str],
-                           repo_root: str) -> List[str]:
+def _detect_path_conflicts(
+    include_dirs: List[str], exclude_dirs: List[str], repo_root: str
+) -> List[str]:
     """
     Detect conflicts between include and exclude directories.
 
@@ -441,11 +461,15 @@ def _detect_path_conflicts(include_dirs: List[str], exclude_dirs: List[str],
 
             # Check if include directory is under exclude directory
             if _is_path_under_directory(include_path, exclude_path):
-                conflicts.append(f"Include directory '{include_dir}' is under exclude directory '{exclude_dir}'")
+                conflicts.append(
+                    f"Include directory '{include_dir}' is under exclude directory '{exclude_dir}'"
+                )
 
             # Check if exclude directory is under include directory
             elif _is_path_under_directory(exclude_path, include_path):
-                conflicts.append(f"Exclude directory '{exclude_dir}' is under include directory '{include_dir}'")
+                conflicts.append(
+                    f"Exclude directory '{exclude_dir}' is under include directory '{include_dir}'"
+                )
 
     # Check for duplicate paths in same list
     include_set = set(include_dirs)
@@ -477,10 +501,12 @@ class DirectoryConfigCore:
             "repoRoot": normalized_repo_root,
             "includeDirs": [],
             "excludeDirs": [],
-            "lastUpdated": datetime.now().isoformat()
+            "lastUpdated": datetime.now().isoformat(),
         }
 
-        self.logger.debug(f"Created default config with repo root: {normalized_repo_root}")
+        self.logger.debug(
+            f"Created default config with repo root: {normalized_repo_root}"
+        )
 
         # Validate schema
         if not self._validate_config_schema(config):
@@ -490,7 +516,13 @@ class DirectoryConfigCore:
 
     def _validate_config_schema(self, config: dict) -> bool:
         """Validate configuration schema structure."""
-        required_fields = ["version", "repoRoot", "includeDirs", "excludeDirs", "lastUpdated"]
+        required_fields = [
+            "version",
+            "repoRoot",
+            "includeDirs",
+            "excludeDirs",
+            "lastUpdated",
+        ]
 
         if not isinstance(config, dict):
             self.logger.error("Configuration must be a dictionary")
@@ -511,30 +543,38 @@ class DirectoryConfigCore:
 
         # Check for conflicts
         conflicts = _detect_path_conflicts(
-            config["includeDirs"],
-            config["excludeDirs"],
-            config["repoRoot"]
+            config["includeDirs"], config["excludeDirs"], config["repoRoot"]
         )
 
         if conflicts:
-            self.logger.warning(f"Configuration conflicts detected: {'; '.join(conflicts)}")
+            self.logger.warning(
+                f"Configuration conflicts detected: {'; '.join(conflicts)}"
+            )
             # Don't fail validation, just warn
 
         self.logger.debug("Configuration schema validation passed")
         return True
 
-    def validate_directory(self, directory_path: str, base_path: str) -> Tuple[bool, str]:
+    def validate_directory(
+        self, directory_path: str, base_path: str
+    ) -> Tuple[bool, str]:
         """Validate that a directory exists and is within the repository root."""
         try:
             normalized_path = _normalize_path(directory_path, base_path)
-            self.logger.debug(f"Validating directory: {directory_path} -> {normalized_path}")
+            self.logger.debug(
+                f"Validating directory: {directory_path} -> {normalized_path}"
+            )
 
-            result = validate_directory_path(normalized_path, base_path, require_exists=True)
+            result = validate_directory_path(
+                normalized_path, base_path, require_exists=True
+            )
 
             if result[0]:
                 self.logger.debug(f"Directory validation successful: {directory_path}")
             else:
-                self.logger.debug(f"Directory validation failed: {directory_path} - {result[1]}")
+                self.logger.debug(
+                    f"Directory validation failed: {directory_path} - {result[1]}"
+                )
 
             return result
         except Exception as e:
@@ -542,8 +582,9 @@ class DirectoryConfigCore:
             self.logger.error(error_msg)
             return False, error_msg
 
-    def update_config_paths(self, config: dict, include_dirs: List[str],
-                            exclude_dirs: List[str]) -> dict:
+    def update_config_paths(
+        self, config: dict, include_dirs: List[str], exclude_dirs: List[str]
+    ) -> dict:
         """Update configuration with validated paths."""
         repo_root = config["repoRoot"]
 
@@ -557,12 +598,16 @@ class DirectoryConfigCore:
         config["lastUpdated"] = datetime.now().isoformat()
 
         # Check for conflicts
-        conflicts = _detect_path_conflicts(validated_includes, validated_excludes, repo_root)
+        conflicts = _detect_path_conflicts(
+            validated_includes, validated_excludes, repo_root
+        )
         if conflicts:
             self.logger.warning(f"Configuration conflicts: {'; '.join(conflicts)}")
 
-        self.logger.info(f"Updated configuration with {len(validated_includes)} include dirs, "
-                         f"{len(validated_excludes)} exclude dirs")
+        self.logger.info(
+            f"Updated configuration with {len(validated_includes)} include dirs, "
+            f"{len(validated_excludes)} exclude dirs"
+        )
 
         return config
 
@@ -582,7 +627,9 @@ class DirectoryConfigUI:
 
         try:
             while True:
-                repo_root = input(f"Enter repository root path [{current_dir}]: ").strip()
+                repo_root = input(
+                    f"Enter repository root path [{current_dir}]: "
+                ).strip()
                 if not repo_root:
                     repo_root = current_dir
 
@@ -593,8 +640,12 @@ class DirectoryConfigUI:
                 try:
                     normalized_root = _normalize_path(repo_root)
 
-                    if os.path.exists(normalized_root) and os.path.isdir(normalized_root):
-                        self.logger.debug(f"Repository root selected: {normalized_root}")
+                    if os.path.exists(normalized_root) and os.path.isdir(
+                        normalized_root
+                    ):
+                        self.logger.debug(
+                            f"Repository root selected: {normalized_root}"
+                        )
                         return normalized_root
                     else:
                         print(f"Error: Directory does not exist: {normalized_root}")
@@ -606,8 +657,12 @@ class DirectoryConfigUI:
             print("\n\nSetup cancelled by user (Ctrl+C).")
             sys.exit(0)
 
-    def prompt_for_directories(self, prompt_text: str, repo_root: str,
-                               existing_dirs: Optional[List[str]] = None) -> List[str]:
+    def prompt_for_directories(
+        self,
+        prompt_text: str,
+        repo_root: str,
+        existing_dirs: Optional[List[str]] = None,
+    ) -> List[str]:
         """Prompt user for directory list with validation."""
         if existing_dirs is None:
             existing_dirs = []
@@ -644,18 +699,22 @@ class DirectoryConfigUI:
                         self.logger.debug(f"Duplicate directory ignored: {rel_path}")
                 else:
                     print(f"  ✗ {result}")
-                    self.logger.debug(f"Invalid directory rejected: {dir_input} - {result}")
+                    self.logger.debug(
+                        f"Invalid directory rejected: {dir_input} - {result}"
+                    )
         except KeyboardInterrupt:
             print("\n\nSetup cancelled by user (Ctrl+C).")
             sys.exit(0)
 
         return directories
 
-    def display_configuration(self, config: dict, config_path: Optional[str] = None) -> None:
+    def display_configuration(
+        self, config: dict, config_path: Optional[str] = None
+    ) -> None:
         """Display current configuration in a user-friendly format."""
-        print("\n" + "="*50)
+        print("\n" + "=" * 50)
         print("Directory Configuration")
-        print("="*50)
+        print("=" * 50)
 
         if config_path:
             print(f"Configuration file: {config_path}")
@@ -677,12 +736,14 @@ class DirectoryConfigUI:
         else:
             print("\nExclude directories: None")
 
-        print("="*50)
+        print("=" * 50)
 
     def _prompt_for_save_location(self) -> str:
         """Prompt user for configuration save location."""
         print("\nWhere would you like to save the configuration?")
-        print(f"[{LOCAL_CHOICE}] Current directory (./.adtconfig.json) - Project-specific")
+        print(
+            f"[{LOCAL_CHOICE}] Current directory (./.adtconfig.json) - Project-specific"
+        )
         print(f"[{HOME_CHOICE}] Home directory (~/.adtconfig.json) - Global default")
 
         try:
@@ -701,33 +762,54 @@ class DirectoryConfigUI:
             print("\n\nSetup cancelled by user (Ctrl+C).")
             sys.exit(0)
 
-    def _save_config_with_retry(self, config_path: str, config: dict,
-                                max_retries: int = 3) -> bool:
+    def _save_config_with_retry(
+        self, config_path: str, config: dict, max_retries: int = 3
+    ) -> bool:
         """Save configuration with retry logic."""
         for attempt in range(max_retries):
             try:
                 if save_config_file(config_path, config):
                     print(f"\n✓ Configuration saved to {config_path}")
                     self.display_configuration(config, config_path)
-                    self.logger.info(f"Configuration saved successfully to {config_path}")
+                    self.logger.info(
+                        f"Configuration saved successfully to {config_path}"
+                    )
                     return True
                 else:
                     if attempt < max_retries - 1:
                         print(f"\n✗ Failed to save configuration to {config_path}")
-                        self.logger.warning(f"Failed to save configuration to {config_path}, attempt {attempt + 1}")
-                        retry = input("Would you like to try again? (y/n): ").strip().lower()
+                        self.logger.warning(
+                            f"Failed to save configuration to {config_path}, attempt {attempt + 1}"
+                        )
+                        retry = (
+                            input("Would you like to try again? (y/n): ")
+                            .strip()
+                            .lower()
+                        )
                         if retry != 'y':
                             # Offer alternative location
-                            alt_path = "~/.adtconfig.json" if config_path.startswith("./") else "./.adtconfig.json"
-                            try_alt = input(f"Try saving to {alt_path} instead? (y/n): ").strip().lower()
+                            alt_path = (
+                                "~/.adtconfig.json"
+                                if config_path.startswith("./")
+                                else "./.adtconfig.json"
+                            )
+                            try_alt = (
+                                input(f"Try saving to {alt_path} instead? (y/n): ")
+                                .strip()
+                                .lower()
+                            )
                             if try_alt == 'y':
                                 config_path = alt_path
                                 continue
                             else:
                                 break
                     else:
-                        print(f"\n✗ Failed to save configuration after {max_retries} attempts")
-                        self.logger.error(f"Failed to save configuration after {max_retries} attempts")
+                        print(
+                            f"\n✗ Failed to save configuration after {max_retries} attempts"
+                        )
+                        self.logger.error(
+                            f"Failed to save configuration after {max_retries} attempts"
+                        )
             except Exception as e:
                 self.logger.error(f"Error saving configuration: {e}")
                 if attempt == max_retries - 1:
@@ -749,7 +831,9 @@ class DirectoryConfigManager:
         """Create a default configuration structure."""
         return self.core.create_default_config(repo_root)
 
-    def validate_directory(self, directory_path: str, base_path: str) -> Tuple[bool, str]:
+    def validate_directory(
+        self, directory_path: str, base_path: str
+    ) -> Tuple[bool, str]:
         """Validate that a directory exists and is within the repository root."""
         return self.core.validate_directory(directory_path, base_path)
 
@@ -764,14 +848,12 @@ class DirectoryConfigManager:
 
             # Step 2: Include directories
             include_dirs = self.ui.prompt_for_directories(
-                "Include Directories (leave empty to include all)",
-                repo_root
+                "Include Directories (leave empty to include all)", repo_root
             )
 
             # Step 3: Exclude directories
             exclude_dirs = self.ui.prompt_for_directories(
-                "Exclude Directories (leave empty to exclude none)",
-                repo_root
+                "Exclude Directories (leave empty to exclude none)", repo_root
             )
 
             # Step 4: Create and update configuration
@@ -830,6 +912,7 @@ class DirectoryConfigManager:
 
 # Modular compatibility functions for the new architecture
 
+
 def load_directory_config() -> Optional[dict]:
     """
     Load directory configuration from the local or home config file.
@@ -881,15 +964,19 @@ def apply_directory_filters(base_path: str, config: Optional[dict]) -> List[str]
         normalized_base = _normalize_path(base_path)
         normalized_repo = _normalize_path(repo_root)
 
-        logger.debug(f"Filtering: base={normalized_base}, repo={normalized_repo}, "
-                     f"includes={len(include_dirs)}, excludes={len(exclude_dirs)}")
+        logger.debug(
+            f"Filtering: base={normalized_base}, repo={normalized_repo}, "
+            f"includes={len(include_dirs)}, excludes={len(exclude_dirs)}"
+        )
 
         # Check if base_path is excluded
         for exclude_dir in exclude_dirs:
             exclude_path = _normalize_path(exclude_dir, normalized_repo)
 
             if _is_path_under_directory(normalized_base, exclude_path):
-                logger.warning(f"Directory {normalized_base} is excluded by configuration")
+                logger.warning(
+                    f"Directory {normalized_base} is excluded by configuration"
+                )
                 # Still return the path since there's no alternative
                 return [normalized_base]
 
@@ -900,8 +987,9 @@ def apply_directory_filters(base_path: str, config: Optional[dict]) -> List[str]
                 include_path = _normalize_path(include_dir, normalized_repo)
 
                 # Check if base_path is in or under an included directory
-                if (_is_path_under_directory(normalized_base, include_path) or
-                        _is_path_under_directory(include_path, normalized_base)):
+                if _is_path_under_directory(
+                    normalized_base, include_path
+                ) or _is_path_under_directory(include_path, normalized_base):
                     filtered_dirs.append(include_path)
                     logger.debug(f"Directory {include_path} matches include filter")
 
@@ -919,8 +1007,11 @@ def apply_directory_filters(base_path: str, config: Optional[dict]) -> List[str]
         return [_normalize_path(base_path)]
 
 
-def get_filtered_adoc_files(directory_path: str, config: Optional[dict],
-                            find_adoc_files_func: Optional[callable] = None) -> List[str]:
+def get_filtered_adoc_files(
+    directory_path: str,
+    config: Optional[dict],
+    find_adoc_files_func: Optional[callable] = None,
+) -> List[str]:
     """
     Get filtered AsciiDoc files based on directory configuration.
 
@@ -936,6 +1027,7 @@ def get_filtered_adoc_files(directory_path: str, config: Optional[dict],
 
     if find_adoc_files_func is None:
         from ..file_utils import find_adoc_files
+
         find_adoc_files_func = find_adoc_files
 
     if not config:
@@ -949,8 +1041,10 @@ def get_filtered_adoc_files(directory_path: str, config: Optional[dict],
 
         normalized_repo = _normalize_path(repo_root)
 
-        logger.debug(f"Filtering files: repo={normalized_repo}, "
-                     f"includes={len(include_dirs)}, excludes={len(exclude_dirs)}")
+        logger.debug(
+            f"Filtering files: repo={normalized_repo}, "
+            f"includes={len(include_dirs)}, excludes={len(exclude_dirs)}"
+        )
 
         all_files = []
 
@@ -962,7 +1056,9 @@ def get_filtered_adoc_files(directory_path: str, config: Optional[dict],
                 if os.path.exists(include_path) and os.path.isdir(include_path):
                     files = find_adoc_files_func(include_path, recursive=True)
                     all_files.extend(files)
-                    logger.debug(f"Found {len(files)} files in include directory {include_path}")
+                    logger.debug(
+                        f"Found {len(files)} files in include directory {include_path}"
+                    )
         else:
             # Process all files in the directory path
             all_files = find_adoc_files_func(directory_path, recursive=True)
@@ -980,7 +1076,9 @@ def get_filtered_adoc_files(directory_path: str, config: Optional[dict],
 
                     if _is_path_under_directory(normalized_file, exclude_path):
                         excluded = True
-                        logger.debug(f"File {file_path} excluded by directory {exclude_dir}")
+                        logger.debug(
+                            f"File {file_path} excluded by directory {exclude_dir}"
+                        )
                         break
 
                 if not excluded:
@@ -1003,35 +1101,33 @@ def run_directory_config(args):
     if ADT_MODULE_AVAILABLE:
         # Use the new ADTModule implementation
         module = DirectoryConfigModule()
-        
+
         # Initialize with configuration from args
         config = {
             "show_config": getattr(args, "show", False),
             "interactive_setup": not getattr(args, "show", False),
             "verbose": getattr(args, "verbose", False),
             "auto_create_config": False,
-            "enable_preview": os.getenv("ADT_ENABLE_DIRECTORY_CONFIG", "false").lower() == "true"
+            "enable_preview": os.getenv("ADT_ENABLE_DIRECTORY_CONFIG", "false").lower()
+            == "true",
         }
-        
+
         module.initialize(config)
-        
+
         # Execute with context
-        context = {
-            "directory": ".",
-            "recursive": False
-        }
-        
+        context = {"directory": ".", "recursive": False}
+
         result = module.execute(context)
-        
+
         # Check if module execution was successful
         if not result.get("success", False):
             if result.get("error"):
                 print(f"Error: {result['error']}")
             sys.exit(1)
-        
+
         # Cleanup
         module.cleanup()
-        
+
         return result
     else:
         # Fallback to legacy implementation
@@ -1063,19 +1159,13 @@ def register_subcommand(subparsers):
         help="Configure directory scoping for AsciiDoc processing",
         description="Set up directory inclusion/exclusion rules for AsciiDoc file processing. "
         "This allows you to configure which directories ADT should process, "
-        "providing consistent scoping across all plugins."
+        "providing consistent scoping across all plugins.",
     )
 
     parser.add_argument(
-        "--show",
-        action="store_true",
-        help="Display current directory configuration"
+        "--show", action="store_true", help="Display current directory configuration"
     )
 
-    parser.add_argument(
-        "--verbose",
-        action="store_true",
-        help="Enable verbose output"
-    )
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
 
     parser.set_defaults(func=run_directory_config)

@@ -17,18 +17,28 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 try:
     from asciidoc_dita_toolkit.asciidoc_dita.regex_patterns import (
-        CompiledPatterns, validate_patterns, get_pattern_documentation,
-        list_available_patterns, compile_pattern,
-        ID_PATTERN, ID_WITH_CONTEXT_PATTERN, XREF_BASIC_PATTERN,
-        XREF_UNFIXED_PATTERN, LINK_PATTERN, CONTEXT_ATTR_PATTERN,
-        INCLUDE_PATTERN, PATTERN_EXAMPLES
+        CompiledPatterns,
+        validate_patterns,
+        get_pattern_documentation,
+        list_available_patterns,
+        compile_pattern,
+        ID_PATTERN,
+        ID_WITH_CONTEXT_PATTERN,
+        XREF_BASIC_PATTERN,
+        XREF_UNFIXED_PATTERN,
+        LINK_PATTERN,
+        CONTEXT_ATTR_PATTERN,
+        INCLUDE_PATTERN,
+        PATTERN_EXAMPLES,
     )
 except ImportError as e:
     print(f"Warning: Could not import regex_patterns module: {e}")
     CompiledPatterns = None
 
 
-@unittest.skipIf(CompiledPatterns is None, "regex_patterns module could not be imported")
+@unittest.skipIf(
+    CompiledPatterns is None, "regex_patterns module could not be imported"
+)
 class TestCompiledPatterns(unittest.TestCase):
     """Test cases for pre-compiled regex patterns."""
 
@@ -45,6 +55,7 @@ class TestCompiledPatterns(unittest.TestCase):
     def test_patterns_are_compiled(self):
         """Test that patterns are actually compiled regex objects."""
         import re
+
         self.assertIsInstance(CompiledPatterns.ID_REGEX, re.Pattern)
         self.assertIsInstance(CompiledPatterns.ID_WITH_CONTEXT_REGEX, re.Pattern)
         self.assertIsInstance(CompiledPatterns.XREF_BASIC_REGEX, re.Pattern)
@@ -54,7 +65,9 @@ class TestCompiledPatterns(unittest.TestCase):
         self.assertIsInstance(CompiledPatterns.INCLUDE_REGEX, re.Pattern)
 
 
-@unittest.skipIf(CompiledPatterns is None, "regex_patterns module could not be imported")
+@unittest.skipIf(
+    CompiledPatterns is None, "regex_patterns module could not be imported"
+)
 class TestIDPatterns(unittest.TestCase):
     """Test cases for ID-related patterns."""
 
@@ -116,7 +129,7 @@ class TestIDPatterns(unittest.TestCase):
             with self.subTest(input_text=input_text):
                 match = CompiledPatterns.ID_WITH_CONTEXT_REGEX.match(input_text)
                 self.assertIsNone(match, f"Pattern should not match: {input_text}")
-                
+
         # Test cases that DO match (any ID with underscore - last underscore is separator)
         matching_cases = [
             ('[id="simple_id"]', ('simple', 'id')),
@@ -124,7 +137,7 @@ class TestIDPatterns(unittest.TestCase):
             ('[id="simple_id_no_context"]', ('simple_id_no', 'context')),
             ('[id="_just_context"]', ('_just', 'context')),
         ]
-        
+
         for input_text, expected_groups in matching_cases:
             with self.subTest(input_text=input_text):
                 match = CompiledPatterns.ID_WITH_CONTEXT_REGEX.match(input_text)
@@ -133,7 +146,9 @@ class TestIDPatterns(unittest.TestCase):
                 self.assertEqual(match.group(2), expected_groups[1])
 
 
-@unittest.skipIf(CompiledPatterns is None, "regex_patterns module could not be imported")
+@unittest.skipIf(
+    CompiledPatterns is None, "regex_patterns module could not be imported"
+)
 class TestCrossReferencePatterns(unittest.TestCase):
     """Test cases for cross-reference patterns."""
 
@@ -142,7 +157,10 @@ class TestCrossReferencePatterns(unittest.TestCase):
         test_cases = [
             ('xref:target[Link Text]', ('target', None, '[Link Text]')),
             ('xref:file.adoc#section[Section]', ('file.adoc', 'section', '[Section]')),
-            ('xref:modules/proc.adoc#step[Step]', ('modules/proc.adoc', 'step', '[Step]')),
+            (
+                'xref:modules/proc.adoc#step[Step]',
+                ('modules/proc.adoc', 'step', '[Step]'),
+            ),
             ('xref:simple[]', ('simple', None, '[]')),
         ]
 
@@ -180,14 +198,22 @@ class TestCrossReferencePatterns(unittest.TestCase):
         for input_text in non_matching_cases:
             with self.subTest(input_text=input_text):
                 match = CompiledPatterns.XREF_UNFIXED_REGEX.search(input_text)
-                self.assertIsNone(match, f"Pattern should not match already fixed xref: {input_text}")
+                self.assertIsNone(
+                    match, f"Pattern should not match already fixed xref: {input_text}"
+                )
 
     def test_link_pattern_matches(self):
         """Test link pattern matching."""
         test_cases = [
-            ('link:http://example.com[Example]', ('http://example.com', None, '[Example]')),
+            (
+                'link:http://example.com[Example]',
+                ('http://example.com', None, '[Example]'),
+            ),
             ('link:file.html#anchor[Link]', ('file.html', 'anchor', '[Link]')),
-            ('link:https://docs.example.com#section[Docs]', ('https://docs.example.com', 'section', '[Docs]')),
+            (
+                'link:https://docs.example.com#section[Docs]',
+                ('https://docs.example.com', 'section', '[Docs]'),
+            ),
             ('link:relative/path.html[]', ('relative/path.html', None, '[]')),
         ]
 
@@ -200,7 +226,9 @@ class TestCrossReferencePatterns(unittest.TestCase):
                 self.assertEqual(match.group(3), expected_captures[2])
 
 
-@unittest.skipIf(CompiledPatterns is None, "regex_patterns module could not be imported")
+@unittest.skipIf(
+    CompiledPatterns is None, "regex_patterns module could not be imported"
+)
 class TestStructurePatterns(unittest.TestCase):
     """Test cases for AsciiDoc structure patterns."""
 
@@ -271,7 +299,9 @@ class TestStructurePatterns(unittest.TestCase):
                     self.assertIsNone(match, f"Pattern should not match: {input_text}")
 
 
-@unittest.skipIf(CompiledPatterns is None, "regex_patterns module could not be imported")
+@unittest.skipIf(
+    CompiledPatterns is None, "regex_patterns module could not be imported"
+)
 class TestUtilityFunctions(unittest.TestCase):
     """Test cases for utility functions."""
 
@@ -284,12 +314,12 @@ class TestUtilityFunctions(unittest.TestCase):
         """Test custom pattern compilation."""
         pattern = compile_pattern(r'test_(\w+)', re.IGNORECASE)
         self.assertIsNotNone(pattern)
-        
+
         # Test the compiled pattern works
         match = pattern.search("Test_Example")
         self.assertIsNotNone(match)
         self.assertEqual(match.group(1), "Example")
-        
+
         # Test case insensitivity
         match_lower = pattern.search("test_example")
         self.assertIsNotNone(match_lower)
@@ -302,7 +332,7 @@ class TestUtilityFunctions(unittest.TestCase):
         self.assertIn('pattern', doc)
         self.assertIn('description', doc)
         self.assertIn('examples', doc)
-        
+
         # Test non-existent pattern
         empty_doc = get_pattern_documentation('NON_EXISTENT')
         self.assertEqual(empty_doc, {})
@@ -312,7 +342,7 @@ class TestUtilityFunctions(unittest.TestCase):
         patterns = list_available_patterns()
         self.assertIsInstance(patterns, list)
         self.assertGreater(len(patterns), 0)
-        
+
         # Check that expected patterns are in the list
         expected_patterns = [
             'ID_PATTERN',
@@ -321,14 +351,16 @@ class TestUtilityFunctions(unittest.TestCase):
             'XREF_UNFIXED_PATTERN',
             'LINK_PATTERN',
             'CONTEXT_ATTR_PATTERN',
-            'INCLUDE_PATTERN'
+            'INCLUDE_PATTERN',
         ]
-        
+
         for pattern in expected_patterns:
             self.assertIn(pattern, patterns)
 
 
-@unittest.skipIf(CompiledPatterns is None, "regex_patterns module could not be imported")
+@unittest.skipIf(
+    CompiledPatterns is None, "regex_patterns module could not be imported"
+)
 class TestPatternExamples(unittest.TestCase):
     """Test cases for pattern examples and documentation."""
 
@@ -337,19 +369,23 @@ class TestPatternExamples(unittest.TestCase):
         for pattern_name, doc in PATTERN_EXAMPLES.items():
             pattern_str = doc['pattern']
             compiled_pattern = re.compile(pattern_str, re.MULTILINE)
-            
+
             with self.subTest(pattern_name=pattern_name):
                 # Test positive examples
                 for example_text, description in doc['examples'].items():
                     match = compiled_pattern.search(example_text)
-                    self.assertIsNotNone(match, 
-                        f"Pattern {pattern_name} should match example: {example_text}")
-                
+                    self.assertIsNotNone(
+                        match,
+                        f"Pattern {pattern_name} should match example: {example_text}",
+                    )
+
                 # Test negative examples (non-matches)
                 for non_match_text in doc.get('non_matches', []):
                     match = compiled_pattern.search(non_match_text)
-                    self.assertIsNone(match, 
-                        f"Pattern {pattern_name} should not match: {non_match_text}")
+                    self.assertIsNone(
+                        match,
+                        f"Pattern {pattern_name} should not match: {non_match_text}",
+                    )
 
     def test_pattern_consistency(self):
         """Test that patterns in examples match compiled patterns."""
@@ -362,28 +398,36 @@ class TestPatternExamples(unittest.TestCase):
             'CONTEXT_ATTR_PATTERN': CompiledPatterns.CONTEXT_ATTR_REGEX,
             'INCLUDE_PATTERN': CompiledPatterns.INCLUDE_REGEX,
         }
-        
+
         for pattern_name, compiled_pattern in pattern_mapping.items():
             with self.subTest(pattern_name=pattern_name):
                 doc = PATTERN_EXAMPLES[pattern_name]
                 pattern_str = doc['pattern']
-                
+
                 # Test that both patterns behave the same on examples
                 for example_text in doc['examples'].keys():
                     doc_match = re.search(pattern_str, example_text, re.MULTILINE)
                     compiled_match = compiled_pattern.search(example_text)
-                    
+
                     if doc_match and compiled_match:
                         # Both should match and have same groups
-                        self.assertEqual(doc_match.groups(), compiled_match.groups(),
-                            f"Pattern groups should match for {pattern_name}: {example_text}")
+                        self.assertEqual(
+                            doc_match.groups(),
+                            compiled_match.groups(),
+                            f"Pattern groups should match for {pattern_name}: {example_text}",
+                        )
                     else:
                         # Both should be None or both should have matches
-                        self.assertEqual(bool(doc_match), bool(compiled_match),
-                            f"Pattern match status should be same for {pattern_name}: {example_text}")
+                        self.assertEqual(
+                            bool(doc_match),
+                            bool(compiled_match),
+                            f"Pattern match status should be same for {pattern_name}: {example_text}",
+                        )
 
 
-@unittest.skipIf(CompiledPatterns is None, "regex_patterns module could not be imported")
+@unittest.skipIf(
+    CompiledPatterns is None, "regex_patterns module could not be imported"
+)
 class TestRealWorldExamples(unittest.TestCase):
     """Test patterns against real-world AsciiDoc content."""
 
@@ -420,12 +464,23 @@ This concludes our document.
 
         # Test ID patterns
         id_matches = CompiledPatterns.ID_REGEX.findall(sample_content)
-        expected_ids = ['introduction_banana', 'procedures_banana', 'step1_banana', 'conclusion']
+        expected_ids = [
+            'introduction_banana',
+            'procedures_banana',
+            'step1_banana',
+            'conclusion',
+        ]
         self.assertEqual(set(id_matches), set(expected_ids))
 
         # Test context ID patterns
-        context_id_matches = CompiledPatterns.ID_WITH_CONTEXT_REGEX.findall(sample_content)
-        expected_context_ids = [('introduction', 'banana'), ('procedures', 'banana'), ('step1', 'banana')]
+        context_id_matches = CompiledPatterns.ID_WITH_CONTEXT_REGEX.findall(
+            sample_content
+        )
+        expected_context_ids = [
+            ('introduction', 'banana'),
+            ('procedures', 'banana'),
+            ('step1', 'banana'),
+        ]
         self.assertEqual(set(context_id_matches), set(expected_context_ids))
 
         # Test xref patterns
@@ -436,7 +491,9 @@ This concludes our document.
         # Test link patterns
         link_matches = CompiledPatterns.LINK_REGEX.findall(sample_content)
         self.assertEqual(len(link_matches), 1)
-        self.assertEqual(link_matches[0], ('https://example.com', 'docs', '[External Docs]'))
+        self.assertEqual(
+            link_matches[0], ('https://example.com', 'docs', '[External Docs]')
+        )
 
         # Test context attribute pattern
         context_matches = CompiledPatterns.CONTEXT_ATTR_REGEX.findall(sample_content)

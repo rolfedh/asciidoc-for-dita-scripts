@@ -17,8 +17,12 @@ class TestContentTypePlugin(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures."""
-        from asciidoc_dita_toolkit.asciidoc_dita.plugins.content_type_detector import ContentTypeDetector
-        from asciidoc_dita_toolkit.asciidoc_dita.plugins.content_type_processor import ContentTypeProcessor
+        from asciidoc_dita_toolkit.asciidoc_dita.plugins.content_type_detector import (
+            ContentTypeDetector,
+        )
+        from asciidoc_dita_toolkit.asciidoc_dita.plugins.content_type_processor import (
+            ContentTypeProcessor,
+        )
         from asciidoc_dita_toolkit.asciidoc_dita.plugins.ui_interface import MockUI
 
         self.detector = ContentTypeDetector()
@@ -49,13 +53,25 @@ class TestContentTypePlugin(unittest.TestCase):
     def test_detect_existing_content_type(self):
         """Test detection of existing content type attributes."""
         test_cases = [
-            ([("text", "\n"), (":_mod-docs-content-type: CONCEPT", "\n")], ("CONCEPT", 1, "current")),
-            ([("text", "\n"), (":_content-type: PROCEDURE", "\n")], ("PROCEDURE", 1, "deprecated_content")),
-            ([("text", "\n"), (":_module-type: REFERENCE", "\n")], ("REFERENCE", 1, "deprecated_module")),
-            ([("text", "\n"), ("//:_mod-docs-content-type: ASSEMBLY", "\n")], ("ASSEMBLY", 1, "commented")),
+            (
+                [("text", "\n"), (":_mod-docs-content-type: CONCEPT", "\n")],
+                ("CONCEPT", 1, "current"),
+            ),
+            (
+                [("text", "\n"), (":_content-type: PROCEDURE", "\n")],
+                ("PROCEDURE", 1, "deprecated_content"),
+            ),
+            (
+                [("text", "\n"), (":_module-type: REFERENCE", "\n")],
+                ("REFERENCE", 1, "deprecated_module"),
+            ),
+            (
+                [("text", "\n"), ("//:_mod-docs-content-type: ASSEMBLY", "\n")],
+                ("ASSEMBLY", 1, "commented"),
+            ),
             ([("text", "\n"), ("no content type", "\n")], (None, None, None)),
         ]
-        
+
         for lines, expected in test_cases:
             with self.subTest(lines=lines):
                 result = self.detector.detect_existing_attribute(lines)
@@ -74,7 +90,7 @@ class TestContentTypePlugin(unittest.TestCase):
             ("= What is containerization", "CONCEPT"),
             (None, None),
         ]
-        
+
         for title, expected in test_cases:
             with self.subTest(title=title):
                 result = self.detector.detect_from_title(title)
@@ -88,7 +104,7 @@ class TestContentTypePlugin(unittest.TestCase):
             ("|====\n|Column 1|Column 2\n|Value 1|Value 2\n|====", "REFERENCE"),
             ("This is just regular content.", None),
         ]
-        
+
         for content, expected in test_cases:
             with self.subTest(content=content):
                 result = self.detector.detect_from_content(content)
@@ -103,7 +119,7 @@ class TestContentTypePlugin(unittest.TestCase):
             ([("content", "\n"), ("no title", "\n")], None),
             ([], None),
         ]
-        
+
         for lines, expected in test_cases:
             with self.subTest(lines=lines):
                 result = self.detector.extract_document_title(lines)
@@ -116,15 +132,24 @@ class TestContentTypePlugin(unittest.TestCase):
         result = self.processor.ensure_blank_line_after_attribute(lines, 1)
         self.assertEqual(len(result), 3)
         self.assertEqual(result[2], ("", "\n"))
-        
+
         # Test case: no blank line after attribute
-        lines = [("content", "\n"), (":_mod-docs-content-type: CONCEPT", "\n"), ("more content", "\n")]
+        lines = [
+            ("content", "\n"),
+            (":_mod-docs-content-type: CONCEPT", "\n"),
+            ("more content", "\n"),
+        ]
         result = self.processor.ensure_blank_line_after_attribute(lines, 1)
         self.assertEqual(len(result), 4)
         self.assertEqual(result[2], ("", "\n"))
-        
+
         # Test case: blank line already exists
-        lines = [("content", "\n"), (":_mod-docs-content-type: CONCEPT", "\n"), ("", "\n"), ("more content", "\n")]
+        lines = [
+            ("content", "\n"),
+            (":_mod-docs-content-type: CONCEPT", "\n"),
+            ("", "\n"),
+            ("more content", "\n"),
+        ]
         result = self.processor.ensure_blank_line_after_attribute(lines, 1)
         self.assertEqual(len(result), 4)  # Should not add another blank line
 
@@ -138,7 +163,7 @@ class TestContentTypeCLIIntegration(unittest.TestCase):
     def test_content_type_disabled_by_default(self, mock_stdout):
         """Test that ContentType plugin is disabled by default."""
         from asciidoc_dita_toolkit.asciidoc_dita import toolkit
-        
+
         try:
             toolkit.main()
         except SystemExit:
@@ -154,7 +179,7 @@ class TestContentTypeCLIIntegration(unittest.TestCase):
     def test_content_type_enabled_via_env(self, mock_stdout):
         """Test that ContentType plugin can be enabled via environment variable."""
         from asciidoc_dita_toolkit.asciidoc_dita import toolkit
-        
+
         try:
             toolkit.main()
         except SystemExit:
@@ -170,7 +195,7 @@ class TestContentTypeCLIIntegration(unittest.TestCase):
     def test_content_type_explicitly_disabled(self, mock_stdout):
         """Test that ContentType plugin can be explicitly disabled."""
         from asciidoc_dita_toolkit.asciidoc_dita import toolkit
-        
+
         try:
             toolkit.main()
         except SystemExit:
