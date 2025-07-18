@@ -1,8 +1,0 @@
-:_mod-docs-content-type: PROCEDURE
-= Correct Procedure Test
-
-This file has a correct content type.
-
-== Section 1
-
-Some content here.
