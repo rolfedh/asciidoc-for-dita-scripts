@@ -1,3 +1,0 @@
-= File Without Content Type
-
-This file has no content type attribute and should prompt the user.

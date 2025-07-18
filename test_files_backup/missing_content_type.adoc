@@ -1,3 +1,0 @@
-= Missing Content Type Test
-
-This file has no content type attribute.

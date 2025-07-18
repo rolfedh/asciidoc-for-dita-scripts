@@ -1,5 +1,3 @@
-:_mod-docs-content-type: ASSEMBLY
-
 = Assembly Test
 
 This is an assembly file that should be detected by its filename prefix.
