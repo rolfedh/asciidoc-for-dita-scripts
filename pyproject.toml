@@ -76,3 +76,25 @@ filterwarnings = [
     "ignore::pytest.PytestReturnNotNoneWarning",
     "ignore::DeprecationWarning:asciidoc_dita_toolkit.*",
 ]
+
+[tool.black]
+# Configure Black for developer-friendly quote handling
+skip-string-normalization = true
+line-length = 88
+target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # Exclude common directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
