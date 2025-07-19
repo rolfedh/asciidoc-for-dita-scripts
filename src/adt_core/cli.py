@@ -29,7 +29,7 @@ def handle_system_exit(component_name: str, component_type: str, exit_exception:
         exit_exception: The SystemExit exception that was caught
     """
     if exit_exception.code != 0:
-        print(f"{component_type.title()} {component_name} exited with code {exit_exception.code}", file=sys.stderr)
+        print(f"Error: {component_type.capitalize()} {component_name} exited with code {exit_exception.code}", file=sys.stderr)
     sys.exit(exit_exception.code)
 
 
@@ -128,7 +128,7 @@ def print_version_with_plugins():
     # Add new modules first (they have proper version info)
     for name, info in new_modules.items():
         desc = PLUGIN_DESCRIPTIONS.get(name, info['description'])
-        version_str = info['module'].version
+        version_str = getattr(info['module'], 'version', 'unknown')
         all_plugins.append((name, version_str, desc))
     
     # Add legacy plugins only if they don't exist in new modules
@@ -144,9 +144,13 @@ def print_version_with_plugins():
         # Sort by plugin name
         all_plugins.sort(key=lambda x: x[0])
         
-        # Print in table format
+        # Calculate dynamic column widths
+        name_width = max(len(name) for name, _, _ in all_plugins) + 2
+        version_width = max(len(version_str) for _, version_str, _ in all_plugins) + 2
+        
+        # Print each plugin with dynamic widths
         for name, version_str, desc in all_plugins:
-            print(f"  {name:<18} v{version_str:<8} {desc}")
+            print(f"  {name:<{name_width}} v{version_str:<{version_width}} {desc}")
     else:
         print("No plugins available")
 
