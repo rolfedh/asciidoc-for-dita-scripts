@@ -64,10 +64,10 @@ python3 -m pip install asciidoc-dita-toolkit
 
 ```sh
 # Production image (recommended for most users)
-docker pull rolfedh/asciidoc-dita-toolkit-prod:latest
+docker pull ghcr.io/rolfedh/asciidoc-dita-toolkit-prod:latest
 
 # Development image (includes dev tools)
-docker pull rolfedh/asciidoc-dita-toolkit:latest
+docker pull ghcr.io/rolfedh/asciidoc-dita-toolkit:latest
 ```
 
 **PyPI:**

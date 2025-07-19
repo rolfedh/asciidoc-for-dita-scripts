@@ -28,6 +28,7 @@ LABEL org.opencontainers.image.url="https://github.com/rolfedh/asciidoc-dita-too
 LABEL org.opencontainers.image.documentation="https://github.com/rolfedh/asciidoc-dita-toolkit/blob/main/README.md"
 LABEL org.opencontainers.image.title="AsciiDoc DITA Toolkit"
 LABEL org.opencontainers.image.description="CLI tools for processing AsciiDoc files for DITA publishing workflows"
+LABEL org.opencontainers.image.licenses=MIT
 
 # Create a non-root user for security
 RUN useradd --create-home --shell /bin/bash --uid 1000 toolkit
