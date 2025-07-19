@@ -69,13 +69,13 @@ make release
 
 ### Container Publishing
 
-Container images are automatically built and published to GitHub Container Registry when git tags are pushed:
+Container images are automatically built and published to GitHub Container Registry when git tags are pushed. Replace `<GITHUB_USERNAME>` in the URLs below with your GitHub username:
 
-- **Development image**: `ghcr.io/rolfedh/asciidoc-dita-toolkit:latest`
-- **Production image**: `ghcr.io/rolfedh/asciidoc-dita-toolkit-prod:latest`  
-- **Version-specific**: `ghcr.io/rolfedh/asciidoc-dita-toolkit:v2.0.5`
+- **Development image**: `ghcr.io/<GITHUB_USERNAME>/asciidoc-dita-toolkit:latest`
+- **Production image**: `ghcr.io/<GITHUB_USERNAME>/asciidoc-dita-toolkit-prod:latest`  
+- **Version-specific**: `ghcr.io/<GITHUB_USERNAME>/asciidoc-dita-toolkit:v2.0.5`
 
-Monitor container builds at: https://github.com/rolfedh/asciidoc-dita-toolkit/actions
+Monitor container builds at: https://github.com/<GITHUB_USERNAME>/asciidoc-dita-toolkit/actions
 
 ### Release Notes
 
