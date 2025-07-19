@@ -1,11 +1,15 @@
 name: Build and Push Container Images
 
+# DISABLED: Docker Hub authentication issues need to be resolved
+# See GitHub issue for details
 on:
-  push:
-    tags: ['v*']
-    branches: ['main']
-  release:
-    types: [published]
+  # Disabled temporarily due to Docker Hub auth issues
+  # push:
+  #   tags: ['v*']
+  #   branches: ['main']
+  # release:
+  #   types: [published]
+  workflow_dispatch:  # Keep manual trigger available
 
 env:
   REGISTRY_GHCR: ghcr.io
