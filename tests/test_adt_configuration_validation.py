@@ -15,8 +15,10 @@ import os
 # Add necessary paths
 workspace_root = Path(__file__).parent.parent  # Go up from tests/ to project root
 src_path = workspace_root / "src"
-sys.path.insert(0, str(src_path))
-sys.path.insert(0, str(workspace_root))
+if str(src_path) not in sys.path:
+    sys.path.insert(0, str(src_path))
+if str(workspace_root) not in sys.path:
+    sys.path.insert(0, str(workspace_root))
 
 
 def test_entityreference_config_validation():
