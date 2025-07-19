@@ -75,10 +75,20 @@ pip install asciidoc-dita-toolkit
    ```
 
 2. **Run a plugin on a single file:**
+### Quick Start
+
+1. **Check what plugins are available:**
    ```bash
+   adt --help
+   ```
+
+2. **Run a plugin on a single file:**
+   ```bash
+   adt ExampleBlock -f your-document.adoc
    adt ExampleBlock -f your-document.adoc
    ```
 
+3. **Process all files in a directory:**
 3. **Process all files in a directory:**
    ```bash
    adt ExampleBlock -r -d /path/to/your/docs
