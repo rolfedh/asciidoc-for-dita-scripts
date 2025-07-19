@@ -8,6 +8,9 @@
 #
 .PHONY: help test test-coverage lint format clean install install-dev build publish-check publish github-release changelog changelog-version release bump-version dev venv setup container-build container-build-prod container-test container-shell container-push container-push-prod container-clean container-validate check
 
+# Changelog extraction pattern for reuse across targets
+CHANGELOG_AWK_PATTERN = {found=1; next} /^## \[/ {if(found) exit} found {if($$0 !~ /^$$/) print $$0}
+
 # Default target
 help:
 	@echo "Available targets:"
@@ -293,7 +296,7 @@ publish: publish-check
 	fi; \
 	release_notes=""; \
 	if [ -f "CHANGELOG.md" ]; then \
-		release_notes=$$(awk "/^## \[$$current_version\]/ {found=1; next} /^## \[/ {if(found) exit} found {if($$0 !~ /^$$/) print $$0}" CHANGELOG.md | head -20); \
+		release_notes=$$(awk "/^## \[$$current_version\]/ $(CHANGELOG_AWK_PATTERN)" CHANGELOG.md | head -20); \
 		if [ -z "$$release_notes" ]; then \
 			release_notes="Release $$current_version"; \
 		fi; \
@@ -301,8 +304,10 @@ publish: publish-check
 		release_notes="Release $$current_version"; \
 	fi; \
 	echo "Creating GitHub release with notes..."; \
-	echo "$$release_notes" | gh release create $$tag_name --title "Release $$tag_name" --notes-file - --verify-tag || \
-	echo "$$release_notes" | gh release create $$tag_name --title "Release $$tag_name" --notes-file -; \
+	if ! echo "$$release_notes" | gh release create $$tag_name --title "Release $$tag_name" --notes-file - --verify-tag; then \
+		echo "❌ Failed to create GitHub release with --verify-tag. Please check the tag or your GitHub CLI configuration."; \
+		exit 1; \
+	fi; \
 	echo "🚀 GitHub release created: https://github.com/rolfedh/asciidoc-dita-toolkit/releases/tag/$$tag_name"; \
 	echo ""; \
 	echo "🐳 Container images will be automatically built and published by GitHub Actions"; \
@@ -327,7 +332,7 @@ github-release:
 	fi; \
 	release_notes=""; \
 	if [ -f "CHANGELOG.md" ]; then \
-		release_notes=$$(awk "/^## \[$$target_version\]/ {found=1; next} /^## \[/ {if(found) exit} found {if($$0 !~ /^$$/) print $$0}" CHANGELOG.md | head -20); \
+		release_notes=$$(awk "/^## \[$$target_version\]/ $(CHANGELOG_AWK_PATTERN)" CHANGELOG.md | head -20); \
 		if [ -z "$$release_notes" ]; then \
 			release_notes="Release $$target_version - See CHANGELOG.md for details"; \
 		fi; \
@@ -492,7 +497,7 @@ release: check
 	fi; \
 	release_notes=""; \
 	if [ -f "CHANGELOG.md" ]; then \
-		release_notes=$$(awk "/^## \[$$new_version\]/ {found=1; next} /^## \[/ {if(found) exit} found {if($$0 !~ /^$$/) print $$0}" CHANGELOG.md | head -20); \
+		release_notes=$$(awk "/^## \[$$new_version\]/ $(CHANGELOG_AWK_PATTERN)" CHANGELOG.md | head -20); \
 		if [ -z "$$release_notes" ]; then \
 			release_notes="Release $$new_version - See CHANGELOG.md for details"; \
 		fi; \
@@ -500,8 +505,13 @@ release: check
 		release_notes="Release $$new_version"; \
 	fi; \
 	echo "Creating GitHub release..."; \
-	echo "$$release_notes" | gh release create $$tag_name --title "Release $$tag_name" --notes-file - --verify-tag --generate-notes || \
-	echo "$$release_notes" | gh release create $$tag_name --title "Release $$tag_name" --notes-file - --generate-notes; \
+	if ! echo "$$release_notes" | gh release create $$tag_name --title "Release $$tag_name" --notes-file - --verify-tag --generate-notes; then \
+		echo "Warning: Failed to create GitHub release with --verify-tag. Retrying without --verify-tag..."; \
+		if ! echo "$$release_notes" | gh release create $$tag_name --title "Release $$tag_name" --notes-file - --generate-notes; then \
+			echo "Error: Failed to create GitHub release. Please check the logs and try again."; \
+			exit 1; \
+		fi; \
+	fi; \
 	echo ""; \
 	echo "✅ Complete! GitHub release created: https://github.com/rolfedh/asciidoc-dita-toolkit/releases/tag/$$tag_name"; \
 	echo ""; \

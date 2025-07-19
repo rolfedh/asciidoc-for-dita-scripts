@@ -24,8 +24,14 @@ fi
 
 # Activate and install dependencies
 echo "📥 Installing dependencies..."
+echo "🔧 Setting up virtual environment..."
 source .venv/bin/activate
-pip install --upgrade pip
+echo "🔄 Upgrading pip..."
+if ! pip install --upgrade pip; then
+    echo "❌ Error: Failed to upgrade pip. Please check your network connection or pip configuration."
+    deactivate
+    exit 1
+fi
 pip install -e .
 pip install -r requirements-dev.txt
 
