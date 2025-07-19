@@ -1,8 +1,8 @@
 """
-ModuleSequencer implementation for ADT module system.
+ModuleSequencer implementation for ADT plugin system.
 
-Main class responsible for sequencing, configuring, and managing ADT modules.
-Handles module discovery, dependency resolution, configuration management,
+Main class responsible for sequencing, configuring, and managing ADT plugins.
+Handles plugin discovery, dependency resolution, configuration management,
 and proper initialization sequencing.
 """
 
@@ -25,7 +25,15 @@ from .exceptions import (
 )
 
 # Known legacy plugins that should not show warnings during transition
-LEGACY_PLUGINS = set()  # All plugins have been migrated to ADTModule
+LEGACY_PLUGINS = {
+    "ContentType",
+    "ContextAnalyzer", 
+    "ContextMigrator",
+    "CrossReference",
+    "DirectoryConfig",
+    "EntityReference",
+    "ExampleBlock"
+}  # These plugins are still being migrated to ADTModule
 
 
 class ModuleState(Enum):
@@ -51,7 +59,7 @@ class ModuleResolution:
 
 
 class ADTModule(ABC):
-    """Base class for all ADT modules."""
+    """Base class for all ADT plugins."""
 
     @property
     @abstractmethod
@@ -92,9 +100,9 @@ class ADTModule(ABC):
 
 class ModuleSequencer:
     """
-    Main class responsible for sequencing, configuring, and managing ADT modules.
+    Main class responsible for sequencing, configuring, and managing ADT plugins.
 
-    Handles module discovery, dependency resolution, configuration management,
+    Handles plugin discovery, dependency resolution, configuration management,
     and proper initialization sequencing.
     """
 
