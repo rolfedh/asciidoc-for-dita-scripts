@@ -144,12 +144,6 @@ make container-clean
 
 **Container Features:**
 
-- **Development image** (`rolfedh/asciidoc-dita-toolkit:latest`): Includes dev dependencies and tools
-- **Production image** (`rolfedh/asciidoc-dita-toolkit-prod:latest`): Optimized multi-stage build
-- **Automated CI/CD**: GitHub Actions builds and publishes containers on releases
-- **Multi-platform**: Supports linux/amd64 and linux/arm64 architectures
-- **Registry publishing**: Pushes to both Docker Hub and GitHub Container Registry
-
 **Manual container usage:**
 
 ```sh

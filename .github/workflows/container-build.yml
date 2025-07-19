@@ -1,19 +1,15 @@
 name: Build and Push Container Images
 
-# DISABLED: Docker Hub authentication issues need to be resolved
-# See GitHub issue for details
 on:
-  # Disabled temporarily due to Docker Hub auth issues
-  # push:
-  #   tags: ['v*']
-  #   branches: ['main']
-  # release:
-  #   types: [published]
-  workflow_dispatch:  # Keep manual trigger available
+  push:
+    tags: ['v*']
+    branches: ['main']
+  release:
+    types: [published]
+  workflow_dispatch:
 
 env:
   REGISTRY_GHCR: ghcr.io
-  REGISTRY_DOCKERHUB: docker.io
 
 jobs:
   build-and-push:
@@ -29,22 +25,14 @@ jobs:
             suffix: ""
           - path: "Dockerfile.production" 
             suffix: "-prod"
-    
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
     
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
-    
-    - name: Login to Docker Hub
-      if: github.event_name != 'pull_request'
-      uses: docker/login-action@v3
-      with:
-        registry: ${{ env.REGISTRY_DOCKERHUB }}
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-    
+
     - name: Login to GitHub Container Registry
       if: github.event_name != 'pull_request'
       uses: docker/login-action@v3
@@ -58,7 +46,6 @@ jobs:
       uses: docker/metadata-action@v5
       with:
         images: |
-          ${{ env.REGISTRY_DOCKERHUB }}/rolfedh/asciidoc-dita-toolkit${{ matrix.dockerfile.suffix }}
           ${{ env.REGISTRY_GHCR }}/rolfedh/asciidoc-dita-toolkit${{ matrix.dockerfile.suffix }}
         tags: |
           type=ref,event=branch
@@ -71,6 +58,8 @@ jobs:
           org.opencontainers.image.title=AsciiDoc DITA Toolkit${{ matrix.dockerfile.suffix }}
           org.opencontainers.image.description=CLI tools for processing AsciiDoc files for DITA publishing workflows
           org.opencontainers.image.vendor=Rolfe Dlugy-Hegwer
+          org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          org.opencontainers.image.licenses=MIT
     
     - name: Build and push Docker image
       id: build

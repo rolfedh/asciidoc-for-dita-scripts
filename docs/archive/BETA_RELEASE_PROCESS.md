@@ -101,7 +101,7 @@ docker build -t rolfedh/asciidoc-dita-toolkit:beta .
 # Test the beta image locally
 docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit:beta --help
 
-# Push to Docker Hub
+# Push to GitHub Container Registry
 docker push rolfedh/asciidoc-dita-toolkit:beta
 ```
 

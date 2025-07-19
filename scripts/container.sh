@@ -53,7 +53,7 @@ Examples:
   $0 run ContentType docs/   # Run ContentType plugin on docs/
   $0 shell                   # Start interactive shell
   $0 test                    # Run test suite
-  $0 push                    # Push to Docker Hub
+  $0 push                    # Push to GitHub Container Registry (ghcr.io)
   $0 clean                   # Clean up local images
 
 EOF
@@ -149,12 +149,12 @@ push_container() {
     log_info "Pushing container image: $full_tag"
 
     if ! docker push "$full_tag:latest"; then
-        log_error "Failed to push $full_tag:latest. Are you logged in to Docker Hub? Please run: docker login"
+        log_error "Failed to push $full_tag:latest. Are you logged in to GitHub Container Registry? Please check your GitHub authentication."
         exit 1
     fi
 
     if ! docker push "$full_tag:$version"; then
-        log_error "Failed to push $full_tag:$version. Are you logged in to Docker Hub? Please run: docker login"
+        log_error "Failed to push $full_tag:$version. Are you logged in to GitHub Container Registry? Please check your GitHub authentication."
         exit 1
     fi
 

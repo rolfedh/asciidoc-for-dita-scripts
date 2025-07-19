@@ -8,6 +8,9 @@ ARG VERSION=latest
 LABEL maintainer="Rolfe Dlugy-Hegwer <rolfedh@users.noreply.github.com>"
 LABEL description="AsciiDoc DITA Toolkit - CLI tools for processing AsciiDoc files for DITA publishing workflows"
 LABEL version=$VERSION
+LABEL org.opencontainers.image.source=https://github.com/rolfedh/asciidoc-dita-toolkit
+LABEL org.opencontainers.image.description="AsciiDoc DITA Toolkit - CLI tools for processing AsciiDoc files for DITA publishing workflows"
+LABEL org.opencontainers.image.licenses=MIT
 
 # Create a non-root user for security
 RUN useradd --create-home --shell /bin/bash --uid 1000 toolkit
