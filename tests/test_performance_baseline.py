@@ -15,18 +15,12 @@ import statistics
 import unittest
 
 # Add necessary paths
-try:
-    # Try to use conftest for pytest compatibility
-    from conftest import setup_test_paths
-    workspace_root, src_path = setup_test_paths()
-except ImportError:
-    # Fallback for unittest runner
-    workspace_root = Path(__file__).parent.parent  # Go up from tests/ to project root
-    src_path = workspace_root / "src"
-    if str(src_path) not in sys.path:
-        sys.path.insert(0, str(src_path))
-    if str(workspace_root) not in sys.path:
-        sys.path.insert(0, str(workspace_root))
+workspace_root = Path(__file__).parent.parent  # Go up from tests/ to project root
+src_path = workspace_root / "src"
+if str(src_path) not in sys.path:
+    sys.path.insert(0, str(src_path))
+if str(workspace_root) not in sys.path:
+    sys.path.insert(0, str(workspace_root))
 
 
 def create_test_files(num_files: int = 10, entities_per_file: int = 20) -> List[str]:
