@@ -1,201 +1,64 @@
 # AsciiDoc DITA Toolkit
 
-[![PyPI version](https://badge.fury.io/py/asciidoc-dita-toolkit.svg)](https://badge.fury.io/py/asciidoc-dita-toolkit)
+[![PyPI version](https://img.shields.io/pypi/v/asciidoc-dita-toolkit.svg)](https://pypi.org/project/asciidoc-dita-toolkit/)
+[![Container](https://img.shields.io/badge/container-ghcr.io-blue?logo=docker)](https://github.com/rolfedh/asciidoc-dita-toolkit/pkgs/container/asciidoc-dita-toolkit-prod)
 [![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Scripts to review and fix AsciiDoc content for DITA-based publishing workflows, based on rules from the [asciidoctor-dita-vale](https://github.com/jhradilek/asciidoctor-dita-vale) project.
+A command-line toolkit for technical writers to review and fix AsciiDoc content for DITA-based publishing workflows.
 
-## 🚀 Resources
+##  What is this?
 
-- [PyPI: asciidoc-dita-toolkit](https://pypi.org/project/asciidoc-dita-toolkit/)
-- [GitHub repository](https://github.com/rolfedh/asciidoc-dita-toolkit)
-- [Documentation](https://github.com/rolfedh/asciidoc-dita-toolkit/blob/main/docs/)
-- [Contributing Guide](https://github.com/rolfedh/asciidoc-dita-toolkit/blob/main/docs/CONTRIBUTING.md)
-
-## 📖 What is this?
-
-The AsciiDoc DITA Toolkit is a command-line tool for technical writers and editors. It helps you:
+The AsciiDoc DITA Toolkit helps you:
 
 - **Find and fix** common issues in `.adoc` files before publishing
-- **Apply automated checks** and transformations using a plugin system
+- **Apply automated checks** and transformations using a plugin system  
 - **Ensure consistency** across large documentation projects
 - **Integrate** with your existing documentation workflow
 
-## 📦 Installation
+## � Documentation
 
-### Option 1: Container (No Python Required)
+**👉 Complete documentation and tutorials:** https://rolfedh.github.io/asciidoc-dita-toolkit/
 
-Use Docker containers if you prefer not to install Python dependencies locally, or need consistent environments across teams:
+## � Quick Start
+
+### Option 1: Container (Recommended)
 
 ```sh
-# Production use (smaller, optimized)
-docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit-prod:latest --help
+# Run on current directory
+docker run --rm -v $(pwd):/workspace ghcr.io/rolfedh/asciidoc-dita-toolkit-prod:latest --help
 
-# Development use (includes dev tools)
-docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit:latest --help
-
-# GitHub Container Registry (alternative)
-docker run --rm -v $(pwd):/workspace ghcr.io/rolfedh/asciidoc-dita-toolkit:latest --help
+# List available plugins
+docker run --rm -v $(pwd):/workspace ghcr.io/rolfedh/asciidoc-dita-toolkit-prod:latest --list-plugins
 ```
 
-**Benefits of container approach:**
-
-- No need to install Python or manage dependencies
-- Consistent environment across different systems
-- Easy to use in CI/CD pipelines
-- Automatic cleanup after each run
-
-### Option 2: PyPI
-
-Install the toolkit using pip:
+### Option 2: Python Package
 
 ```sh
-python3 -m pip install asciidoc-dita-toolkit
-```
+# Install
+pip install asciidoc-dita-toolkit
 
-> **📦 Unified Package**: This is the unified package that includes both the core framework and all plugins. The CLI command is the convenient short `adt` while the package name remains descriptive.
-
-> **🌙 Nightly Releases**: This project automatically publishes nightly patch releases to PyPI whenever there are new commits. These releases include the latest fixes and improvements. The nightly releases follow the pattern `x.y.z` where `z` is automatically incremented.
-
-### Upgrading
-
-**Container:**
-
-```sh
-# Production image (recommended for most users)
-docker pull ghcr.io/rolfedh/asciidoc-dita-toolkit-prod:latest
-
-# Development image (includes dev tools)
-docker pull ghcr.io/rolfedh/asciidoc-dita-toolkit:latest
-```
-
-**PyPI:**
-
-```sh
-python3 -m pip install --upgrade asciidoc-dita-toolkit
-```
-
-### Requirements
-
-- Python 3.7 or newer
-- No external dependencies (uses only Python standard library)
-
-## 🔧 Usage
-
-### List available plugins
-
-```sh
+# Use
+adt --help
 adt --list-plugins
 ```
 
-### Run a plugin
+## � Basic Usage
 
 ```sh
-adt <plugin> [options]
-```
+# Fix HTML entity references
+adt EntityReference -r
 
-- `<plugin>`: Name of the plugin to run (e.g., `EntityReference`, `ContentType`)
-- `[options]`: Plugin-specific options (e.g., `-f` for a file, `-r` for recursive)
-
-### Common Options
-
-All plugins support these options:
-
-- `-f FILE` or `--file FILE`: Process a specific file
-- `-r` or `--recursive`: Process all .adoc files recursively in the current directory
-- `-d DIR` or `--directory DIR`: Specify the root directory to search (default: current directory)
-
-### 📝 Examples
-
-#### Fix HTML entity references in a file
-
-```sh
-adt EntityReference -f path/to/file.adoc
-```
-
-#### Add content type labels to all files recursively
-
-```sh
+# Add content type labels  
 adt ContentType -r
 ```
 
-#### Process all .adoc files in a specific directory
-
-```sh
-adt EntityReference -d /path/to/docs -r
-```
-
-### Container Usage
-
-If using the container version, all commands work the same but are prefixed with the Docker run command:
-
-```sh
-# List plugins
-docker run --rm rolfedh/asciidoc-dita-toolkit-prod:latest --list-plugins
-
-# Fix entity references in current directory
-docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit-prod:latest EntityReference -r
-
-# Add content type labels to a specific file
-docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit-prod:latest ContentType -f docs/myfile.adoc
-
-# Interactive shell for development (use dev image)
-docker run --rm -it -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit:latest /bin/bash
-```
-
-**Container command breakdown:**
-
-- `docker run --rm` - Run and automatically remove container when done
-- `-v $(pwd):/workspace` - Mount current directory as `/workspace` in container
-- `rolfedh/asciidoc-dita-toolkit-prod:latest` - The production container image (recommended)
-- Everything after the image name works exactly like the PyPI version
-
-**Tip:** Create a shell alias to simplify container usage:
-
-```sh
-alias adt='docker run --rm -v $(pwd):/workspace rolfedh/asciidoc-dita-toolkit-prod:latest'
-```
-
-Then use it exactly like the PyPI version:
-
-```sh
-adt --list-plugins
-adt EntityReference -r
-```
-
-### 🔌 Available Plugins
-
-| Plugin | Description | Example Usage |
-|--------|-------------|---------------|
-| `EntityReference` | Replace unsupported HTML character entity references with AsciiDoc attribute references | `adt EntityReference -f file.adoc` |
-| `ContentType` | Add `:_mod-docs-content-type:` labels where missing, based on filename | `adt ContentType -r` |
-
-> **📋 Technical Details**: For plugin internals and supported entity mappings, see [docs/asciidoc-dita-toolkit.md](docs/asciidoc-dita-toolkit.md).
-
-## 🔍 Troubleshooting
-
-- **Python Version**: Make sure you are using Python 3.7 or newer
-- **Installation Issues**: Try upgrading pip: `python3 -m pip install --upgrade pip`
-- **Development Setup**: If you need to use a local clone, see the [contributor guide](docs/CONTRIBUTING.md)
-- **Plugin Errors**: Use `-v` or `--verbose` flag for detailed error information
-
-## 📚 Related Resources
-
-- **[`asciidoctor-dita-vale`](https://github.com/jhradilek/asciidoctor-dita-vale)**: Vale style rules and test fixtures for validating AsciiDoc content
-
 ## 🤝 Contributing
 
-Want to add new plugins or help improve the toolkit?
-
-- **Getting Started**: Read our [Contributing Guide](docs/CONTRIBUTING.md)
-- **Release Management**: See [Release Management](docs/RELEASE_MANAGEMENT.md) (maintainers only)  
-- **Plugin Development**: Follow the [Plugin Development Pattern](docs/development/PLUGIN_DEVELOPMENT_PATTERN.md)
-- **Issues**: Check out [open issues](https://github.com/rolfedh/asciidoc-dita-toolkit/issues)
-- **Security**: See our [Security Policy](SECURITY.md) for reporting vulnerabilities
-
-**For maintainers**: One-command release is available with `make publish` (see [docs/RELEASE_MANAGEMENT.md](docs/RELEASE_MANAGEMENT.md))
+- **Documentation**: https://rolfedh.github.io/asciidoc-dita-toolkit/
+- **Issues**: https://github.com/rolfedh/asciidoc-dita-toolkit/issues
+- **Contributing Guide**: [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - see [LICENSE](LICENSE) file for details.
