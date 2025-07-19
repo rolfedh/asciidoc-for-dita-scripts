@@ -1,12 +1,26 @@
-# ExampleBlock Plugin - User Guide
+---
+layout: default
+title: ExampleBlock
+parent: Plugins
+nav_order: 1
+---
 
-## Overview
+# ExampleBlock Plugin
+{: .no_toc }
 
 The ExampleBlock plugin helps technical writers prepare AsciiDoc content for DITA migration by identifying and fixing example blocks that violate DITA 1.3 compliance requirements.
 
+{: .highlight }
 **What it does**: Detects example blocks placed in invalid locations (within sections, lists, or other blocks) and either moves them to the main body or provides guidance on how to fix them manually.
 
+{: .important }
 **Why it matters**: DITA 1.3 requires `<example>` elements to appear only in the main body of topics, not nested within other structures.
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
 
 ## Quick Start
 
@@ -57,6 +71,9 @@ In AsciiDoc, example blocks can be created in two ways:
 
 ### DITA 1.3 Compliance Requirements
 
+{: .note-title }
+> Valid vs Invalid Placements
+
 **✅ Valid placement** - Example blocks in the main body:
 ```asciidoc
 = Topic Title
@@ -72,6 +89,7 @@ This example block is properly placed in the main body.
 Section content here.
 ```
 
+{: .warning }
 **❌ Invalid placements** that the plugin will detect:
 
 1. **Within sections**:
@@ -112,6 +130,7 @@ The plugin scans your AsciiDoc files and identifies:
 
 ### What Gets Ignored
 
+{: .note }
 The plugin is smart enough to ignore:
 - Example blocks that are already in the main body ✅
 - Example blocks inside comments (these are documentation)
@@ -142,13 +161,18 @@ Press: 1-4 for placement, L/S/Q
 
 #### Interactive Options Explained
 
-- **1-3**: Automatic placement options (most common scenarios)
-- **4**: Show additional placement choices
-- **L**: Leave the block where it is and add a comment explaining the issue
-- **S**: Skip this particular block and continue to the next one
-- **Q**: Exit the plugin entirely
+| Option | Action | Description |
+|--------|--------|-------------|
+| **1-3** | Automatic placement | Most common scenarios (end of main body, beginning, before first section) |
+| **4** | More choices | Show additional placement options |
+| **L** | Leave with comment | Add explanatory comment and leave block in place |
+| **S** | Skip | Skip this block and continue to next |
+| **Q** | Quit | Exit the plugin entirely |
 
 ### Non-Interactive Mode
+
+{: .note-title }
+> Batch Processing & CI/CD
 
 For batch processing or CI/CD pipelines, the plugin runs in non-interactive mode by default and adds helpful comments:
 
@@ -329,17 +353,16 @@ Set the port and host values according to your environment.
 
 ### Common Issues
 
-**Issue**: Plugin reports false positives
-- **Cause**: Complex nested structures or unusual formatting
-- **Solution**: Use the "L" option to leave the block and add a comment, then review manually
+### Common Issues
 
-**Issue**: Plugin doesn't detect all example blocks
-- **Cause**: Non-standard formatting or custom block types
-- **Solution**: Review your document manually for blocks using `====` or `[example]`
+{: .warning-title }
+> Troubleshooting
 
-**Issue**: Automatic placement doesn't work well
-- **Cause**: Complex document structure
-- **Solution**: Use the interactive options to choose the best placement
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| **False positives reported** | Complex nested structures or unusual formatting | Use "L" option to leave block and add comment, review manually |
+| **Not all example blocks detected** | Non-standard formatting or custom block types | Review document manually for blocks using `====` or `[example]` |
+| **Automatic placement doesn't work** | Complex document structure | Use interactive options to choose best placement |
 
 ### Getting Help
 
@@ -417,7 +440,7 @@ find ./docs -name "*-tutorial.adoc" -exec adt ExampleBlock -f {} \;
 
 - [DITA 1.3 Specification](https://docs.oasis-open.org/dita/dita/v1.3/dita-v1.3-part0-overview.html)
 - [AsciiDoc User Manual](https://asciidoc.org/userguide.html)
-- [ADT User Guide](../README.md) (main documentation)
+- [ADT User Guide]({% link index.md %}) (main documentation)
 
 ---
 
