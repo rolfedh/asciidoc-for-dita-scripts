@@ -1,6 +1,6 @@
 title: AsciiDoc DITA Toolkit
 description: Documentation for technical writers preparing AsciiDoc content for DITA migration
-baseurl: "/asciidoc-dita-toolkit/user-guide"
+baseurl: "/asciidoc-dita-toolkit"
 url: "https://rolfedh.github.io"
 
 # Modern theme - Just the Docs
