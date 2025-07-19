@@ -1,8 +1,23 @@
-.PHONY: help test test-coverage lint format clean install install-dev build publish-check publish changelog changelog-version release bump-version dev venv setup container-build container-build-prod container-test container-shell container-push container-push-prod container-clean container-validate check
+# Makefile for AsciiDoc DITA Toolkit
+# 
+# GitHub Release Automation:
+#   - `make publish` now automatically creates GitHub releases after PyPI publication
+#   - `make release` creates tags, releases, and triggers container builds via GitHub Actions  
+#   - `make github-release` creates releases for existing versions
+#   - Requires `gh` CLI to be authenticated: `gh auth login`
+#
+.PHONY: help test test-coverage lint format clean install install-dev build publish-check publish github-release changelog changelog-version release bump-version dev venv setup container-build container-build-prod container-test container-shell container-push container-push-prod container-clean container-validate check
 
 # Default target
 help:
 	@echo "Available targets:"
+	@echo ""
+	@echo "Prerequisites for release automation:"
+	@echo "  - GitHub CLI: gh auth login (automated check)"
+	@echo "  - PyPI credentials: PYPI_API_TOKEN environment variable (automated check)"
+	@echo "  - Virtual environment: Automatically created if missing"
+	@echo "  - Dependencies: Automatically installed if missing"
+	@echo ""
 	@echo "  help       - Show this help message"
 	@echo "  test       - Run all tests"
 	@echo "  test-coverage - Run tests with coverage reporting"
@@ -18,7 +33,8 @@ help:
 	@echo "  build      - Build distribution packages"
 	@echo "  publish-check - Check publishing prerequisites (twine, credentials)"
 	@echo "  bump-version - Bump version in both pyproject.toml and __init__.py (VERSION=x.y.z to specify)"
-	@echo "  publish    - Bump version and publish to PyPI (MAINTAINERS ONLY - requires PYPI_API_TOKEN)"
+	@echo "  publish    - Complete automated release: setup environment, auto-bump patch version (or VERSION=x.y.z), build, publish to PyPI, create GitHub release & trigger container builds (MAINTAINERS ONLY)"
+	@echo "  github-release - Create GitHub release for current version (VERSION=x.y.z to override)"
 	@echo "  check      - Run comprehensive quality checks"
 	@echo "  changelog  - Generate changelog entry for latest version"
 	@echo "  changelog-version - Generate changelog for specific version (VERSION=x.y.z)"
@@ -145,24 +161,187 @@ bump-version:
 	fi; \
 	echo "Version bumped to $$new_version in both files"
 
-# Publishing dependency check
+# Publishing dependency check with automated setup
 publish-check:
-	@echo "Checking publishing prerequisites..."
-	@if ! python3 -c "import twine" 2>/dev/null; then \
-		echo "❌ twine not installed. Run 'make install-dev' or 'pip install twine'"; \
-		exit 1; \
+	@echo "🔍 Checking and setting up publishing prerequisites..."
+	@echo ""
+	@echo "Step 1: Virtual environment setup..."
+	@if [ -z "$$VIRTUAL_ENV" ]; then \
+		echo "No virtual environment currently active."; \
+		if [ ! -d ".venv" ]; then \
+			echo "Creating virtual environment and installing dependencies..."; \
+			./scripts/dev-setup.sh; \
+			echo "✅ Development environment set up successfully"; \
+			echo "Note: You may need to run 'source .venv/bin/activate' in your current shell"; \
+		else \
+			echo "Virtual environment .venv exists. Checking if it has required dependencies..."; \
+			if .venv/bin/python -c "import twine" 2>/dev/null; then \
+				echo "✅ Virtual environment has required dependencies"; \
+			else \
+				echo "Installing missing dependencies..."; \
+				.venv/bin/pip install -e .; \
+				.venv/bin/pip install -r requirements-dev.txt; \
+				echo "✅ Dependencies installed"; \
+			fi; \
+		fi; \
+	else \
+		echo "✅ Virtual environment active: $$VIRTUAL_ENV"; \
 	fi
-	@echo "✅ twine is available"
+	@echo ""
+	@echo "Step 2: Checking twine installation..."
+	@if [ -n "$$VIRTUAL_ENV" ]; then \
+		python_cmd="python3"; \
+		pip_cmd="pip"; \
+	elif [ -d ".venv" ]; then \
+		python_cmd=".venv/bin/python"; \
+		pip_cmd=".venv/bin/pip"; \
+	else \
+		python_cmd="python3"; \
+		pip_cmd="pip"; \
+	fi; \
+	if ! $$python_cmd -c "import twine" 2>/dev/null; then \
+		echo "Installing twine..."; \
+		$$pip_cmd install twine; \
+		echo "✅ twine installed"; \
+	else \
+		echo "✅ twine is available"; \
+	fi
+	@echo ""
+	@echo "Step 3: Checking PyPI credentials..."
 	@if [ -z "$$PYPI_API_TOKEN" ] && [ ! -f ~/.pypirc ]; then \
 		echo "❌ No PyPI credentials found. Set PYPI_API_TOKEN or configure ~/.pypirc"; \
 		exit 1; \
 	fi
 	@echo "✅ PyPI credentials configured"
-	@echo "✅ Ready to publish"
+	@echo ""
+	@echo "Step 4: Checking git state..."
+	@if [ -n "$$(git status --porcelain 2>/dev/null)" ]; then \
+		echo "⚠️  Working directory has uncommitted changes:"; \
+		git status --short; \
+		echo ""; \
+		echo "Please commit changes before publishing:"; \
+		echo "  git add ."; \
+		echo "  git commit -m 'Prepare for release'"; \
+		exit 1; \
+	else \
+		echo "✅ Working directory is clean"; \
+	fi
+	@echo ""
+	@echo "✅ All prerequisites satisfied - ready to publish!"
 
-publish: bump-version build publish-check
-	@echo "Publishing to PyPI..."
-	python3 -m twine upload dist/*
+publish: publish-check
+	@echo ""
+	@echo "🚀 Starting automated release process..."
+	@echo ""
+	@echo "Step 5: Cleaning build environment..."
+	@$(MAKE) clean
+	@echo "✅ Build environment cleaned"
+	@echo ""
+	@echo "Step 6: Determining version for release..."
+	@if [ -z "$(VERSION)" ]; then \
+		current_version=$$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/'); \
+		echo "Current version: $$current_version"; \
+		major=$$(echo $$current_version | cut -d. -f1); \
+		minor=$$(echo $$current_version | cut -d. -f2); \
+		patch=$$(echo $$current_version | cut -d. -f3); \
+		new_patch=$$((patch + 1)); \
+		new_version="$$major.$$minor.$$new_patch"; \
+		echo "Auto-incrementing to: $$new_version"; \
+	else \
+		new_version="$(VERSION)"; \
+		echo "Using specified version: $$new_version"; \
+	fi; \
+	echo "Updating version files..."; \
+	sed -i 's/^version = .*/version = "'"$$new_version"'"/' pyproject.toml; \
+	if [ -f src/adt_core/__init__.py ]; then \
+		sed -i 's/^__version__ = .*/__version__ = "'"$$new_version"'"/' src/adt_core/__init__.py; \
+	else \
+		echo "Warning: src/adt_core/__init__.py not found, skipping..."; \
+	fi; \
+	echo "Version updated to $$new_version"; \
+	echo ""; \
+	echo "Step 7: Building package with new version..."; \
+	if [ -n "$$VIRTUAL_ENV" ]; then \
+		python3 -m build; \
+	elif [ -d ".venv" ]; then \
+		.venv/bin/python -m build; \
+	else \
+		python3 -m build; \
+	fi; \
+	echo "✅ Package built successfully"; \
+	echo ""; \
+	echo "Step 8: Publishing to PyPI..."; \
+	if [ -n "$$VIRTUAL_ENV" ]; then \
+		python3 -m twine upload dist/*; \
+	elif [ -d ".venv" ]; then \
+		.venv/bin/python -m twine upload dist/*; \
+	else \
+		python3 -m twine upload dist/*; \
+	fi; \
+	echo "✅ Successfully published to PyPI!"; \
+	echo ""; \
+	echo "Step 9: Creating GitHub release..."; \
+	current_version="$$new_version"; \
+	tag_name="v$$current_version"; \
+	echo "Creating GitHub release for $$tag_name..."; \
+	if git tag -l | grep -q "^$$tag_name$$"; then \
+		echo "Tag $$tag_name already exists, creating release from existing tag..."; \
+	else \
+		echo "Creating tag $$tag_name..."; \
+		git tag $$tag_name; \
+		git push origin $$tag_name; \
+	fi; \
+	release_notes=""; \
+	if [ -f "CHANGELOG.md" ]; then \
+		release_notes=$$(awk "/^## \[$$current_version\]/ {found=1; next} /^## \[/ {if(found) exit} found {if($$0 !~ /^$$/) print $$0}" CHANGELOG.md | head -20); \
+		if [ -z "$$release_notes" ]; then \
+			release_notes="Release $$current_version"; \
+		fi; \
+	else \
+		release_notes="Release $$current_version"; \
+	fi; \
+	echo "Creating GitHub release with notes..."; \
+	echo "$$release_notes" | gh release create $$tag_name --title "Release $$tag_name" --notes-file - --verify-tag || \
+	echo "$$release_notes" | gh release create $$tag_name --title "Release $$tag_name" --notes-file -; \
+	echo "🚀 GitHub release created: https://github.com/rolfedh/asciidoc-dita-toolkit/releases/tag/$$tag_name"; \
+	echo ""; \
+	echo "🐳 Container images will be automatically built and published by GitHub Actions"; \
+	echo "📦 Monitor progress: https://github.com/rolfedh/asciidoc-dita-toolkit/actions"
+
+# Create GitHub release for current or specified version
+github-release:
+	@echo "Creating GitHub release..."
+	@if [ -n "$(VERSION)" ]; then \
+		target_version="$(VERSION)"; \
+		echo "Using specified version: $$target_version"; \
+	else \
+		target_version=$$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/'); \
+		echo "Using current version from pyproject.toml: $$target_version"; \
+	fi; \
+	tag_name="v$$target_version"; \
+	echo "Creating/updating GitHub release for $$tag_name..."; \
+	if ! git tag -l | grep -q "^$$tag_name$$"; then \
+		echo "Tag $$tag_name does not exist. Creating tag..."; \
+		git tag $$tag_name; \
+		git push origin $$tag_name; \
+	fi; \
+	release_notes=""; \
+	if [ -f "CHANGELOG.md" ]; then \
+		release_notes=$$(awk "/^## \[$$target_version\]/ {found=1; next} /^## \[/ {if(found) exit} found {if($$0 !~ /^$$/) print $$0}" CHANGELOG.md | head -20); \
+		if [ -z "$$release_notes" ]; then \
+			release_notes="Release $$target_version - See CHANGELOG.md for details"; \
+		fi; \
+	else \
+		release_notes="Release $$target_version"; \
+	fi; \
+	echo "Creating GitHub release with notes..."; \
+	if gh release view $$tag_name >/dev/null 2>&1; then \
+		echo "Release $$tag_name already exists. Updating..."; \
+		echo "$$release_notes" | gh release edit $$tag_name --title "Release $$tag_name" --notes-file -; \
+	else \
+		echo "$$release_notes" | gh release create $$tag_name --title "Release $$tag_name" --notes-file - --generate-notes; \
+	fi; \
+	echo "✅ GitHub release ready: https://github.com/rolfedh/asciidoc-dita-toolkit/releases/tag/$$tag_name"
 
 # Container targets
 container-build:
@@ -300,13 +479,33 @@ release: check
 	echo ""; \
 	echo "🚀 Release branch $$release_branch created and pushed!"; \
 	echo ""; \
-	echo "Next steps:"; \
-	echo "1. Create a Pull Request from $$release_branch to main"; \
-	echo "2. Title: 'Release v$$new_version'"; \
-	echo "3. Once CI passes, merge the PR"; \
-	echo "4. After merging, create and push the tag:"; \
-	echo "   git checkout main"; \
-	echo "   git pull origin main"; \
-	echo "   git tag v$$new_version"; \
-	echo "   git push origin v$$new_version"; \
-	echo "5. GitHub Actions will automatically build and publish to PyPI"
+	echo "Creating GitHub release..."; \
+	tag_name="v$$new_version"; \
+	if git tag -l | grep -q "^$$tag_name$$"; then \
+		echo "Tag $$tag_name already exists, creating release from existing tag..."; \
+	else \
+		echo "Creating tag $$tag_name on main branch..."; \
+		git checkout main; \
+		git pull origin main; \
+		git tag $$tag_name; \
+		git push origin $$tag_name; \
+	fi; \
+	release_notes=""; \
+	if [ -f "CHANGELOG.md" ]; then \
+		release_notes=$$(awk "/^## \[$$new_version\]/ {found=1; next} /^## \[/ {if(found) exit} found {if($$0 !~ /^$$/) print $$0}" CHANGELOG.md | head -20); \
+		if [ -z "$$release_notes" ]; then \
+			release_notes="Release $$new_version - See CHANGELOG.md for details"; \
+		fi; \
+	else \
+		release_notes="Release $$new_version"; \
+	fi; \
+	echo "Creating GitHub release..."; \
+	echo "$$release_notes" | gh release create $$tag_name --title "Release $$tag_name" --notes-file - --verify-tag --generate-notes || \
+	echo "$$release_notes" | gh release create $$tag_name --title "Release $$tag_name" --notes-file - --generate-notes; \
+	echo ""; \
+	echo "✅ Complete! GitHub release created: https://github.com/rolfedh/asciidoc-dita-toolkit/releases/tag/$$tag_name"; \
+	echo ""; \
+	echo "🚀 Next steps:"; \
+	echo "1. GitHub Actions will automatically build and push container images"; \
+	echo "2. Monitor the workflow: https://github.com/rolfedh/asciidoc-dita-toolkit/actions"; \
+	echo "3. If needed, publish to PyPI with: make publish"

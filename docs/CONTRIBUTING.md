@@ -2,6 +2,13 @@
 
 Thank you for your interest in contributing! This guide is for developers and maintainers.
 
+## Quick Reference
+
+- **Development Setup**: See "Getting Started" below
+- **Release Management**: See [RELEASE_MANAGEMENT.md](RELEASE_MANAGEMENT.md) (maintainers only)
+- **Container Development**: See [development/CONTAINER_DISTRIBUTION.md](development/CONTAINER_DISTRIBUTION.md)
+- **Plugin Development**: See [development/PLUGIN_DEVELOPMENT_PATTERN.md](development/PLUGIN_DEVELOPMENT_PATTERN.md)
+
 ## Project Structure
 
 For the complete package structure, see [asciidoc-dita-toolkit.md](asciidoc-dita-toolkit.md).

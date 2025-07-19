@@ -188,10 +188,13 @@ adt EntityReference -r
 
 Want to add new plugins or help improve the toolkit?
 
-- Read our [Contributing Guide](docs/CONTRIBUTING.md)
-- Follow the [Plugin Development Pattern](docs/PLUGIN_DEVELOPMENT_PATTERN.md) for new plugins
-- Check out [open issues](https://github.com/rolfedh/asciidoc-dita-toolkit/issues)
-- See our [Security Policy](SECURITY.md) for reporting vulnerabilities
+- **Getting Started**: Read our [Contributing Guide](docs/CONTRIBUTING.md)
+- **Release Management**: See [Release Management](docs/RELEASE_MANAGEMENT.md) (maintainers only)  
+- **Plugin Development**: Follow the [Plugin Development Pattern](docs/development/PLUGIN_DEVELOPMENT_PATTERN.md)
+- **Issues**: Check out [open issues](https://github.com/rolfedh/asciidoc-dita-toolkit/issues)
+- **Security**: See our [Security Policy](SECURITY.md) for reporting vulnerabilities
+
+**For maintainers**: One-command release is available with `make publish` (see [docs/RELEASE_MANAGEMENT.md](docs/RELEASE_MANAGEMENT.md))
 
 ## 📄 License
 
