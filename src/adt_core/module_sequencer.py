@@ -25,15 +25,7 @@ from .exceptions import (
 )
 
 # Known legacy plugins that should not show warnings during transition
-LEGACY_PLUGINS = {
-    "ContentType",
-    "ContextAnalyzer", 
-    "ContextMigrator",
-    "CrossReference",
-    "DirectoryConfig",
-    "EntityReference",
-    "ExampleBlock"
-}  # These plugins are still being migrated to ADTModule
+LEGACY_PLUGINS = set()  # All plugins have been migrated to ADTModule
 
 
 class ModuleState(Enum):
