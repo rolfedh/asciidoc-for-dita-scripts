@@ -215,3 +215,25 @@ test-pypi-install/
 # Test environments for user experience testing
 test_user_install/
 test_pypi_install/
+
+# Jekyll and Ruby build artifacts
+user-guide/vendor/
+user-guide/.bundle/
+user-guide/_site/
+user-guide/.sass-cache/
+user-guide/.jekyll-cache/
+user-guide/.jekyll-metadata
+user-guide/Gemfile.lock
+
+# Ruby version management
+.ruby-version
+
+# Bundler configuration
+.bundle/
+
+# Additional Jekyll ignores
+*.gem
+.jekyll-cache/
+.sass-cache/
+_site/
+Gemfile.lock

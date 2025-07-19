@@ -2,15 +2,26 @@
 layout: default
 title: Home
 nav_order: 1
+description: "User guide for technical writers preparing AsciiDoc content for DITA migration"
+permalink: /
 ---
 
-# AsciiDoc DITA Toolkit - User Guide
+# AsciiDoc DITA Toolkit
+{: .fs-9 }
 
-Welcome to the AsciiDoc DITA Toolkit (ADT) user guide. This documentation is designed for **technical writers** who need to prepare AsciiDoc content for migration to DITA format.
+Professional toolkit for technical writers preparing AsciiDoc content for DITA migration.
+{: .fs-6 .fw-300 }
 
+[Get Started](#getting-started){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 }
+[View on GitHub](https://github.com/rolfedh/asciidoc-dita-toolkit){: .btn .fs-5 .mb-4 .mb-md-0 }
+
+---
+
+{: .highlight }
 > **For ADT Developers & Plugin Developers**: Development documentation, contribution guidelines, and architecture details are available at [https://rolfedh.github.io/asciidoc-dita-toolkit/README.md](https://rolfedh.github.io/asciidoc-dita-toolkit/README.md)
 
 ## Overview
+{: .no_toc }
 
 The AsciiDoc DITA Toolkit helps identify and fix common issues that prevent successful AsciiDoc-to-DITA conversion. Each plugin targets specific compliance requirements defined in the DITA 1.3 specification.
 
@@ -20,21 +31,32 @@ The AsciiDoc DITA Toolkit helps identify and fix common issues that prevent succ
 - Applies automatic corrections where safe to do so
 - Generates detailed reports of changes made to your content
 
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
 ## Available Plugins
+
+ADT provides specialized plugins to address different DITA compliance issues:
 
 ### Content Validation Plugins
 
-- **[ExampleBlock](plugins/ExampleBlock.md)** - Ensures example blocks are placed in valid locations according to DITA 1.3 requirements
-- **ContentType** - Validates and fixes content type declarations (documentation coming soon)
-- **CrossReference** - Fixes cross-reference formats for DITA compatibility (documentation coming soon)
-- **EntityReference** - Converts HTML entities to AsciiDoc attributes (documentation coming soon)
+{: .highlight }
+**[ExampleBlock]({% link plugins/ExampleBlock.md %})** - Ensures example blocks comply with DITA placement requirements  
+**ContentType** - Validates content type declarations *(coming soon)*  
+**CrossReference** - Fixes cross-reference formats *(coming soon)*  
+**EntityReference** - Converts HTML entities *(coming soon)*
 
 ### Analysis and Migration Plugins
 
-- **ContextAnalyzer** - Analyzes document context usage (documentation coming soon)
-- **ContextMigrator** - Migrates context-suffixed IDs (documentation coming soon)
-- **DirectoryConfig** - Manages directory-level configuration (documentation coming soon)
-- **MetaDataExtractor** - Extracts and formats metadata (documentation coming soon)
+**ContextAnalyzer** - Analyzes document context usage *(coming soon)*  
+**ContextMigrator** - Migrates context-suffixed IDs *(coming soon)*  
+**DirectoryConfig** - Manages directory-level configuration *(coming soon)*  
+**MetaDataExtractor** - Extracts and formats metadata *(coming soon)*
+
+[View All Plugins →]({% link plugins.md %}){: .btn .btn-outline }
 
 ## Getting Started
 
@@ -64,13 +86,15 @@ pip install asciidoc-dita-toolkit
 
 ## Recommended Workflow
 
+{: .note }
+> Always backup your content by committing to version control before running ADT plugins.
+
 Follow this workflow to prepare your AsciiDoc content for DITA migration:
 
-1. **Backup your content** - Always commit to version control before running ADT
-2. **Start with analysis** - Run plugins to understand the scope of issues
-3. **Process systematically** - Use one plugin at a time to understand changes
-4. **Review each change** - Examine plugin output before proceeding
-5. **Test conversion** - Validate your content with DITA conversion tools
+1. **Start with analysis** - Run plugins to understand the scope of issues
+2. **Process systematically** - Use one plugin at a time to understand changes  
+3. **Review each change** - Examine plugin output before proceeding
+4. **Test conversion** - Validate your content with DITA conversion tools
 
 ## Common Usage Patterns
 
@@ -156,10 +180,13 @@ Each plugin includes detailed documentation covering:
 
 ADT plugins provide clear feedback about what they find and fix:
 
-- **✅ No issues found** - Your content already complies with DITA requirements
-- **🔧 Auto-fixed** - Issues were automatically corrected
-- **❓ Manual review needed** - Interactive prompts will guide you through decisions
-- **💬 Comments added** - Explanatory comments inserted where fixes aren't possible
+{: .note-title }
+> Plugin Status Indicators
+>
+> - **✅ No issues found** - Your content already complies with DITA requirements
+> - **🔧 Auto-fixed** - Issues were automatically corrected
+> - **❓ Manual review needed** - Interactive prompts will guide you through decisions
+> - **💬 Comments added** - Explanatory comments inserted where fixes aren't possible
 
 ## Troubleshooting Common Issues
 
