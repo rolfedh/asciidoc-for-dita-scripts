@@ -1,95 +1,127 @@
-# AsciiDoc DITA Toolkit - User Guide
+# AsciiDoc DITA Toolkit Documentation
 
-Welcome to the AsciiDoc DITA Toolkit (ADT) user guide. This documentation is designed for technical writers who need to prepare AsciiDoc content for migration to DITA format.
+This directory contains user-facing documentation for the AsciiDoc DITA Toolkit, designed for technical writers preparing content for DITA migration.
 
-## Overview
+## Documentation Structure
 
-The AsciiDoc DITA Toolkit helps identify and fix common issues that prevent successful AsciiDoc-to-DITA conversion. Each plugin targets specific compliance requirements defined in the DITA 1.3 specification.
+- `index.md` - Main user guide homepage (published via GitHub Pages)
+- `plugins/` - Individual plugin documentation
+  - `ExampleBlock.md` - ExampleBlock plugin user guide
+  - (Additional plugin documentation will be added here)
+- `_config.yml` - Jekyll configuration for GitHub Pages
 
-## Available Plugins
+## GitHub Pages Publishing
 
-### Content Validation Plugins
+This documentation is published using **GitHub Actions** (not the classic "Deploy from a branch" strategy).
 
-- **[ExampleBlock](plugins/ExampleBlock.md)** - Ensures example blocks are placed in valid locations according to DITA 1.3 requirements
-- **ContentType** - Validates and fixes content type declarations (documentation coming soon)
-- **CrossReference** - Fixes cross-reference formats for DITA compatibility (documentation coming soon)
-- **EntityReference** - Converts HTML entities to AsciiDoc attributes (documentation coming soon)
+### Configuration
+- **Workflow file**: `.github/workflows/pages.yml`
+- **Base URL**: `https://rolfedh.github.io/asciidoc-dita-toolkit/user-guide/`
+- **Source directory**: `/user-guide/`
 
-### Analysis and Migration Plugins
+### Enabling GitHub Pages
+1. Go to your repository Settings → Pages
+2. Confirm source is set to "GitHub Actions"
+3. The workflow will automatically deploy on pushes to main branch
 
-- **ContextAnalyzer** - Analyzes document context usage (documentation coming soon)
-- **ContextMigrator** - Migrates context-suffixed IDs (documentation coming soon)
-- **DirectoryConfig** - Manages directory-level configuration (documentation coming soon)
+## Local Development
 
-## Getting Started
+### Prerequisites
+- Python 3.7+ (for simple server)
+- Ruby 2.7+ and Bundler (for Jekyll preview)
 
-### Installation
+### Preview Documentation Locally
 
-1. Clone the repository:
+#### Using Python (Simple)
+```bash
+cd user-guide
+python -m http.server 8000
+# Visit http://localhost:8000
+```
+
+#### Using Jekyll (Full Features)
+```bash
+cd user-guide
+bundle install
+bundle exec jekyll serve
+# Visit http://localhost:4000/asciidoc-dita-toolkit/user-guide/
+```
+
+### Testing Changes
+1. Preview locally before committing
+2. Check all internal links work
+3. Verify code examples are accurate
+4. Test responsive layout on different screen sizes
+
+## Contributing to Documentation
+
+### Adding New Plugin Documentation
+
+1. **Create plugin documentation file:**
    ```bash
-   git clone https://github.com/rolfedh/asciidoc-dita-toolkit.git
-   cd asciidoc-dita-toolkit
+   touch plugins/YourPluginName.md
    ```
 
-2. Set up a virtual environment:
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   ```
+2. **Follow the established structure:**
+   - Purpose and overview
+   - Installation/usage instructions
+   - Configuration options
+   - Examples with expected output
+   - Troubleshooting section
 
-3. Install in development mode:
-   ```bash
-   pip install -e .
-   ```
+3. **Update the main index:**
+   - Add plugin to the "Available Plugins" section in `index.md`
+   - Include brief description and link to detailed docs
 
-### Basic Usage
+4. **Test the documentation:**
+   - Verify all examples work as documented
+   - Check cross-references and internal links
+   - Preview locally before submitting PR
 
-List all available plugins:
-```bash
-adt --help
-```
+### Documentation Style Guide
 
-Run a specific plugin:
-```bash
-adt ExampleBlock -f your-document.adoc
-```
+- **Tone**: Professional but approachable; assume technical writing background
+- **Code blocks**: Always specify language for syntax highlighting
+- **Links**: Use descriptive link text, not "click here"
+- **Examples**: Include both command and expected output when relevant
+- **Headings**: Use sentence case, maintain consistent hierarchy
 
-## General Workflow
+### Content Review Process
 
-1. **Assess your content**: Run analysis plugins to understand the scope of issues
-2. **Fix validation issues**: Use content validation plugins to address DITA compliance problems
-3. **Migrate content**: Use migration plugins for structural changes
-4. **Verify results**: Test your content with DITA conversion tools
+1. **Technical accuracy**: Verify all commands and examples work
+2. **User experience**: Test instructions with fresh eyes
+3. **Consistency**: Maintain consistent terminology and formatting
+4. **Completeness**: Ensure all features are documented
 
-## Common Patterns
+## Deployment Pipeline
 
-### Single File Processing
-```bash
-adt PluginName -f document.adoc
-```
+The documentation is automatically deployed when:
+1. Changes are pushed to the `main` branch
+2. The GitHub Actions workflow (`pages.yml`) runs successfully
+3. Jekyll builds the site from the `/user-guide/` directory
+4. The built site is deployed to the `gh-pages` branch
 
-### Batch Processing
-```bash
-adt PluginName -r -d /path/to/docs
-```
+### Troubleshooting Deployment
 
-### Verbose Output
-```bash
-adt PluginName -f document.adoc -v
-```
+- **Build failures**: Check the Actions tab for error logs
+- **Broken links**: Use Jekyll's link checker in local development
+- **Missing pages**: Verify file paths and Jekyll front matter
+- **Styling issues**: Test with Jekyll locally before deploying
 
-## Best Practices
+## Maintenance Tasks
 
-1. **Use version control**: Always commit your changes before running ADT plugins
-2. **Process incrementally**: Start with one plugin at a time to understand changes
-3. **Review changes**: Examine plugin output before proceeding to the next step
-4. **Test conversion**: Regularly test your content with DITA conversion tools
+### Regular Updates
+- [ ] Keep plugin list current as new plugins are added
+- [ ] Update installation instructions if requirements change
+- [ ] Refresh examples when ADT CLI interface changes
+- [ ] Review and update broken external links
 
-## Support
-
-- [GitHub Issues](https://github.com/rolfedh/asciidoc-dita-toolkit/issues) - Report bugs or request features
-- [Project Repository](https://github.com/rolfedh/asciidoc-dita-toolkit) - Source code and development information
+### Quality Assurance
+- [ ] Quarterly review of all documentation for accuracy
+- [ ] User feedback integration from GitHub Issues
+- [ ] Performance monitoring of page load times
+- [ ] Accessibility compliance checking
 
 ---
 
-*This documentation is part of the AsciiDoc DITA Toolkit (ADT) project.*
+*This README is for contributors and maintainers. End users should visit the [published documentation](https://rolfedh.github.io/asciidoc-dita-toolkit/user-guide/).*
