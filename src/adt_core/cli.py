@@ -2,7 +2,7 @@
 Command-line interface for adt_core.
 
 This module provides backward compatibility with the old asciidoc-dita-toolkit
-while integrating with the new module system.
+while integrating with the new plugin system.
 """
 
 import argparse
@@ -21,11 +21,11 @@ from .module_sequencer import ModuleSequencer
 
 def handle_system_exit(component_name: str, component_type: str, exit_exception: SystemExit) -> None:
     """
-    Handle SystemExit exceptions from plugins and modules gracefully.
+    Handle SystemExit exceptions from plugins gracefully.
     
     Args:
-        component_name: Name of the plugin/module that exited
-        component_type: Type of component ('plugin' or 'module')
+        component_name: Name of the plugin that exited
+        component_type: Type of component (always 'plugin')
         exit_exception: The SystemExit exception that was caught
     """
     if exit_exception.code != 0:
@@ -100,7 +100,7 @@ def get_version():
     try:
         return importlib.metadata.version("asciidoc-dita-toolkit")
     except importlib.metadata.PackageNotFoundError:
-        # Fallback to module version for development/uninstalled package
+        # Fallback to plugin version for development/uninstalled package
         try:
             from . import __version__
 
@@ -120,23 +120,23 @@ def print_version_with_plugins():
     
     # Get plugin information
     legacy_plugins = get_legacy_plugins()
-    new_modules = get_new_modules_for_help()
+    new_plugins = get_new_plugins_for_help()
     
     # Combine and sort all plugins with version info
     all_plugins = []
     
-    # Add new modules first (they have proper version info)
-    for name, info in new_modules.items():
+    # Add new plugins first (they have proper version info)
+    for name, info in new_plugins.items():
         desc = PLUGIN_DESCRIPTIONS.get(name, info['description'])
-        version_str = getattr(info['module'], 'version', 'unknown')
+        version_str = getattr(info['plugin'], 'version', 'unknown')
         all_plugins.append((name, version_str, desc))
     
-    # Add legacy plugins only if they don't exist in new modules
+    # Add legacy plugins only if they don't exist in new plugins
     for name, info in legacy_plugins.items():
-        if name not in new_modules:
+        if name not in new_plugins:
             desc = PLUGIN_DESCRIPTIONS.get(name, info['description'])
-            # Try to get version from module, fallback to 'legacy'
-            version_str = getattr(info.get('module'), '__version__', 'legacy')
+            # Try to get version from plugin, fallback to 'legacy'
+            version_str = getattr(info.get('plugin'), '__version__', 'legacy')
             all_plugins.append((name, version_str, desc))
     
     if all_plugins:
@@ -188,17 +188,17 @@ def get_legacy_plugins():
                     continue
 
                 try:
-                    module = importlib.import_module(
+                    plugin_module = importlib.import_module(
                         f"asciidoc_dita_toolkit.asciidoc_dita.plugins.{plugin_name}"
                     )
 
                     # Check if it has the required functions
-                    if hasattr(module, "register_subcommand") and hasattr(
-                        module, "main"
+                    if hasattr(plugin_module, "register_subcommand") and hasattr(
+                        plugin_module, "main"
                     ):
-                        description = getattr(module, "__description__", plugin_name)
+                        description = getattr(plugin_module, "__description__", plugin_name)
                         plugins[plugin_name] = {
-                            "module": module,
+                            "plugin": plugin_module,
                             "description": description,
                         }
                 except Exception as e:
@@ -212,12 +212,12 @@ def get_legacy_plugins():
     return plugins
 
 
-def get_new_modules_for_help():
-    """Get available modules from the new module system with all warnings suppressed for help display."""
-    modules = {}
+def get_new_plugins_for_help():
+    """Get available plugins from the new plugin system with all warnings suppressed for help display."""
+    plugins = {}
 
     try:
-        # Temporarily suppress all logging to avoid module discovery warnings during help
+        # Temporarily suppress all logging to avoid plugin discovery warnings during help
         import logging
 
         original_level = logging.getLogger().level
@@ -228,14 +228,14 @@ def get_new_modules_for_help():
             sequencer.set_suppress_legacy_warnings(True)
             sequencer.discover_modules()
 
-            for name, module in sequencer.available_modules.items():
-                # Use module's description property if available, otherwise use generic description
+            for name, plugin in sequencer.available_modules.items():
+                # Use plugin's description property if available, otherwise use generic description
                 description = getattr(
-                    module,
+                    plugin,
                     'description',
-                    f"New module system: {name} v{module.version}",
+                    f"New plugin system: {name} v{plugin.version}",
                 )
-                modules[name] = {"module": module, "description": description}
+                plugins[name] = {"plugin": plugin, "description": description}
         finally:
             # Restore original logging level
             logging.getLogger().setLevel(original_level)
@@ -244,53 +244,53 @@ def get_new_modules_for_help():
         # Silently fail during help operations
         pass
 
-    return modules
+    return plugins
 
 
-def get_new_modules():
-    """Get available modules from the new module system."""
-    modules = {}
+def get_new_plugins():
+    """Get available plugins from the new plugin system."""
+    plugins = {}
 
     try:
         sequencer = ModuleSequencer()
         sequencer.discover_modules()
 
-        for name, module in sequencer.available_modules.items():
-            # Use module's description property if available, otherwise use generic description
+        for name, plugin in sequencer.available_modules.items():
+            # Use plugin's description property if available, otherwise use generic description
             description = getattr(
-                module, 'description', f"New module system: {name} v{module.version}"
+                plugin, 'description', f"New plugin system: {name} v{plugin.version}"
             )
-            modules[name] = {"module": module, "description": description}
+            plugins[name] = {"plugin": plugin, "description": description}
     except Exception as e:
-        print(f"Warning: Could not load new modules: {e}", file=sys.stderr)
+        print(f"Warning: Could not load new plugins: {e}", file=sys.stderr)
 
-    return modules
+    return plugins
 
 
-def get_new_modules_with_warnings_control(suppress_warnings: bool = True):
-    """Get available modules from the new module system with warning control."""
-    modules = {}
+def get_new_plugins_with_warnings_control(suppress_warnings: bool = True):
+    """Get available plugins from the new plugin system with warning control."""
+    plugins = {}
 
     try:
         sequencer = ModuleSequencer()
         sequencer.set_suppress_legacy_warnings(suppress_warnings)
         sequencer.discover_modules()
 
-        for name, module in sequencer.available_modules.items():
-            # Use module's description property if available, otherwise use generic description
+        for name, plugin in sequencer.available_modules.items():
+            # Use plugin's description property if available, otherwise use generic description
             description = getattr(
-                module, 'description', f"New module system: {name} v{module.version}"
+                plugin, 'description', f"New plugin system: {name} v{plugin.version}"
             )
-            modules[name] = {"module": module, "description": description}
+            plugins[name] = {"plugin": plugin, "description": description}
     except Exception as e:
-        print(f"Warning: Could not load new modules: {e}", file=sys.stderr)
+        print(f"Warning: Could not load new plugins: {e}", file=sys.stderr)
 
-    return modules
+    return plugins
 
 
 def print_plugin_list():
-    """Print a list of all available plugins and modules."""
-    print("Available plugins and modules:")
+    """Print a list of all available plugins."""
+    print("Available plugins:")
 
     # Get legacy plugins
     legacy_plugins = get_legacy_plugins()
@@ -299,26 +299,26 @@ def print_plugin_list():
         for name, info in legacy_plugins.items():
             print(f"  {name:20} {info['description']}")
 
-    # Get new modules
-    new_modules = get_new_modules()
-    if new_modules:
-        print("\nNew modules:")
-        for name, info in new_modules.items():
+    # Get new plugins
+    new_plugins = get_new_plugins()
+    if new_plugins:
+        print("\nNew plugins:")
+        for name, info in new_plugins.items():
             print(f"  {name:20} {info['description']}")
 
-    if not legacy_plugins and not new_modules:
-        print("  No plugins or modules available")
+    if not legacy_plugins and not new_plugins:
+        print("  No plugins available")
 
 
 def print_detailed_plugin_list(suppress_warnings: bool = True):
-    """Print a detailed, well-formatted list of all available plugins and modules."""
+    """Print a detailed, well-formatted list of all available plugins."""
     print("AVAILABLE PLUGINS:\n")
 
     # Get legacy plugins (warnings already suppressed in function)
     legacy_plugins = get_legacy_plugins()
 
-    # Get new modules with warnings completely suppressed for help display
-    new_modules = get_new_modules_for_help()
+    # Get new plugins with warnings completely suppressed for help display
+    new_plugins = get_new_plugins_for_help()
 
     # Combine and sort all plugins
     all_plugins = {}
@@ -327,10 +327,10 @@ def print_detailed_plugin_list(suppress_warnings: bool = True):
     for name, info in legacy_plugins.items():
         all_plugins[name] = {"description": info['description'], "type": "legacy"}
 
-    # Add new modules (avoid duplicates)
-    for name, info in new_modules.items():
+    # Add new plugins (avoid duplicates)
+    for name, info in new_plugins.items():
         if name not in all_plugins:
-            all_plugins[name] = {"description": info['description'], "type": "module"}
+            all_plugins[name] = {"description": info['description'], "type": "plugin"}
 
     if not all_plugins:
         print("  No plugins available")
@@ -356,8 +356,8 @@ def print_detailed_plugin_list(suppress_warnings: bool = True):
 
 
 def print_plugin_list_with_warnings_control(suppress_warnings: bool = True):
-    """Print a list of all available plugins and modules with warning control."""
-    print("Available plugins and modules:")
+    """Print a list of all available plugins with warning control."""
+    print("Available plugins:")
 
     # Get legacy plugins
     legacy_plugins = get_legacy_plugins()
@@ -366,15 +366,15 @@ def print_plugin_list_with_warnings_control(suppress_warnings: bool = True):
         for name, info in legacy_plugins.items():
             print(f"  {name:20} {info['description']}")
 
-    # Get new modules
-    new_modules = get_new_modules_with_warnings_control(suppress_warnings)
-    if new_modules:
-        print("\nNew modules:")
-        for name, info in new_modules.items():
+    # Get new plugins
+    new_plugins = get_new_plugins_with_warnings_control(suppress_warnings)
+    if new_plugins:
+        print("\nNew plugins:")
+        for name, info in new_plugins.items():
             print(f"  {name:20} {info['description']}")
 
-    if not legacy_plugins and not new_modules:
-        print("  No plugins or modules available")
+    if not legacy_plugins and not new_plugins:
+        print("  No plugins available")
 
 
 def create_legacy_subcommand(subparsers, name, plugin_info):
@@ -403,7 +403,7 @@ def create_legacy_subcommand(subparsers, name, plugin_info):
     # Set the function to call
     def run_legacy_plugin(args):
         try:
-            plugin_info["module"].main(args)
+            plugin_info["plugin"].main(args)
         except SystemExit as e:
             handle_system_exit(name, "plugin", e)
         except Exception as e:
@@ -413,9 +413,9 @@ def create_legacy_subcommand(subparsers, name, plugin_info):
     parser.set_defaults(func=run_legacy_plugin)
 
 
-def create_new_module_subcommand(subparsers, name, module_info):
-    """Create a subcommand for a new module."""
-    description = PLUGIN_DESCRIPTIONS.get(name, module_info["description"])
+def create_new_plugin_subcommand(subparsers, name, plugin_info):
+    """Create a subcommand for a new plugin."""
+    description = PLUGIN_DESCRIPTIONS.get(name, plugin_info["description"])
     parser = subparsers.add_parser(name, help=description)
 
     # Add common arguments
@@ -437,35 +437,35 @@ def create_new_module_subcommand(subparsers, name, module_info):
     )
 
     # Set the function to call
-    def run_new_module(args):
+    def run_new_plugin(args):
         try:
-            # Initialize module
-            module = module_info["module"]
+            # Initialize plugin
+            plugin = plugin_info["plugin"]
             config = {"verbose": args.verbose}
-            module.initialize(config)
+            plugin.initialize(config)
 
-            # Execute module
+            # Execute plugin
             context = {
                 "file": args.file,
                 "recursive": args.recursive,
                 "directory": args.directory,
                 "verbose": args.verbose,
             }
-            result = module.execute(context)
+            result = plugin.execute(context)
 
             if args.verbose:
-                print(f"Module result: {result}")
+                print(f"Plugin result: {result}")
 
             # Cleanup
-            module.cleanup()
+            plugin.cleanup()
 
         except SystemExit as e:
-            handle_system_exit(name, "module", e)
+            handle_system_exit(name, "plugin", e)
         except Exception as e:
-            print(f"Error running module {name}: {e}", file=sys.stderr)
+            print(f"Error running plugin {name}: {e}", file=sys.stderr)
             sys.exit(1)
 
-    parser.set_defaults(func=run_new_module)
+    parser.set_defaults(func=run_new_plugin)
 
 
 class CustomHelpAction(argparse.Action):
@@ -544,14 +544,14 @@ def main(args=None):
 
     # For help operations, use the warning-suppressed version
     if args and ("-h" in args or "--help" in args or "--list-plugins" in args):
-        new_modules = get_new_modules_for_help()
+        new_plugins = get_new_plugins_for_help()
     else:
-        new_modules = get_new_modules_with_warnings_control(suppress_warnings)
+        new_plugins = get_new_plugins_with_warnings_control(suppress_warnings)
 
-    for name, info in new_modules.items():
+    for name, info in new_plugins.items():
         # Only add if not already added by legacy plugins
         if name not in legacy_plugins:
-            create_new_module_subcommand(subparsers, name, info)
+            create_new_plugin_subcommand(subparsers, name, info)
 
     # Parse arguments
     if args is None:
