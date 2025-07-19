@@ -243,28 +243,25 @@ tests/
 **Run all tests (recommended):**
 
 ```sh
-# Using unittest discovery
-python3 -m unittest discover -s tests -v
-
-# Using pytest (if available)
+# Using pytest (primary testing framework)
 python3 -m pytest tests/ -v
+
+# Alternative: using make command
+make test
 ```
 
 **Run specific test modules:**
 
 ```sh
-python3 -m unittest tests.test_cli -v
-python3 -m unittest tests.test_EntityReference -v
-python3 -m unittest tests.test_DirectoryConfig -v
-
-# Or with pytest
+python3 -m pytest tests/test_cli.py -v
+python3 -m pytest tests/test_EntityReference.py -v
 python3 -m pytest tests/test_DirectoryConfig.py -v
 ```
 
 **Run individual test cases:**
 
 ```sh
-python3 -m unittest tests.test_cli.TestCLI.test_discover_plugins -v
+python3 -m pytest tests/test_cli.py::TestCLI::test_discover_plugins -v
 ```
 
 ### Test Coverage
@@ -300,11 +297,13 @@ Our test suite covers:
 
 **Testing Best Practices:**
 
-- Use `unittest.mock.patch` for external dependencies
+- Use `pytest` fixtures and parametrized tests for cleaner test code
+- Use `unittest.mock.patch` for external dependencies (pytest works with unittest mocks)
 - Create temporary files for file processing tests
 - Test both valid inputs and error conditions
 - Use descriptive test method names and docstrings
 - Use context managers (`with patch()`) for complex mocking
+- Prefer standalone test functions where appropriate, use TestCase classes for complex setups
 
 ### Continuous Integration
 

@@ -62,7 +62,7 @@ adt CrossReference -r -d path/to/your/docs
 ```bash
 pytest -v
 # or
-python3 -m unittest discover -s tests
+python3 -m pytest tests/ -v
 ```
 
 ## 7. Report Issues

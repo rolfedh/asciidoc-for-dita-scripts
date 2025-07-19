@@ -133,7 +133,6 @@ For each .adoc file, it expects a corresponding .expected file in the same direc
 
 import os
 import sys
-import unittest
 
 # Add the project root to the path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -143,44 +142,50 @@ from tests.asciidoc_testkit import run_linewise_test, get_same_dir_fixture_pairs
 
 FIXTURE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'fixtures', 'PluginName'))
 
-class TestPluginName(unittest.TestCase):
-    
-    def test_basic_functionality(self):
-        """Test basic transformation functionality."""
-        input_text = "input example"
-        expected = "expected output"
-        result = transform_line(input_text)
-        self.assertEqual(result, expected)
-    
-    def test_edge_cases(self):
-        """Test edge cases and error conditions."""
-        # Test cases for edge conditions
-        pass
-    
-    def test_fixture_based_tests(self):
-        """Run tests based on fixture files if they exist."""
-        if os.path.exists(FIXTURE_DIR):
-            fixture_count = 0
-            for input_path, expected_path in get_same_dir_fixture_pairs(FIXTURE_DIR):
-                fixture_count += 1
-                with self.subTest(fixture=os.path.basename(input_path)):
-                    fixture_name = os.path.basename(input_path)
-                    
-                    # Choose test method based on whether state tracking is needed
-                    if requires_state_tracking(fixture_name):
-                        success = run_file_based_test(input_path, expected_path, process_file)
-                    else:
-                        success = run_linewise_test(input_path, expected_path, transform_line)
-                    
-                    self.assertTrue(success, f"Fixture test failed for {input_path}")
-            
-            if fixture_count > 0:
-                print(f"Ran {fixture_count} fixture-based tests")
-        else:
-            self.skipTest(f"Fixture directory not found: {FIXTURE_DIR}")
+def test_basic_functionality():
+    """Test basic transformation functionality."""
+    input_text = "input example"
+    expected = "expected output"
+    result = transform_line(input_text)
+    assert result == expected
 
-if __name__ == '__main__':
-    unittest.main()
+def test_edge_cases():
+    """Test edge cases and error conditions."""
+    # Test cases for edge conditions
+    pass
+
+def test_fixture_based_tests():
+    """Run tests based on fixture files if they exist."""
+    if not os.path.exists(FIXTURE_DIR):
+        pytest.skip(f"Fixture directory not found: {FIXTURE_DIR}")
+        
+    fixture_count = 0
+    for input_path, expected_path in get_same_dir_fixture_pairs(FIXTURE_DIR):
+        fixture_count += 1
+        fixture_name = os.path.basename(input_path)
+        
+        # Choose test method based on whether state tracking is needed
+        if requires_state_tracking(fixture_name):
+            success = run_file_based_test(input_path, expected_path, process_file)
+        else:
+            success = run_linewise_test(input_path, expected_path, transform_line)
+        
+        assert success, f"Fixture test failed for {input_path}"
+    
+    if fixture_count > 0:
+        print(f"Ran {fixture_count} fixture-based tests")
+
+# Alternative: For complex setups, you can still use TestCase classes
+import unittest
+class TestPluginNameWithSetup(unittest.TestCase):
+    
+    def setUp(self):
+        """Setup test fixtures and state."""
+        self.test_data = {}
+    
+    def test_with_complex_setup(self):
+        """Test that requires complex setup/teardown."""
+        pass
 ```
 
 ### 2. Test Method Selection

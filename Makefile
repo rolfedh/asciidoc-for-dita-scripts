@@ -37,14 +37,13 @@ help:
 
 # Test targets
 test:
-	@echo "Running unit tests..."
-	python3 -m unittest discover -s tests -v
+	@echo "Running all tests with pytest..."
+	python3 -m pytest tests/ -v
 
 test-coverage:
 	@echo "Running tests with coverage..."
-	python3 -m coverage run -m unittest discover -s tests
-	python3 -m coverage report
-	python3 -m coverage html
+	python3 -m pytest tests/ --cov=src --cov-report=term-missing --cov-report=html
+	@echo "Coverage report generated in htmlcov/"
 
 # Code quality targets
 lint:
@@ -96,7 +95,7 @@ setup: venv
 	@.venv/bin/python -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude=.venv,venv,debug_env,build,dist,*.egg-info,.git,__pycache__ || true
 	@.venv/bin/python -m flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude=.venv,venv,debug_env,build,dist,*.egg-info,.git,__pycache__ || true
 	@echo "🧪 Running tests..."
-	@.venv/bin/python -m unittest discover -s tests -v || true
+	@.venv/bin/python -m pytest tests/ -v || true
 	@echo ""
 	@echo "✅ Development setup complete!"
 	@echo "💡 To activate the virtual environment: source .venv/bin/activate"
