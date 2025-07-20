@@ -25,22 +25,24 @@ from ..config_utils import (
 from ..plugin_manager import is_plugin_enabled
 from ..security_utils import validate_directory_path
 
-# Try to import ADTModule for the new pattern
+# Import ADTModule from core
+import sys
+from pathlib import Path
+
+# Add src to path if needed for ADTModule import
+package_root = Path(__file__).parent.parent.parent.parent
+src_path = package_root / "src"
+if str(src_path) not in sys.path:
+    sys.path.insert(0, str(src_path))
+
 try:
-    # Add the path to find the ADTModule
-    package_root = Path(__file__).parent.parent.parent.parent
-    if str(package_root / "src") not in sys.path:
-        sys.path.insert(0, str(package_root / "src"))
-
     from adt_core.module_sequencer import ADTModule
-
     ADT_MODULE_AVAILABLE = True
-except ImportError:
-    ADT_MODULE_AVAILABLE = False
-
-    # Create a dummy ADTModule for backward compatibility
-    class ADTModule:
-        pass
+except ImportError as e:
+    raise ImportError(
+        f"Failed to import ADTModule from adt_core.module_sequencer: {e}. "
+        f"This is required for DirectoryConfig module to function properly."
+    )
 
 
 # Constants

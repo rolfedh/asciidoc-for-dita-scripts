@@ -27,13 +27,22 @@ from dataclasses import dataclass, asdict
 import logging
 
 # Import from ADT core
+import sys
+from pathlib import Path
+
+# Add src to path for consistent imports
+package_root = Path(__file__).parent.parent.parent.parent
+src_path = package_root / "src"
+if str(src_path) not in sys.path:
+    sys.path.insert(0, str(src_path))
+
 try:
-    from src.adt_core.module_sequencer import ModuleSequencer, ModuleState, ModuleResolution
-except ImportError:
-    # Handle case where we're running from different context
-    import sys
-    sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent.parent))
-    from src.adt_core.module_sequencer import ModuleSequencer, ModuleState, ModuleResolution
+    from adt_core.module_sequencer import ModuleSequencer, ModuleState, ModuleResolution
+except ImportError as e:
+    raise ImportError(
+        f"Failed to import ModuleSequencer from adt_core.module_sequencer: {e}. "
+        f"This is required for UserJourney plugin to function properly."
+    )
 
 
 # ============================================================================
