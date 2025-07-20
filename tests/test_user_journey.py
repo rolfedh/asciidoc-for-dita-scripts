@@ -38,32 +38,39 @@ class TestUserJourneyProcessor(unittest.TestCase):
         (self.test_directory / "doc1.adoc").write_text("= Document 1\nContent")
         (self.test_directory / "doc2.adoc").write_text("= Document 2\nContent")
         
-        # Mock ModuleSequencer
+        # Mock ModuleSequencer  
+        from asciidoc_dita_toolkit.adt_core.module_sequencer import ModuleState
         self.mock_sequencer = Mock()
+        
+        # Create properly configured mock resolution objects
+        mock_directory_config = Mock()
+        mock_directory_config.name = "DirectoryConfig"
+        mock_directory_config.state = ModuleState.ENABLED
+        
+        mock_content_type = Mock()
+        mock_content_type.name = "ContentType"  
+        mock_content_type.state = ModuleState.ENABLED
+        
         self.mock_sequencer.sequence_modules.return_value = (
-            [
-                Mock(name="DirectoryConfig", state="enabled"),
-                Mock(name="ContentType", state="enabled"),
-            ],
+            [mock_directory_config, mock_content_type],
             []  # No errors
         )
         
         self.manager = WorkflowManager(self.mock_sequencer)
         self.processor = UserJourneyProcessor(self.manager)
         
-        # Mock workflow storage
+        # Set up isolated storage directory
         self.workflow_dir = Path(self.temp_dir) / ".adt" / "workflows"
         self.workflow_dir.mkdir(parents=True)
         
-        self.storage_patch = patch.object(
-            WorkflowState, 'get_storage_path',
-            return_value=self.workflow_dir / "test_workflow.json"
-        )
-        self.storage_patch.start()
+        # Configure both WorkflowManager and WorkflowState to use test storage
+        WorkflowManager.set_storage_directory(self.workflow_dir)
     
     def tearDown(self):
         """Clean up test environment."""
-        self.storage_patch.stop()
+        # Reset storage directories
+        WorkflowManager._storage_dir = None
+        WorkflowState._default_storage_dir = None
         shutil.rmtree(self.temp_dir)
     
     def test_start_command_success(self):
@@ -292,20 +299,17 @@ class TestWorkflowState(unittest.TestCase):
         
         self.test_modules = ["DirectoryConfig", "ContentType", "EntityReference"]
         
-        # Mock the workflow storage directory
+        # Set up isolated storage directory
         self.workflow_dir = Path(self.temp_dir) / ".adt" / "workflows"
         self.workflow_dir.mkdir(parents=True)
         
-        # Patch the storage path
-        self.storage_patch = patch.object(
-            WorkflowState, 'get_storage_path',
-            return_value=self.workflow_dir / "test_workflow.json"
-        )
-        self.storage_patch.start()
+        # Configure WorkflowState to use test storage
+        WorkflowState._default_storage_dir = self.workflow_dir
     
     def tearDown(self):
         """Clean up test environment."""
-        self.storage_patch.stop()
+        # Reset storage directory
+        WorkflowState._default_storage_dir = None
         shutil.rmtree(self.temp_dir)
     
     def test_workflow_initialization(self):
@@ -472,19 +476,18 @@ class TestWorkflowManager(unittest.TestCase):
         
         self.manager = WorkflowManager(self.mock_sequencer)
         
-        # Mock workflow storage
+        # Set up isolated storage directory
         self.workflow_dir = Path(self.temp_dir) / ".adt" / "workflows"
         self.workflow_dir.mkdir(parents=True)
         
-        self.storage_patch = patch.object(
-            WorkflowState, 'get_storage_path',
-            return_value=self.workflow_dir / "test_workflow.json"
-        )
-        self.storage_patch.start()
+        # Configure both WorkflowManager and WorkflowState to use test storage
+        WorkflowManager.set_storage_directory(self.workflow_dir)
     
     def tearDown(self):
         """Clean up test environment."""
-        self.storage_patch.stop()
+        # Reset storage directories
+        WorkflowManager._storage_dir = None
+        WorkflowState._default_storage_dir = None
         shutil.rmtree(self.temp_dir)
     
     def test_start_workflow(self):

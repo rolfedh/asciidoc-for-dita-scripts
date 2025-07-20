@@ -61,7 +61,7 @@ ContextAnalyzer = "asciidoc_dita_toolkit.asciidoc_dita.plugins.ContextAnalyzer:C
 ContextMigrator = "asciidoc_dita_toolkit.asciidoc_dita.plugins.ContextMigrator:ContextMigratorModule"
 CrossReference = "asciidoc_dita_toolkit.asciidoc_dita.plugins.CrossReference:CrossReferenceModule"
 ExampleBlock = "asciidoc_dita_toolkit.asciidoc_dita.plugins.ExampleBlock:ExampleBlockModule"
-UserJourney = "modules.user_journey:UserJourney"
+UserJourney = "asciidoc_dita_toolkit.asciidoc_dita.plugins.UserJourney:UserJourneyModule"
 
 [project.optional-dependencies]
 dev = [

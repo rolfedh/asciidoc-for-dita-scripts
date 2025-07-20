@@ -20,6 +20,7 @@ other modules but is not itself executed by ModuleSequencer.
 import json
 import shutil
 import sys
+from collections import OrderedDict
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Union
@@ -31,10 +32,10 @@ import sys
 from pathlib import Path
 
 try:
-    from asciidoc_dita_toolkit.adt_core.module_sequencer import ModuleSequencer, ModuleState, ModuleResolution
+    from asciidoc_dita_toolkit.adt_core.module_sequencer import ModuleSequencer, ModuleState, ModuleResolution, ADTModule
 except ImportError as e:
     raise ImportError(
-        f"Failed to import ModuleSequencer from asciidoc_dita_toolkit.adt_core.module_sequencer: {e}. "
+        f"Failed to import from asciidoc_dita_toolkit.adt_core.module_sequencer: {e}. "
         f"This is required for UserJourney plugin to function properly."
     )
 
@@ -171,10 +172,11 @@ class WorkflowState:
     
     def _initialize_module_states(self, modules: List[str]) -> Dict[str, ModuleExecutionState]:
         """Create state tracking for each module with detailed metrics."""
-        return {
-            module: ModuleExecutionState(status="pending")
+        # Use OrderedDict to preserve execution order
+        return OrderedDict([
+            (module, ModuleExecutionState(status="pending"))
             for module in modules
-        }
+        ])
     
     def _refresh_file_discovery(self) -> None:
         """Discover .adoc files using DirectoryConfig if available."""
@@ -263,7 +265,7 @@ class WorkflowState:
         total = len(self.modules)
         completed = sum(1 for s in self.modules.values() if s.status == "completed")
         failed = sum(1 for s in self.modules.values() if s.status == "failed")
-        pending = sum(1 for s in self.modules.values() if s.status == "pending")
+        pending = sum(1 for s in self.modules.values() if s.status in ["pending", "running"])
         
         processed_files = sum(s.files_processed for s in self.modules.values())
         completion_pct = (completed / total * 100) if total > 0 else 0
@@ -287,6 +289,7 @@ class WorkflowState:
             "created": self.created,
             "last_activity": self.last_activity,
             "status": self.status,
+            "module_order": list(self.modules.keys()),  # Preserve module execution order
             "modules": {
                 name: asdict(state) for name, state in self.modules.items()
             },
@@ -316,11 +319,14 @@ class WorkflowState:
         workflow.directory_config = data.get("directory_config")
         workflow.metadata = data.get("metadata", workflow.metadata)
         
-        # Restore module states
+        # Restore module states in correct order
         modules_data = data.get("modules", {})
-        for module_name, module_data in modules_data.items():
-            if module_name in workflow.modules:
-                workflow.modules[module_name] = ModuleExecutionState(**module_data)
+        module_order = data.get("module_order", list(modules_data.keys()))  # Use saved order if available
+        
+        workflow.modules = OrderedDict()  # Initialize as OrderedDict
+        for module_name in module_order:
+            if module_name in modules_data:
+                workflow.modules[module_name] = ModuleExecutionState(**modules_data[module_name])
         
         return workflow
     
@@ -333,24 +339,33 @@ class WorkflowState:
         temp_path = storage_path.with_suffix('.tmp')
         backup_path = storage_path.with_suffix('.backup')
         
+        # Track if backup already existed
+        backup_existed = backup_path.exists()
+        
         try:
-            # Create backup of existing state
+            # Create backup of existing state (only if current file exists)
             if storage_path.exists():
                 shutil.copy2(storage_path, backup_path)
             
             # Write to temp file
             with open(temp_path, 'w') as f:
-                json.dump(self.to_dict(), f, indent=2, sort_keys=True)
+                json.dump(self.to_dict(), f, indent=2)  # Removed sort_keys=True to preserve module order
             
             # Atomic rename
             temp_path.rename(storage_path)
             
-            # Clean up backup on success
+            # Clean up any backup on success (whether it existed before or was created now)
             if backup_path.exists():
                 backup_path.unlink()
                 
         except Exception as e:
-            # Restore from backup if available
+            # Clean up temp file if it exists
+            if temp_path.exists():
+                try:
+                    temp_path.unlink()
+                except:
+                    pass
+            # Restore from backup if available and main file is missing
             if backup_path.exists() and not storage_path.exists():
                 shutil.copy2(backup_path, storage_path)
             raise WorkflowStateError(f"Failed to save workflow state: {e}")
@@ -437,6 +452,16 @@ class WorkflowManager:
                 logging.warning(f"Failed to initialize ModuleSequencer: {e}")
         else:
             self.sequencer = module_sequencer
+        
+        # If we have a custom storage directory, apply it to WorkflowState as well
+        if self._storage_dir is not None:
+            WorkflowState._default_storage_dir = self._storage_dir
+    
+    @classmethod
+    def set_storage_directory(cls, storage_dir: Path) -> None:
+        """Set storage directory for testing or custom deployments."""
+        cls._storage_dir = storage_dir
+        WorkflowState._default_storage_dir = storage_dir
     
     def start_workflow(self, name: str, directory: str) -> WorkflowState:
         """
@@ -814,8 +839,8 @@ class UserJourneyProcessor:
             adoc_files = list(directory_path.rglob("*.adoc"))
             if not adoc_files:
                 self._print_warning(f"No .adoc files found in '{directory_path}'")
-                response = input("Continue anyway? (y/N): ").strip().lower()
-                if response not in ['y', 'yes']:
+                response = input("Continue anyway? [Y/n]: ").strip().lower()
+                if response in ['n', 'no']:
                     self._print_info("Operation cancelled.")
                     return 0
             
@@ -1126,7 +1151,7 @@ class UserJourneyProcessor:
                     print(f"  - {name}")
             
             # Confirm deletion
-            response = input(f"\nDelete {len(to_delete)} workflow(s)? (y/N): ").strip().lower()
+            response = input(f"\nDelete {len(to_delete)} workflow(s)? [y/N]: ").strip().lower()
             if response not in ['y', 'yes']:
                 self._print_info("Operation cancelled.")
                 return 0
@@ -1135,7 +1160,11 @@ class UserJourneyProcessor:
             deleted_count = 0
             for workflow_name in to_delete:
                 try:
-                    storage_path = Path.home() / ".adt" / "workflows" / f"{workflow_name}.json"
+                    if self.workflow_manager._storage_dir is not None:
+                        storage_path = self.workflow_manager._storage_dir / f"{workflow_name}.json"
+                    else:
+                        storage_path = Path.home() / ".adt" / "workflows" / f"{workflow_name}.json"
+                        
                     if storage_path.exists():
                         storage_path.unlink()
                         deleted_count += 1
@@ -1177,13 +1206,17 @@ class UserJourneyProcessor:
         except Exception as e:
             self._print_warning(f"Could not load workflow details: {e}")
         
-        response = input(f"\nDelete workflow '{workflow_name}'? (y/N): ").strip().lower()
+        response = input(f"\nDelete workflow '{workflow_name}'? [y/N]: ").strip().lower()
         if response not in ['y', 'yes']:
             self._print_info("Operation cancelled.")
             return 0
         
         try:
-            storage_path = Path.home() / ".adt" / "workflows" / f"{workflow_name}.json"
+            if self.workflow_manager._storage_dir is not None:
+                storage_path = self.workflow_manager._storage_dir / f"{workflow_name}.json"
+            else:
+                storage_path = Path.home() / ".adt" / "workflows" / f"{workflow_name}.json"
+                
             if storage_path.exists():
                 storage_path.unlink()
             
@@ -1353,6 +1386,215 @@ class UserJourneyProcessor:
 # Module Integration (for ADT system compatibility)
 # ============================================================================
 
+class UserJourneyModule(ADTModule):
+    """
+    ADTModule implementation for UserJourney plugin.
+    
+    UserJourney is a CLI-first orchestrator that uses ModuleSequencer to execute
+    other modules but is not itself executed by ModuleSequencer. This wrapper
+    provides minimal ADTModule compatibility for system integration.
+    """
+    
+    @property
+    def name(self) -> str:
+        """Module name identifier."""
+        return "UserJourney"
+    
+    @property
+    def version(self) -> str:
+        """Module version using semantic versioning."""
+        return "1.0.0"
+    
+    @property
+    def dependencies(self) -> List[str]:
+        """List of required module names."""
+        return ["DirectoryConfig"]  # DirectoryConfig is required
+    
+    @property
+    def release_status(self) -> str:
+        """Release status: 'stable' for production-ready features."""
+        return "stable"
+    
+    def initialize(self, config: Dict[str, Any] = None) -> Dict[str, Any]:
+        """
+        Initialize the module with configuration.
+        
+        Args:
+            config: Configuration dictionary containing module settings
+            
+        Returns:
+            Dict containing initialization status
+        """
+        if config is None:
+            config = {}
+        
+        # Store configuration
+        self.config = config
+        self.verbose = config.get("verbose", False)
+        
+        # Set up logging
+        self._setup_logging()
+        
+        # Initialize processor
+        try:
+            self.processor = UserJourneyProcessor()
+            self._initialized = True
+            
+            if self.verbose:
+                logging.info("UserJourney module initialized successfully")
+            
+            return {"status": "success", "message": "UserJourney initialized"}
+            
+        except Exception as e:
+            logging.error(f"Failed to initialize UserJourney module: {e}")
+            return {"status": "error", "message": f"Initialization failed: {e}"}
+    
+    def _setup_logging(self) -> None:
+        """Set up logging for UserJourney operations."""
+        # Create logger for UserJourney
+        logger = logging.getLogger("UserJourney")
+        
+        # Set level based on configuration
+        if self.verbose:
+            logger.setLevel(logging.DEBUG)
+        else:
+            logger.setLevel(logging.INFO)
+        
+        # Add console handler if not already present
+        if not logger.handlers:
+            console_handler = logging.StreamHandler(sys.stderr)
+            console_handler.setLevel(logging.INFO if not self.verbose else logging.DEBUG)
+            
+            # Create formatter
+            formatter = logging.Formatter(
+                '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                datefmt='%Y-%m-%d %H:%M:%S'
+            )
+            console_handler.setFormatter(formatter)
+            
+            logger.addHandler(console_handler)
+        
+        # Also configure file logging if enabled
+        log_file = self.config.get("log_file")
+        if log_file:
+            try:
+                file_handler = logging.FileHandler(log_file)
+                file_handler.setLevel(logging.DEBUG)
+                
+                file_formatter = logging.Formatter(
+                    '%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S'
+                )
+                file_handler.setFormatter(file_formatter)
+                
+                logger.addHandler(file_handler)
+                logging.info(f"UserJourney logging to file: {log_file}")
+                
+            except Exception as e:
+                logging.warning(f"Failed to set up file logging: {e}")
+    
+    def execute(self, file_path: str, **kwargs) -> Dict[str, Any]:
+        """
+        Execute the module on a file.
+        
+        Note: UserJourney is a CLI orchestrator and should not be called
+        as part of normal module execution. This method exists for 
+        ADTModule compatibility only.
+        
+        Args:
+            file_path: Path to the file to process
+            **kwargs: Additional arguments
+            
+        Returns:
+            Dict containing execution status
+        """
+        return {
+            "status": "skipped",
+            "message": "UserJourney is a CLI orchestrator and should not be executed as a module",
+            "modified": False
+        }
+    
+    def get_cli_parser(self):
+        """
+        Get CLI argument parser for UserJourney commands.
+        
+        This is called by the main ADT CLI to add journey subcommands.
+        
+        Returns:
+            Configured argument parser for journey commands
+        """
+        import argparse
+        
+        parser = argparse.ArgumentParser(
+            prog="adt journey",
+            description="Workflow orchestration for ADT processing pipelines"
+        )
+        
+        subparsers = parser.add_subparsers(dest='journey_command', help='Journey commands')
+        
+        # Start command
+        start_parser = subparsers.add_parser('start', help='Start a new workflow')
+        start_parser.add_argument('--name', required=True, help='Workflow name')
+        start_parser.add_argument('--directory', required=True, help='Target directory')
+        
+        # Resume command  
+        resume_parser = subparsers.add_parser('resume', help='Resume an existing workflow')
+        resume_parser.add_argument('--name', required=True, help='Workflow name')
+        
+        # Status command
+        status_parser = subparsers.add_parser('status', help='Show workflow status')
+        status_parser.add_argument('--name', help='Workflow name (optional, shows all if omitted)')
+        
+        # Continue command
+        continue_parser = subparsers.add_parser('continue', help='Continue workflow execution')
+        continue_parser.add_argument('--name', required=True, help='Workflow name')
+        
+        # List command
+        list_parser = subparsers.add_parser('list', help='List all workflows')
+        
+        # Cleanup command
+        cleanup_parser = subparsers.add_parser('cleanup', help='Clean up workflows')
+        cleanup_group = cleanup_parser.add_mutually_exclusive_group(required=True)
+        cleanup_group.add_argument('--name', help='Delete specific workflow')
+        cleanup_group.add_argument('--completed', action='store_true', help='Delete completed workflows')
+        cleanup_group.add_argument('--all', action='store_true', help='Delete all workflows')
+        
+        return parser
+    
+    def process_cli_command(self, args) -> int:
+        """
+        Process CLI command for UserJourney.
+        
+        Args:
+            args: Parsed command line arguments
+            
+        Returns:
+            Exit code (0 for success, non-zero for error)
+        """
+        if not hasattr(self, 'processor'):
+            print("❌ UserJourney module not initialized")
+            return 1
+        
+        # Dispatch to appropriate processor method
+        command = getattr(args, 'journey_command', None)
+        
+        if command == 'start':
+            return self.processor.process_start_command(args)
+        elif command == 'resume':
+            return self.processor.process_resume_command(args)
+        elif command == 'status':
+            return self.processor.process_status_command(args)
+        elif command == 'continue':
+            return self.processor.process_continue_command(args)
+        elif command == 'list':
+            return self.processor.process_list_command(args)
+        elif command == 'cleanup':
+            return self.processor.process_cleanup_command(args)
+        else:
+            print("❌ Unknown journey command")
+            return 1
+
+
 # The UserJourney plugin integrates with ADT as a CLI orchestrator,
 # not as a standard ADTModule in the sequencing chain.
-# The actual CLI integration will be handled in the module wrapper.
+# The actual CLI integration is handled through the UserJourneyModule wrapper.

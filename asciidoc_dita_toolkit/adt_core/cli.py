@@ -472,8 +472,15 @@ def create_new_plugin_subcommand(subparsers, name, plugin_info):
 def create_user_journey_subcommands(subparsers):
     """Create UserJourney workflow management subcommands."""
     try:
-        # Import UserJourney components
-        from modules.user_journey import UserJourney
+        # Import UserJourney module
+        from asciidoc_dita_toolkit.asciidoc_dita.plugins.UserJourney import UserJourneyModule
+        
+        # Initialize UserJourney module
+        user_journey_module = UserJourneyModule()
+        init_result = user_journey_module.initialize()
+        
+        if init_result.get("status") != "success":
+            raise ImportError(f"Failed to initialize UserJourney: {init_result.get('message')}")
         
         # Create the journey command group
         journey_parser = subparsers.add_parser(
@@ -567,32 +574,7 @@ def create_user_journey_subcommands(subparsers):
         # Set the function to handle all journey commands
         def run_user_journey_command(args):
             try:
-                # Initialize UserJourney module
-                user_journey = UserJourney()
-                user_journey.initialize()
-                processor = user_journey.get_processor()
-                
-                if not processor:
-                    print("❌ Failed to initialize UserJourney processor", file=sys.stderr)
-                    sys.exit(1)
-                
-                # Route to appropriate handler based on subcommand
-                if args.journey_command == 'start':
-                    exit_code = processor.process_start_command(args)
-                elif args.journey_command == 'resume':
-                    exit_code = processor.process_resume_command(args)
-                elif args.journey_command == 'continue':
-                    exit_code = processor.process_continue_command(args)
-                elif args.journey_command == 'status':
-                    exit_code = processor.process_status_command(args)
-                elif args.journey_command == 'list':
-                    exit_code = processor.process_list_command(args)
-                elif args.journey_command == 'cleanup':
-                    exit_code = processor.process_cleanup_command(args)
-                else:
-                    print(f"❌ Unknown journey command: {args.journey_command}", file=sys.stderr)
-                    exit_code = 1
-                
+                exit_code = user_journey_module.process_cli_command(args)
                 sys.exit(exit_code)
                 
             except SystemExit:

@@ -71,15 +71,23 @@ class MockModuleSequencerFactory:
     @staticmethod
     def create_standard_mock():
         """Create standard mock with successful sequence."""
+        from asciidoc_dita_toolkit.adt_core.module_sequencer import ModuleState
+        
         mock = Mock()
         fixture_data = TestFixtureLoader.load_mock_response_fixture("standard_sequence")
         
-        # Convert fixture data to Mock objects
+        # Convert fixture data to Mock objects with proper enum states
         resolutions = []
         for res in fixture_data["resolutions"]:
             mock_res = Mock()
             mock_res.name = res["name"]
-            mock_res.state = res["state"]
+            # Convert string state to enum
+            if res["state"] == "enabled":
+                mock_res.state = ModuleState.ENABLED
+            elif res["state"] == "disabled":
+                mock_res.state = ModuleState.DISABLED  
+            else:
+                mock_res.state = res["state"]  # Keep as-is if not recognized
             mock_res.dependencies = res["dependencies"]
             resolutions.append(mock_res)
         
@@ -91,6 +99,8 @@ class MockModuleSequencerFactory:
     @staticmethod
     def create_error_mock():
         """Create mock with sequencing errors."""
+        from asciidoc_dita_toolkit.adt_core.module_sequencer import ModuleState
+        
         mock = Mock()
         fixture_data = TestFixtureLoader.load_mock_response_fixture("error_sequence")
         
@@ -98,7 +108,13 @@ class MockModuleSequencerFactory:
         for res in fixture_data["resolutions"]:
             mock_res = Mock()
             mock_res.name = res["name"]
-            mock_res.state = res["state"]
+            # Convert string state to enum
+            if res["state"] == "enabled":
+                mock_res.state = ModuleState.ENABLED
+            elif res["state"] == "disabled":
+                mock_res.state = ModuleState.DISABLED
+            else:
+                mock_res.state = res["state"]
             mock_res.dependencies = res["dependencies"]
             resolutions.append(mock_res)
         
@@ -153,7 +169,7 @@ class TestStatePersistenceAdvanced(unittest.TestCase):
         workflow.save_to_disk()
         
         # Create existing backup file (simulating previous backup)
-        backup_path = self.storage_dir / f"{self.workflow_name}.json.backup"
+        backup_path = self.storage_dir / f"{self.workflow_name}.backup"  # Changed from .json.backup to .backup
         backup_path.write_text('{"old": "backup"}')
         
         # Modify and save workflow again
@@ -354,6 +370,10 @@ class TestModuleSequencerIntegration(unittest.TestCase):
         self.test_directory = Path(self.temp_dir) / "test_docs"
         self.test_directory.mkdir(parents=True)
         
+        # Create test .adoc files for file discovery
+        (self.test_directory / "doc1.adoc").write_text("= Document 1\nContent")
+        (self.test_directory / "doc2.adoc").write_text("= Document 2\nContent")
+        
         # Set up workflow storage
         self.workflow_dir = Path(self.temp_dir) / ".adt" / "workflows" 
         self.workflow_dir.mkdir(parents=True)
@@ -424,12 +444,14 @@ class TestModuleSequencerIntegration(unittest.TestCase):
         manager = WorkflowManager(mock_sequencer)
         manager._storage_dir = self.workflow_dir
         
-        # Mock DirectoryConfig module
+        # Mock DirectoryConfig module with proper ADT interface
         mock_directory_config = Mock()
-        mock_directory_config.process_directory.return_value = {
+        mock_directory_config.execute.return_value = {
+            "status": "success",
             "files_discovered": ["/test/doc1.adoc", "/test/doc2.adoc"],
             "config": {"source_dir": "/test", "output_dir": "/output"}
         }
+        mock_directory_config._initialized = True  # Skip initialization
         mock_sequencer.available_modules["DirectoryConfig"] = mock_directory_config
         
         workflow = manager.start_workflow("test_dirconfig", str(self.test_directory))
@@ -438,7 +460,7 @@ class TestModuleSequencerIntegration(unittest.TestCase):
         result = manager.execute_next_module(workflow)
         
         # Verify DirectoryConfig was executed with directory context
-        mock_directory_config.process_directory.assert_called_once()
+        mock_directory_config.execute.assert_called_once()
         
         # Verify workflow state updated with discovered files
         self.assertGreater(len(workflow.files_discovered), 0)
@@ -544,7 +566,7 @@ class TestCLICommandsComprehensive(unittest.TestCase):
         # Check for visual indicators
         self.assertIn('✅', output_text)  # Completed module
         self.assertIn('❌', output_text)  # Failed module  
-        self.assertIn('🔄', output_text)  # Pending module
+        self.assertIn('⏸️', output_text)  # Pending module
         self.assertIn('%', output_text)   # Progress percentage
     
     def test_continue_command_error_handling(self):
