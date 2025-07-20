@@ -1,8 +1,22 @@
-# AsciiDoc DITA Toolkit
+# AsciiDoc DITA Tool**👉 Complete documentation and tutorials:** https://rolfedh.github.io/asciidoc-dita-toolkit/
+
+## 📋 Prerequisites
+
+### Option 1: Python Package
+- **Python 3.8+** - Required for the package installation (we recommend upgrading to Python 3.8+)
+- **pip** - Python package manager
+- *Note: If you're using Python 3.7, please use the container option below*
+
+### Option 2: Container
+- **Docker** or **Podman** - Container runtime
+- **curl** - For downloading the wrapper script
+- *Recommended for users on Python 3.7 or those who prefer containerized tools*
+
+## 🚀 Quick Start
 
 [![PyPI version](https://img.shields.io/pypi/v/asciidoc-dita-toolkit.svg)](https://pypi.org/project/asciidoc-dita-toolkit/)
 [![Container](https://img.shields.io/badge/container-ghcr.io-blue?logo=docker)](https://github.com/rolfedh/asciidoc-dita-toolkit/pkgs/container/asciidoc-dita-toolkit-prod)
-[![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A command-line toolkit for technical writers to review and fix AsciiDoc content for DITA-based publishing workflows.
@@ -36,11 +50,12 @@ adt --list-plugins
 ### Option 2: Container
 
 ```sh
-# Run on current directory
-docker run --rm -v $(pwd):/workspace ghcr.io/rolfedh/asciidoc-dita-toolkit-prod:latest --help
+# One-time setup: Download and install adt wrapper
+curl -sSL https://raw.githubusercontent.com/rolfedh/asciidoc-dita-toolkit/main/scripts/adt-docker -o /usr/local/bin/adt && chmod +x /usr/local/bin/adt
 
-# List available plugins
-docker run --rm -v $(pwd):/workspace ghcr.io/rolfedh/asciidoc-dita-toolkit-prod:latest --list-plugins
+# Use
+adt --help
+adt --list-plugins
 ```
 
 ## � Basic Usage
