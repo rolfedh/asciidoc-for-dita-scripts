@@ -126,17 +126,14 @@ def test_cli_implementation():
                 print(f"❌ {command} command missing")
                 return False
         
-        # Test CLI entry point script exists
-        script_dir = Path(__file__).parent
-        if script_dir.name == 'tests':
-            cli_script = script_dir.parent / 'adt_journey.py'
-        else:
-            cli_script = script_dir / 'adt_journey.py'
-        
-        if cli_script.exists():
-            print("✅ CLI entry point script exists")
-        else:
-            print("❌ CLI entry point script missing")
+        # Test that UserJourney is integrated into main CLI
+        # The standalone wrapper script has been archived
+        try:
+            # Test main CLI integration
+            from asciidoc_dita_toolkit.adt_core.cli import create_user_journey_subcommands
+            print("✅ UserJourney integrated into main CLI")
+        except ImportError:
+            print("❌ UserJourney CLI integration missing")
             return False
         
         return True

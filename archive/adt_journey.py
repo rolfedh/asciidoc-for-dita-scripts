@@ -1,9 +1,18 @@
 #!/usr/bin/env python3
 """
-ADT Journey - UserJourney Workflow Orchestration CLI
+ADT Journey - UserJourney Workflow Orchestration CLI [ARCHIVED]
 
-Simple wrapper script to run the UserJourney CLI interface.
-This can be used directly or integrated into the main ADT CLI system.
+DEPRECATED: This standalone wrapper script is no longer needed.
+UserJourney is now fully integrated into the main ADT CLI.
+
+Use instead:
+    adt journey start --name=<workflow> --directory=<path>
+    adt journey continue --name=<workflow>
+    adt journey status --name=<workflow>
+    adt journey list
+    adt journey cleanup --name=<workflow>
+
+This file is archived for historical reference only.
 """
 
 import sys
@@ -11,7 +20,7 @@ from pathlib import Path
 
 # Add the project root to Python path
 script_dir = Path(__file__).parent
-project_root = script_dir.parent.parent.parent
+project_root = script_dir.parent
 sys.path.insert(0, str(project_root))
 
 # Import and run the CLI

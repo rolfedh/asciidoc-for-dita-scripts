@@ -78,13 +78,17 @@ python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 
-# Enforce test file location - fail if tests found outside tests/
+# Ignore patterns for pytest collection - files to exclude from test discovery
 addopts = [
     "-v",                              # Verbose output
     "--strict-markers",                # Require markers to be defined
     "--strict-config",                 # Strict configuration parsing  
     "--tb=short",                      # Short traceback format
     "--rootdir=.",                     # Set root directory explicitly
+    "--ignore=test_*.py",              # Ignore root-level test files
+    "--ignore=*_test.py",              # Ignore root-level test files
+    "--ignore=debug_*.py",             # Ignore debug files as tests
+    "--ignore=validate_*.py",          # Ignore validation files as tests
 ]
 
 # Custom markers for test categorization
@@ -94,14 +98,6 @@ markers = [
     "unit: marks tests as unit tests",
     "cli: marks tests as CLI tests",
     "plugin: marks tests as plugin-specific tests",
-]
-
-# Ignore patterns - explicitly exclude root-level test files
-collect_ignore = [
-    "test_*.py",           # No test files in root
-    "*_test.py",           # No test files in root  
-    "debug_*.py",          # No debug files as tests
-    "validate_*.py",       # No validation files as tests (unless in tests/)
 ]
 
 # Test file discovery settings  
