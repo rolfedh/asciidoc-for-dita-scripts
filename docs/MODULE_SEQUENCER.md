@@ -99,6 +99,9 @@ The ModuleSequencer automatically:
 4. **Orders initialization** via topological sorting
 
 ### Example Dependency Chain
+
+**ModuleSequencer Orchestration Only** (not used by CLI commands):
+
 ```
 EntityReference (no dependencies)
     ↓
@@ -108,6 +111,8 @@ ContextAnalyzer (depends on CrossReference)
     ↓
 ContextMigrator (depends on ContextAnalyzer)
 ```
+
+**Important**: CLI commands like `adt ContextAnalyzer` bypass this dependency chain entirely and execute plugins directly without dependency resolution.
 
 ### Circular Dependency Detection
 ```python
@@ -214,6 +219,55 @@ except CircularDependencyError as e:
 
 ## Advanced Features
 
+### Dual Plugin Architecture
+
+The asciidoc-dita-toolkit uses a dual plugin architecture that maintains backward compatibility while providing modern orchestration capabilities:
+
+#### CLI Plugin System (Legacy Interface)
+- **Direct execution**: Commands like `adt ContextAnalyzer` bypass ModuleSequencer
+- **Original plugin code**: Uses plugins in `asciidoc_dita_toolkit/asciidoc_dita/plugins/`
+- **No dependency resolution**: Each plugin runs independently
+- **Immediate execution**: No configuration or sequencing overhead
+
+```bash
+# These commands use the legacy interface directly:
+adt ContextAnalyzer --recursive --directory=./docs
+adt EntityReference --file=example.adoc
+adt CrossReference --validate-refs
+```
+
+#### ModuleSequencer System (Modern Architecture)
+- **Orchestrated execution**: Uses ADTModule wrappers in `modules/`
+- **Dependency resolution**: Automatic dependency management and ordering
+- **Configuration management**: 3-tier config system with validation
+- **Enterprise features**: Error handling, status monitoring, cleanup
+
+```python
+# ModuleSequencer provides orchestrated execution:
+sequencer = ModuleSequencer()
+sequencer.sequence_modules()  # Runs plugins in dependency order
+```
+
+#### How They Work Together
+
+The ADTModule wrappers actually **call the original plugin code**:
+
+```python
+# modules/entity_reference.py (ADTModule wrapper)
+def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
+    # Import and use the legacy plugin functionality
+    from asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference import process_file
+    
+    # Call the original plugin code
+    process_file(filepath)
+```
+
+This design provides:
+- **100% backward compatibility**: All CLI commands work unchanged
+- **Modern orchestration**: ModuleSequencer for complex workflows
+- **Code reuse**: Both systems use the same core plugin logic
+- **Migration path**: Gradual transition to ModuleSequencer when needed
+
 ### Legacy Plugin Support
 
 The ModuleSequencer includes transition support for legacy plugins:
@@ -225,6 +279,8 @@ LEGACY_PLUGINS = {"OldPlugin", "AnotherLegacyPlugin"}  # Historical
 # Now all plugins migrated:
 LEGACY_PLUGINS = set()  # All plugins have been migrated to ADTModule
 ```
+
+**Note**: `LEGACY_PLUGINS = set()` refers to ModuleSequencer tracking, not the existence of legacy plugin code. The original plugin code remains active and is used by both the CLI system and ADTModule wrappers.
 
 ### Module Status Reporting
 
