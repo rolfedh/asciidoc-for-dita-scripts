@@ -199,7 +199,7 @@ class TestIntegration(unittest.TestCase):
         self.assertGreater(len(errors), 0)
         self.assertIn("missing", errors[0].lower())
 
-    @patch('src.adt_core.module_sequencer.entry_points')
+    @patch('asciidoc_dita_toolkit.adt_core.module_sequencer.entry_points')
     def test_module_discovery_integration(self, mock_entry_points):
         """Test module discovery with actual module classes."""
         # Mock entry points to return our actual modules
