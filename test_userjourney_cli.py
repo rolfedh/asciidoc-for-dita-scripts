@@ -53,7 +53,7 @@ Content here.
         mock_sequencer = Mock()
         
         # Import ModuleState enum
-        from src.adt_core.module_sequencer import ModuleState
+        from asciidoc_dita_toolkit.adt_core.module_sequencer import ModuleState
         
         # Create properly configured mock modules with actual string names
         mock_dir_config = Mock()

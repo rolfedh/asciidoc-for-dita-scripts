@@ -7,7 +7,7 @@ from importlib.metadata import entry_points
 # Add src to path
 sys.path.insert(0, 'src')
 
-from adt_core.module_sequencer import ADTModule as RealADTModule
+from asciidoc_dita_toolkit.adt_core.module_sequencer import ADTModule as RealADTModule
 
 print("Diagnostic Test: ADTModule Entry Points")
 print("=" * 50)

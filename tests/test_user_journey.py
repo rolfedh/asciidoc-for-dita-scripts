@@ -453,7 +453,7 @@ class TestWorkflowManager(unittest.TestCase):
         (self.test_directory / "doc1.adoc").write_text("= Document 1")
         
         # Mock ModuleSequencer
-        from src.adt_core.module_sequencer import ModuleState
+        from asciidoc_dita_toolkit.adt_core.module_sequencer import ModuleState
         self.mock_sequencer = Mock()
         
         # Create properly configured mock resolution objects

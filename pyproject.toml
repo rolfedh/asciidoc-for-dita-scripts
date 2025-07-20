@@ -42,16 +42,16 @@ dependencies = [
 "Documentation" = "https://github.com/rolfedh/asciidoc-dita-toolkit/blob/main/docs/"
 
 [tool.setuptools.packages.find]
-where = ["src", "."]
-include = ["adt_core*", "asciidoc_dita_toolkit*"]
+where = ["."]
+include = ["asciidoc_dita_toolkit*"]
 exclude = ["tests*", "build*", "dist*", "*.egg-info*"]
 
 [project.scripts]
-adt = "adt_core.cli:main"
-adg = "adt_core.cli:launch_gui"
-adt-test-files = "adt_core.cli:adt_test_files_main"
-asciidoc-dita-toolkit = "adt_core.cli:main"
-asciidoc-dita-toolkit-gui = "adt_core.cli:launch_gui"
+adt = "asciidoc_dita_toolkit.adt_core.cli:main"
+adg = "asciidoc_dita_toolkit.adt_core.cli:launch_gui"
+adt-test-files = "asciidoc_dita_toolkit.adt_core.cli:adt_test_files_main"
+asciidoc-dita-toolkit = "asciidoc_dita_toolkit.adt_core.cli:main"
+asciidoc-dita-toolkit-gui = "asciidoc_dita_toolkit.adt_core.cli:launch_gui"
 
 [project.entry-points."adt.modules"]
 EntityReference = "asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference:EntityReferenceModule"

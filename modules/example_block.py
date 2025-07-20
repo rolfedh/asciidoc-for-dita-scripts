@@ -11,7 +11,7 @@ try:
     if str(package_root / "src") not in sys.path:
         sys.path.insert(0, str(package_root / "src"))
 
-    from adt_core.module_sequencer import ADTModule
+    from asciidoc_dita_toolkit.adt_core.module_sequencer import ADTModule
 
     ADT_MODULE_AVAILABLE = True
 except ImportError:

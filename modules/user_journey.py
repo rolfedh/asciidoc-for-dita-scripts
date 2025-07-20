@@ -15,12 +15,12 @@ import logging
 
 # Import ADT base class
 try:
-    from src.adt_core.module_sequencer import ADTModule
+    from asciidoc_dita_toolkit.adt_core.module_sequencer import ADTModule
 except ImportError:
     # Handle case where we're running from different context  
     import sys
     sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent.parent))
-    from src.adt_core.module_sequencer import ADTModule
+    from asciidoc_dita_toolkit.adt_core.module_sequencer import ADTModule
 
 # Import UserJourney plugin core
 from asciidoc_dita_toolkit.asciidoc_dita.plugins.UserJourney import (

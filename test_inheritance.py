@@ -13,7 +13,7 @@ print("=" * 50)
 
 try:
     # Import real ADTModule
-    from adt_core.module_sequencer import ADTModule as RealADTModule
+    from asciidoc_dita_toolkit.adt_core.module_sequencer import ADTModule as RealADTModule
     print(f"✓ Successfully imported real ADTModule: {RealADTModule}")
     print(f"  Location: {RealADTModule.__module__}")
     

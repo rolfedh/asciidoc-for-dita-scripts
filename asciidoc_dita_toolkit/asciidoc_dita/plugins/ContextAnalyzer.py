@@ -27,17 +27,11 @@ from ..regex_patterns import CompiledPatterns
 
 # Import ADTModule from core
 try:
-    # Add the path to find the ADTModule
-    package_root = Path(__file__).parent.parent.parent.parent
-    src_path = package_root / "src"
-    if str(src_path) not in sys.path:
-        sys.path.insert(0, str(src_path))
-
-    from src.adt_core.module_sequencer import ADTModule
+    from asciidoc_dita_toolkit.adt_core.module_sequencer import ADTModule
     ADT_MODULE_AVAILABLE = True
 except ImportError as e:
     raise ImportError(
-        f"Failed to import ADTModule from src.adt_core.module_sequencer: {e}. "
+        f"Failed to import ADTModule from asciidoc_dita_toolkit.adt_core.module_sequencer: {e}. "
         f"This is required for ContextAnalyzer module to function properly."
     )
 

@@ -15,7 +15,7 @@ print("Testing ModuleSequencer discovery...")
 print("=" * 50)
 
 try:
-    from adt_core.module_sequencer import ModuleSequencer
+    from asciidoc_dita_toolkit.adt_core.module_sequencer import ModuleSequencer
     
     # Create sequencer
     sequencer = ModuleSequencer()

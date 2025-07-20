@@ -31,11 +31,11 @@ from pathlib import Path
 
 # Import ADTModule from core - use same path as ModuleSequencer
 try:
-    from src.adt_core.module_sequencer import ADTModule
+    from asciidoc_dita_toolkit.adt_core.module_sequencer import ADTModule
     ADT_MODULE_AVAILABLE = True
 except ImportError as e:
     raise ImportError(
-        f"Failed to import ADTModule from src.adt_core.module_sequencer: {e}. "
+        f"Failed to import ADTModule from asciidoc_dita_toolkit.adt_core.module_sequencer: {e}. "
         f"This is required for DirectoryConfig module to function properly."
     )
 
