@@ -1,5 +1,6 @@
-# AsciiDoc DITA Tool**👉 Complete documentation and tutorials:** https://rolfedh.github.io/asciidoc-dita-toolkit/
+# AsciiDoc DITA Tool
 
+**👉 Complete documentation and tutorials:** https://rolfedh.github.io/asciidoc-dita-toolkit/
 ## 📋 Prerequisites
 
 ### Option 1: Python Package
