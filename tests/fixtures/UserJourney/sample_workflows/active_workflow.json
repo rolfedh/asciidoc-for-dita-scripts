@@ -1,0 +1,59 @@
+{
+  "name": "sample_workflow",
+  "directory": "/tmp/test_docs",
+  "created": "2024-01-01T10:00:00",
+  "last_activity": "2024-01-01T10:30:00",
+  "status": "active",
+  "modules": {
+    "DirectoryConfig": {
+      "status": "completed",
+      "started_at": "2024-01-01T10:00:00",
+      "completed_at": "2024-01-01T10:05:00",
+      "files_processed": 10,
+      "files_modified": 0,
+      "execution_time": 5.2,
+      "error_message": null,
+      "retry_count": 0,
+      "user_interaction_required": false
+    },
+    "ContentType": {
+      "status": "running",
+      "started_at": "2024-01-01T10:05:00",
+      "completed_at": null,
+      "files_processed": 3,
+      "files_modified": 2,
+      "execution_time": null,
+      "error_message": null,
+      "retry_count": 0,
+      "user_interaction_required": false
+    },
+    "EntityReference": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "files_processed": 0,
+      "files_modified": 0,
+      "execution_time": null,
+      "error_message": null,
+      "retry_count": 0,
+      "user_interaction_required": false
+    }
+  },
+  "files_discovered": [
+    "/tmp/test_docs/chapter1.adoc",
+    "/tmp/test_docs/chapter2.adoc",
+    "/tmp/test_docs/appendix.adoc"
+  ],
+  "directory_config": {
+    "include_patterns": ["**/*.adoc"],
+    "exclude_patterns": ["**/draft_*.adoc"],
+    "content_types": {
+      "chapter": "content/chapter",
+      "appendix": "content/appendix"
+    }
+  },
+  "metadata": {
+    "version": "1.0",
+    "adt_version": "2.0.0"
+  }
+}
