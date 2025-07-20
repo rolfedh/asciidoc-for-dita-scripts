@@ -1,6 +1,6 @@
-# ADT UserJourney Plugin MVP Implementation Guide for AI-Assisted Development
+# ADT UserJourney Plugin MVP Implementation Guide
 
-This document provides step-by-step instructions for implementing the ADT UserJourney plugin. It leverages GitHub Copilot for code suggestions and Claude Sonnet 4 for advanced AI-driven insights. The plugin orchestrates multi-module document processing workflows for technical writers.
+This document provides step-by-step instructions for implementing the ADT UserJourney plugin using AI-assisted development tools such as GitHub Copilot or Claude Sonnet 4. The plugin orchestrates multi-module document processing workflows for technical writers.
 
 **IMPORTANT**: Feed these instructions in sequential chunks to maintain context and ensure successful implementation.
 
