@@ -24,6 +24,7 @@ help:
 	@echo "  help       - Show this help message"
 	@echo "  test       - Run all tests"
 	@echo "  test-coverage - Run tests with coverage reporting"
+	@echo "  check-test-locations - Ensure all test files are in tests/ directory"
 	@echo "  lint       - Run comprehensive code linting with flake8"
 	@echo "  lint-clean - Run linting on main codebase (excludes archive/debug)"
 	@echo "  quick-lint - Run critical error checks only"
@@ -66,9 +67,24 @@ test-coverage: check-test-locations
 
 check-test-locations:
 	@echo "Checking for misplaced test files..."
+	@# Check for Python test files
 	@if find . -maxdepth 1 -name "test_*.py" -o -name "*_test.py" | grep -q .; then \
-		echo "❌ Found test files in root directory:"; \
+		echo "❌ Found Python test files in root directory:"; \
 		find . -maxdepth 1 -name "test_*.py" -o -name "*_test.py"; \
+		echo "Please move these files to tests/ directory"; \
+		exit 1; \
+	fi
+	@# Check for shell script test files
+	@if find . -maxdepth 1 -name "test-*.sh" -o -name "*-test.sh" -o -name "test_*.sh" -o -name "*_test.sh" | grep -q .; then \
+		echo "❌ Found shell script test files in root directory:"; \
+		find . -maxdepth 1 -name "test-*.sh" -o -name "*-test.sh" -o -name "test_*.sh" -o -name "*_test.sh"; \
+		echo "Please move these files to tests/ directory"; \
+		exit 1; \
+	fi
+	@# Check for other common test file patterns
+	@if find . -maxdepth 1 -name "test-*" -o -name "*-test.*" -o -name "test_*" -o -name "*_test.*" | grep -E '\.(sh|bat|cmd|ps1|js|ts|rb|pl|php)$$' | grep -q .; then \
+		echo "❌ Found other test files in root directory:"; \
+		find . -maxdepth 1 -name "test-*" -o -name "*-test.*" -o -name "test_*" -o -name "*_test.*" | grep -E '\.(sh|bat|cmd|ps1|js|ts|rb|pl|php)$$'; \
 		echo "Please move these files to tests/ directory"; \
 		exit 1; \
 	fi
@@ -167,10 +183,10 @@ bump-version:
 	new_version="$(VERSION)"; \
 	echo "Bumping version to $$new_version..."; \
 	sed -i 's/^version = .*/version = "'"$$new_version"'"/' pyproject.toml; \
-	if [ -f src/adt_core/__init__.py ]; then \
-		sed -i 's/^__version__ = .*/__version__ = "'"$$new_version"'"/' src/adt_core/__init__.py; \
+	if [ -f asciidoc_dita_toolkit/adt_core/__init__.py ]; then \
+		sed -i 's/^__version__ = .*/__version__ = "'"$$new_version"'"/' asciidoc_dita_toolkit/adt_core/__init__.py; \
 	else \
-		echo "Warning: src/adt_core/__init__.py not found, skipping..."; \
+		echo "Warning: asciidoc_dita_toolkit/adt_core/__init__.py not found, skipping..."; \
 	fi; \
 	echo "Version bumped to $$new_version in both files"
 
@@ -266,10 +282,10 @@ publish: publish-check
 	fi; \
 	echo "Updating version files..."; \
 	sed -i 's/^version = .*/version = "'"$$new_version"'"/' pyproject.toml; \
-	if [ -f src/adt_core/__init__.py ]; then \
-		sed -i 's/^__version__ = .*/__version__ = "'"$$new_version"'"/' src/adt_core/__init__.py; \
+	if [ -f asciidoc_dita_toolkit/adt_core/__init__.py ]; then \
+		sed -i 's/^__version__ = .*/__version__ = "'"$$new_version"'"/' asciidoc_dita_toolkit/adt_core/__init__.py; \
 	else \
-		echo "Warning: src/adt_core/__init__.py not found, skipping..."; \
+		echo "Warning: asciidoc_dita_toolkit/adt_core/__init__.py not found, skipping..."; \
 	fi; \
 	echo "Version updated to $$new_version"; \
 	echo ""; \
@@ -488,11 +504,11 @@ release: check
 	else \
 		sed -i '' 's/^version = ".*"/version = "'"$$new_version"'"/' pyproject.toml; \
 	fi; \
-	echo "Updating version in src/adt_core/__init__.py..."; \
+	echo "Updating version in asciidoc_dita_toolkit/adt_core/__init__.py..."; \
 	if sed --version >/dev/null 2>&1; then \
-		sed -i 's/^__version__ = ".*"/__version__ = "'"$$new_version"'"/' src/adt_core/__init__.py; \
+		sed -i 's/^__version__ = ".*"/__version__ = "'"$$new_version"'"/' asciidoc_dita_toolkit/adt_core/__init__.py; \
 	else \
-		sed -i '' 's/^__version__ = ".*"/__version__ = "'"$$new_version"'"/' src/adt_core/__init__.py; \
+		sed -i '' 's/^__version__ = ".*"/__version__ = "'"$$new_version"'"/' asciidoc_dita_toolkit/adt_core/__init__.py; \
 	fi; \
 	echo "Generating changelog for version $$new_version..."; \
 	if [ -f "./scripts/generate-changelog.sh" ]; then \
@@ -501,7 +517,7 @@ release: check
 		echo "Changelog script not found, skipping changelog generation."; \
 	fi; \
 	echo "Committing version bump..."; \
-	git add pyproject.toml src/adt_core/__init__.py CHANGELOG.md; \
+	git add pyproject.toml asciidoc_dita_toolkit/adt_core/__init__.py CHANGELOG.md; \
 	git commit -m "Bump version to $$new_version"; \
 	echo "Pushing release branch..."; \
 	git push origin "$$release_branch"; \

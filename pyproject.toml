@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "asciidoc-dita-toolkit"
-version = "2.0.5"
+version = "2.0.6"
 description = "AsciiDoc DITA Toolkit - unified package for technical documentation workflows"
 readme = "README.md"
 requires-python = ">=3.8"
