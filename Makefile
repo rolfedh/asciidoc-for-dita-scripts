@@ -318,11 +318,11 @@ publish: publish-check
 	echo ""; \
 	echo "Step 9: Publishing to PyPI..."; \
 	if [ -n "$$VIRTUAL_ENV" ]; then \
-		"$${VIRTUAL_ENV}/bin/python" -m twine upload dist/*; \
+		"$${VIRTUAL_ENV}/bin/python" -m twine upload dist/* || { echo "❌ PyPI upload failed"; exit 1; }; \
 	elif [ -d ".venv" ]; then \
-		.venv/bin/python -m twine upload dist/*; \
+		.venv/bin/python -m twine upload dist/* || { echo "❌ PyPI upload failed"; exit 1; }; \
 	else \
-		python3 -m twine upload dist/*; \
+		python3 -m twine upload dist/* || { echo "❌ PyPI upload failed"; exit 1; }; \
 	fi; \
 	echo "✅ Successfully published to PyPI!"; \
 	echo ""; \
