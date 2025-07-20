@@ -17,8 +17,8 @@ echo "Generating changelog entry for version $VERSION..."
 PREV_TAG=$(git describe --tags --abbrev=0 v${VERSION}^2 2>/dev/null || echo "")
 
 if [ -z "$PREV_TAG" ]; then
-    echo "Getting all recent commits..."
-    RANGE="--since='1 month ago'"
+    echo "Getting all commits since repository start..."
+    RANGE=""  # Empty range means all commits
 else
     echo "Getting commits since $PREV_TAG..."
     RANGE="${PREV_TAG}..v${VERSION}"
@@ -68,31 +68,41 @@ echo "  1. Edit CHANGELOG.md"
 echo "  2. Add the content above after the [Unreleased] section"
 echo "  3. Update the [Unreleased] section with new changes if needed"
 
-"# Optionally auto-update CHANGELOG.md"
-if [[ -t 0 ]]; then
-    # Only prompt when input is a terminal
+# Optionally auto-update CHANGELOG.md
+# Only prompt when run interactively (not from make or CI)
+if [[ -t 0 && -t 1 && -z "$CI" && -z "$MAKE_LEVEL" ]]; then
     read -p "Automatically update CHANGELOG.md? (y/n): " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-        # Check if version already exists
-        if grep -q "## \[$VERSION\]" CHANGELOG.md; then
-            echo "Version $VERSION already exists in CHANGELOG.md"
-            exit 1
-        fi
-        # Create backup
-        cp CHANGELOG.md CHANGELOG.md.bak
-        # Update changelog
-        {
-            sed '/## \[Unreleased\]/q' CHANGELOG.md
-            echo
-            cat changelog_entry.txt
-            echo
-            sed -n '/## \[Unreleased\]/,$p' CHANGELOG.md | tail -n +2
-        } > CHANGELOG_new.md
-        mv CHANGELOG_new.md CHANGELOG.md
-        echo "CHANGELOG.md updated successfully!"
-        echo "Backup saved as CHANGELOG.md.bak"
+        UPDATE_CHANGELOG=true
+    else
+        UPDATE_CHANGELOG=false
     fi
+else
+    # Automatically update changelog in non-interactive contexts
+    echo "Automatically updating CHANGELOG.md (running in automated context)"
+    UPDATE_CHANGELOG=true
+fi
+
+if [[ "$UPDATE_CHANGELOG" == "true" ]]; then
+    # Check if version already exists
+    if grep -q "## \[$VERSION\]" CHANGELOG.md; then
+        echo "Version $VERSION already exists in CHANGELOG.md"
+        exit 1
+    fi
+    # Create backup
+    cp CHANGELOG.md CHANGELOG.md.bak
+    # Update changelog
+    {
+        sed '/## \[Unreleased\]/q' CHANGELOG.md
+        echo
+        cat changelog_entry.txt
+        echo
+        sed -n '/## \[Unreleased\]/,$p' CHANGELOG.md | tail -n +2
+    } > CHANGELOG_new.md
+    mv CHANGELOG_new.md CHANGELOG.md
+    echo "CHANGELOG.md updated successfully!"
+    echo "Backup saved as CHANGELOG.md.bak"
 fi
 
 rm -f changelog_entry.txt
