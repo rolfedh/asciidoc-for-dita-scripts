@@ -1,12 +1,13 @@
 name: Build and Push Container Images
 
 on:
-  push:
-    tags: ['v*']
-    branches: ['main']
-  release:
-    types: [published]
-  workflow_dispatch:
+  # Commenting these out to reduce usage: https://github.com/settings/billing
+  #  push:
+  #   tags: ['v*']
+  #   branches: ['main']
+  # release:
+  #   types: [published]
+  workflow_dispatch: # To publish new containers after a release, visit https://github.com/rolfedh/asciidoc-dita-toolkit/actions/workflows/container-build.yml and select "Run workflow".
 
 env:
   REGISTRY_GHCR: ghcr.io
@@ -17,19 +18,19 @@ jobs:
     permissions:
       contents: read
       packages: write
-    
+
     strategy:
       matrix:
-        dockerfile: 
-          - path: "Dockerfile"
-            suffix: ""
-          - path: "Dockerfile.production" 
+        dockerfile:
+          # - path: "Dockerfile"
+          #   suffix: ""
+          - path: "Dockerfile.production"
             suffix: "-prod"
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-    
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
@@ -40,7 +41,7 @@ jobs:
         registry: ${{ env.REGISTRY_GHCR }}
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
-    
+
     - name: Extract metadata
       id: meta
       uses: docker/metadata-action@v5
@@ -60,7 +61,7 @@ jobs:
           org.opencontainers.image.vendor=Rolfe Dlugy-Hegwer
           org.opencontainers.image.source=https://github.com/${{ github.repository }}
           org.opencontainers.image.licenses=MIT
-    
+
     - name: Build and push Docker image
       id: build
       uses: docker/build-push-action@v5
@@ -73,7 +74,7 @@ jobs:
         platforms: linux/amd64,linux/arm64
         cache-from: type=gha
         cache-to: type=gha,mode=max
-    
+
     - name: Test container image
       if: matrix.dockerfile.path == 'Dockerfile.production'
       run: |
