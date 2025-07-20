@@ -12,7 +12,7 @@ A command-line toolkit for technical writers to review and fix AsciiDoc content 
 The AsciiDoc DITA Toolkit helps you:
 
 - **Find and fix** common issues in `.adoc` files before publishing
-- **Apply automated checks** and transformations using a plugin system  
+- **Apply automated checks** and transformations using a plugin system
 - **Ensure consistency** across large documentation projects
 - **Integrate** with your existing documentation workflow
 
@@ -22,17 +22,7 @@ The AsciiDoc DITA Toolkit helps you:
 
 ## � Quick Start
 
-### Option 1: Container (Recommended)
-
-```sh
-# Run on current directory
-docker run --rm -v $(pwd):/workspace ghcr.io/rolfedh/asciidoc-dita-toolkit-prod:latest --help
-
-# List available plugins
-docker run --rm -v $(pwd):/workspace ghcr.io/rolfedh/asciidoc-dita-toolkit-prod:latest --list-plugins
-```
-
-### Option 2: Python Package
+### Option 1: Python Package (Recommended)
 
 ```sh
 # Install
@@ -43,13 +33,23 @@ adt --help
 adt --list-plugins
 ```
 
+### Option 2: Container
+
+```sh
+# Run on current directory
+docker run --rm -v $(pwd):/workspace ghcr.io/rolfedh/asciidoc-dita-toolkit-prod:latest --help
+
+# List available plugins
+docker run --rm -v $(pwd):/workspace ghcr.io/rolfedh/asciidoc-dita-toolkit-prod:latest --list-plugins
+```
+
 ## � Basic Usage
 
 ```sh
 # Fix HTML entity references
 adt EntityReference -r
 
-# Add content type labels  
+# Add content type labels
 adt ContentType -r
 ```
 
