@@ -2,11 +2,22 @@
   "version": "1.0",
   "modules": [
     {
+      "name": "DirectoryConfig",
+      "required": true,
+      "version": "~1.0.0",
+      "dependencies": [],
+      "init_order": 1,
+      "config": {
+        "scan_depth": 5,
+        "exclude_patterns": ["*.tmp", "*.log"]
+      }
+    },
+    {
       "name": "EntityReference",
       "required": true,
       "version": ">=1.2.0",
-      "dependencies": [],
-      "init_order": 1,
+      "dependencies": ["DirectoryConfig"],
+      "init_order": 2,
       "config": {
         "timeout_seconds": 30,
         "cache_size": 1000
@@ -17,28 +28,17 @@
       "required": false,
       "version": ">=2.0.0",
       "dependencies": ["EntityReference"],
-      "init_order": 2,
+      "init_order": 3,
       "config": {
         "cache_enabled": true,
         "supported_types": ["text", "image", "video"]
       }
     },
     {
-      "name": "DirectoryConfig",
-      "required": false,
-      "version": "~1.0.0",
-      "dependencies": ["ContentType", "EntityReference"],
-      "init_order": 3,
-      "config": {
-        "scan_depth": 5,
-        "exclude_patterns": ["*.tmp", "*.log"]
-      }
-    },
-    {
       "name": "ExampleBlock",
       "required": false,
       "version": ">=1.0.0",
-      "dependencies": [],
+      "dependencies": ["DirectoryConfig"],
       "init_order": 4,
       "config": {
         "interactive": true,
