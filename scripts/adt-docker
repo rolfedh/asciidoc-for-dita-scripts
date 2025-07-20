@@ -1,0 +1,17 @@
+#!/bin/bash
+# AsciiDoc DITA Toolkit - Docker wrapper script
+# This script allows you to use 'adt' commands with the Docker container
+
+set -e
+
+# Container image
+IMAGE="ghcr.io/rolfedh/asciidoc-dita-toolkit-prod:latest"
+
+# Check if Docker is available
+if ! command -v docker &> /dev/null; then
+    echo "Error: Docker is not installed or not in PATH" >&2
+    exit 1
+fi
+
+# Run the container with current directory mounted
+exec docker run --rm -v "$(pwd):/workspace" "$IMAGE" "$@"
