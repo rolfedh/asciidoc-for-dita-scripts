@@ -18,6 +18,7 @@ other modules but is not itself executed by ModuleSequencer.
 """
 
 import json
+import logging
 import shutil
 import sys
 from collections import OrderedDict
@@ -25,12 +26,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Union
 from dataclasses import dataclass, asdict
-import logging
 
 # Import from ADT core
-import sys
-from pathlib import Path
-
 try:
     from asciidoc_dita_toolkit.adt_core.module_sequencer import ModuleSequencer, ModuleState, ModuleResolution, ADTModule
 except ImportError as e:
@@ -163,12 +160,31 @@ class WorkflowState:
         self.directory_config: Optional[Dict] = None
         self.metadata = {
             "version": "1.0",
-            "adt_version": "2.0.0"  # TODO: Get from actual ADT version
+            "adt_version": self._get_adt_version()
         }
         
         # Initialize file discovery and directory config
         self._refresh_file_discovery()
         self._load_directory_config()
+    
+    def _get_adt_version(self) -> str:
+        """Get ADT version from package metadata."""
+        try:
+            # Try modern importlib.metadata first
+            from importlib.metadata import version
+            return version("asciidoc-dita-toolkit")
+        except ImportError:
+            # Fallback to pkg_resources for older Python versions
+            try:
+                import pkg_resources
+                return pkg_resources.get_distribution("asciidoc-dita-toolkit").version
+            except Exception:
+                pass
+        except Exception:
+            pass
+        
+        # Final fallback version if package not installed or detection fails
+        return "2.0.0"
     
     def _initialize_module_states(self, modules: List[str]) -> Dict[str, ModuleExecutionState]:
         """Create state tracking for each module with detailed metrics."""
@@ -586,9 +602,15 @@ class WorkflowManager:
             # Execute module with full context
             result = self._execute_module_with_context(workflow, next_module)
             
-            # Update workflow state with results
-            workflow.mark_module_completed(next_module, result)
-            workflow.save_to_disk()
+            # Check result status and update workflow state appropriately
+            if result.status == "failed":
+                workflow.mark_module_failed(next_module, result.error_message or "Module execution failed")
+                workflow.save_to_disk()
+                raise WorkflowExecutionError(f"Module {next_module} failed: {result.error_message}")
+            else:
+                # Update workflow state with successful results
+                workflow.mark_module_completed(next_module, result)
+                workflow.save_to_disk()
             
             return ExecutionResult(
                 status="success",
@@ -597,7 +619,11 @@ class WorkflowManager:
                 next_action=self._get_next_action(workflow)
             )
             
+        except WorkflowExecutionError:
+            # Re-raise WorkflowExecutionError (already handled above)
+            raise
         except Exception as e:
+            # Handle other unexpected exceptions
             workflow.mark_module_failed(next_module, str(e))
             workflow.save_to_disk()
             raise WorkflowExecutionError(f"Module {next_module} failed: {e}")
