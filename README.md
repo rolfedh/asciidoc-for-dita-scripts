@@ -35,7 +35,7 @@ The AsciiDoc DITA Toolkit helps you:
 
 **👉 Complete documentation and tutorials:** https://rolfedh.github.io/asciidoc-dita-toolkit/
 
-## � Quick Start
+## 🚀 Quick Start
 
 ### Option 1: Python Package (Recommended)
 
