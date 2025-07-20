@@ -1,0 +1,11 @@
+= Simple Guide
+
+This is a simple AsciiDoc document for testing.
+
+== Overview
+
+Basic content for testing UserJourney workflows.
+
+== Getting Started
+
+Some content here.

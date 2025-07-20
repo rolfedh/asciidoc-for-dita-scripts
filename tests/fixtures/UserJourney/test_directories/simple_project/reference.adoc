@@ -1,0 +1,13 @@
+= API Reference
+
+This document contains API reference information.
+
+== Methods
+
+=== process()
+
+Processes the input data.
+
+=== validate()
+
+Validates the configuration.

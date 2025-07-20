@@ -140,6 +140,9 @@ class WorkflowState:
     Integrates with DirectoryConfig for file discovery.
     """
     
+    # Class-level storage configuration for testing
+    _default_storage_dir: Optional[Path] = None
+    
     def __init__(self, name: str, directory: str, modules: List[str]):
         """
         Initialize workflow state.
@@ -210,7 +213,10 @@ class WorkflowState:
     
     def get_storage_path(self) -> Path:
         """Get storage path with proper directory creation."""
-        storage_dir = Path.home() / ".adt" / "workflows"
+        if self._default_storage_dir is not None:
+            storage_dir = self._default_storage_dir
+        else:
+            storage_dir = Path.home() / ".adt" / "workflows"
         storage_dir.mkdir(parents=True, exist_ok=True)
         return storage_dir / f"{self.name}.json"
     
@@ -239,6 +245,7 @@ class WorkflowState:
             state.files_modified = result.files_modified
             state.execution_time = result.execution_time
             state.error_message = None  # Clear any previous errors
+            state.retry_count = 0  # Reset retry count on success
             self.last_activity = state.completed_at
     
     def mark_module_failed(self, module_name: str, error_message: str) -> None:
@@ -349,9 +356,14 @@ class WorkflowState:
             raise WorkflowStateError(f"Failed to save workflow state: {e}")
     
     @classmethod
-    def load_from_disk(cls, name: str) -> 'WorkflowState':
+    def load_from_disk(cls, name: str, storage_dir: Optional[Path] = None) -> 'WorkflowState':
         """Load workflow state with validation and migration."""
-        storage_path = Path.home() / ".adt" / "workflows" / f"{name}.json"
+        if storage_dir is None:
+            if cls._default_storage_dir is not None:
+                storage_dir = cls._default_storage_dir
+            else:
+                storage_dir = Path.home() / ".adt" / "workflows"
+        storage_path = storage_dir / f"{name}.json"
         if not storage_path.exists():
             raise WorkflowNotFoundError(f"Workflow '{name}' not found")
         
@@ -404,6 +416,9 @@ class WorkflowManager:
     Handles workflow lifecycle, module execution, and integration with
     the existing ADT module system.
     """
+    
+    # Storage configuration for testing
+    _storage_dir: Optional[Path] = None
     
     def __init__(self, module_sequencer: Optional[ModuleSequencer] = None):
         """
@@ -472,16 +487,22 @@ class WorkflowManager:
         Raises:
             WorkflowNotFoundError: If workflow doesn't exist
         """
-        return WorkflowState.load_from_disk(name)
+        return WorkflowState.load_from_disk(name, self._storage_dir)
     
     def workflow_exists(self, name: str) -> bool:
         """Check if a workflow exists."""
-        storage_path = Path.home() / ".adt" / "workflows" / f"{name}.json"
+        if self._storage_dir is not None:
+            storage_path = self._storage_dir / f"{name}.json"
+        else:
+            storage_path = Path.home() / ".adt" / "workflows" / f"{name}.json"
         return storage_path.exists()
     
     def list_available_workflows(self) -> List[str]:
         """List all available workflow names."""
-        workflow_dir = Path.home() / ".adt" / "workflows"
+        if self._storage_dir is not None:
+            workflow_dir = self._storage_dir
+        else:
+            workflow_dir = Path.home() / ".adt" / "workflows"
         if not workflow_dir.exists():
             return []
         
@@ -592,23 +613,139 @@ class WorkflowManager:
     
     def _execute_directory_config(self, workflow: WorkflowState, context: Dict[str, Any]) -> ExecutionResult:
         """Execute DirectoryConfig module with special handling."""
-        # TODO: Implement DirectoryConfig execution
-        # This is a placeholder - actual implementation will integrate with DirectoryConfig
-        return ExecutionResult(
-            status="success",
-            message="DirectoryConfig completed (placeholder)",
-            files_processed=len(workflow.files_discovered)
-        )
+        from datetime import datetime
+        
+        start_time = datetime.now()
+        
+        try:
+            # Get DirectoryConfig module
+            if "DirectoryConfig" not in self.sequencer.available_modules:
+                raise WorkflowExecutionError("DirectoryConfig module not found or not available")
+            
+            directory_config_module = self.sequencer.available_modules["DirectoryConfig"]
+            
+            # Initialize if needed
+            if not hasattr(directory_config_module, '_initialized') or not directory_config_module._initialized:
+                init_result = directory_config_module.initialize()
+                if init_result.get('status') == 'error':
+                    raise WorkflowExecutionError(f"Failed to initialize DirectoryConfig: {init_result.get('message')}")
+            
+            # DirectoryConfig is interactive - log this info
+            logging.info("DirectoryConfig module is interactive and may prompt for input")
+            logging.info("This module will help configure which files to process")
+            
+            # Execute DirectoryConfig in the workflow directory context
+            config_context = {
+                **context,
+                "interactive": True,
+                "workflow_directory": str(workflow.directory)
+            }
+            
+            # DirectoryConfig typically works on the directory as a whole, not individual files
+            result = directory_config_module.execute(str(workflow.directory), **config_context)
+            
+            # Calculate execution time
+            end_time = datetime.now()
+            execution_time = (end_time - start_time).total_seconds()
+            
+            if result.get('status') in ['success', 'completed']:
+                return ExecutionResult(
+                    status="success",
+                    message="DirectoryConfig completed successfully",
+                    files_processed=len(workflow.files_discovered),
+                    execution_time=execution_time,
+                    module_name="DirectoryConfig"
+                )
+            else:
+                return ExecutionResult(
+                    status="failed",
+                    message="DirectoryConfig execution failed",
+                    error_message=result.get('message', 'Unknown error'),
+                    execution_time=execution_time,
+                    module_name="DirectoryConfig"
+                )
+                
+        except Exception as e:
+            end_time = datetime.now()
+            execution_time = (end_time - start_time).total_seconds()
+            
+            return ExecutionResult(
+                status="failed",
+                message="DirectoryConfig execution failed",
+                error_message=str(e),
+                execution_time=execution_time,
+                module_name="DirectoryConfig"
+            )
     
     def _execute_standard_module(self, module_name: str, context: Dict[str, Any]) -> ExecutionResult:
-        """Execute a standard ADT module."""
-        # TODO: Implement standard module execution via ModuleSequencer
-        # This is a placeholder - actual implementation will use ModuleSequencer
-        return ExecutionResult(
-            status="success",
-            message=f"{module_name} completed (placeholder)",
-            files_processed=len(context.get("files", []))
-        )
+        """Execute a standard ADT module via ModuleSequencer."""
+        from datetime import datetime
+        
+        start_time = datetime.now()
+        
+        try:
+            # Get the module instance from ModuleSequencer
+            if module_name not in self.sequencer.available_modules:
+                raise WorkflowExecutionError(f"Module '{module_name}' not found or not available")
+            
+            module = self.sequencer.available_modules[module_name]
+            
+            # Initialize the module if not already done
+            if not hasattr(module, '_initialized') or not module._initialized:
+                init_result = module.initialize()
+                if init_result.get('status') == 'error':
+                    raise WorkflowExecutionError(f"Failed to initialize {module_name}: {init_result.get('message')}")
+            
+            # Execute module on discovered files
+            files = context.get("files", [])
+            files_processed = 0
+            files_modified = 0
+            
+            for file_path in files:
+                if not Path(file_path).exists():
+                    continue
+                    
+                try:
+                    # Execute module on this file
+                    result = module.execute(file_path, **context)
+                    
+                    if result.get('status') in ['success', 'completed']:
+                        files_processed += 1
+                        if result.get('modified', False) or result.get('files_modified', 0) > 0:
+                            files_modified += 1
+                    elif result.get('status') == 'error':
+                        # Log error but continue with other files
+                        logging.warning(f"Module {module_name} failed on {file_path}: {result.get('message')}")
+                        
+                except Exception as e:
+                    # Log error but continue processing other files
+                    logging.warning(f"Module {module_name} exception on {file_path}: {e}")
+                    continue
+            
+            # Calculate execution time
+            end_time = datetime.now()
+            execution_time = (end_time - start_time).total_seconds()
+            
+            return ExecutionResult(
+                status="success",
+                message=f"{module_name} completed successfully",
+                files_processed=files_processed,
+                files_modified=files_modified,
+                execution_time=execution_time,
+                module_name=module_name
+            )
+            
+        except Exception as e:
+            end_time = datetime.now()
+            execution_time = (end_time - start_time).total_seconds()
+            
+            return ExecutionResult(
+                status="failed",
+                message=f"{module_name} execution failed",
+                error_message=str(e),
+                execution_time=execution_time,
+                module_name=module_name
+            )
     
     def _get_next_action(self, workflow: WorkflowState) -> str:
         """Get suggested next action for user."""

@@ -1,0 +1,9 @@
+{
+  "invalid": "json", 
+  "missing_required_fields": true,
+  "name": null,
+  "directory": 12345,
+  "status": "invalid_status",
+  "modules": "not_an_object",
+  // Invalid JSON with comment
+}

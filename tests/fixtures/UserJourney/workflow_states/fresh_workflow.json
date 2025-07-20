@@ -1,0 +1,45 @@
+{
+  "name": "fresh_workflow",
+  "directory": "/test/docs",
+  "created": "2024-01-01T10:00:00",
+  "last_activity": "2024-01-01T10:00:00",
+  "status": "active",
+  "modules": {
+    "DirectoryConfig": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "files_processed": 0,
+      "files_modified": 0,
+      "execution_time": null,
+      "error_message": null,
+      "retry_count": 0
+    },
+    "ContentType": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "files_processed": 0,
+      "files_modified": 0,
+      "execution_time": null,
+      "error_message": null,
+      "retry_count": 0
+    },
+    "CrossReference": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "files_processed": 0,
+      "files_modified": 0,
+      "execution_time": null,
+      "error_message": null,
+      "retry_count": 0
+    }
+  },
+  "files_discovered": [],
+  "directory_config": {},
+  "metadata": {
+    "version": "1.0",
+    "adt_version": "2.0.0"
+  }
+}

@@ -1,0 +1,27 @@
+= Complex Documentation Project
+
+This is a more complex documentation project with multiple documents and cross-references.
+
+== Overview
+
+This project demonstrates:
+
+* Cross-references between documents
+* Complex content structures
+* Multiple module processing
+
+See <<tutorial.adoc#getting-started,Getting Started>> for details.
+
+== Architecture
+
+The system consists of several components:
+
+* Content processing engine (see <<reference.adoc#api,API Reference>>)
+* Configuration management
+* Workflow orchestration
+
+== Cross-References
+
+For troubleshooting, see <<troubleshooting.adoc#common-issues,Common Issues>>.
+
+For advanced usage, see <<advanced.adoc#custom-modules,Custom Modules>>.
