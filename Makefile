@@ -275,10 +275,16 @@ publish: publish-check
 	echo ""; \
 	echo "Step 7: Updating changelog for release..."; \
 	if [ -f "./scripts/generate-changelog.sh" ]; then \
-		./scripts/generate-changelog.sh $$new_version || echo "Warning: Changelog generation failed, continuing..."; \
-		echo "✅ Changelog updated"; \
+		changelog_output=$$(./scripts/generate-changelog.sh $$new_version 2>&1); \
+		if [ $$? -ne 0 ]; then \
+			echo "Warning: Changelog generation failed with the following error:"; \
+			echo "$$changelog_output"; \
+			echo "Continuing with the release process..."; \
+		else \
+			echo "✅ Changelog updated"; \
+		fi; \
 	else \
-		echo "⚠️ Changelog script not found, skipping changelog update"; \
+		echo "⚠️ Changelog script not found at ./scripts/generate-changelog.sh, skipping changelog update"; \
 	fi; \
 	echo ""; \
 	echo "Step 8: Building package with new version..."; \
