@@ -48,15 +48,15 @@ class TestIntegration(unittest.TestCase):
         # Should have no errors
         self.assertEqual(len(errors), 0)
 
-        # Should have 2 modules (EntityReference and ContentType)
-        # DirectoryConfig should be disabled by user config
+        # Should have 3 modules (DirectoryConfig, EntityReference and ContentType)
+        # DirectoryConfig is now a required module and cannot be disabled
         enabled_modules = [r for r in resolutions if r.state == ModuleState.ENABLED]
-        self.assertEqual(len(enabled_modules), 2)
+        self.assertEqual(len(enabled_modules), 3)
 
         module_names = [r.name for r in enabled_modules]
         self.assertIn("EntityReference", module_names)
         self.assertIn("ContentType", module_names)
-        self.assertNotIn("DirectoryConfig", module_names)
+        self.assertIn("DirectoryConfig", module_names)  # DirectoryConfig is now required
 
         # Verify correct initialization order
         entity_ref_order = next(
@@ -149,10 +149,10 @@ class TestIntegration(unittest.TestCase):
             "EntityReference should be initialized before ContentType",
         )
 
-        # If DirectoryConfig is enabled, it should come after both
+        # If DirectoryConfig is enabled, it should come before both (since it's foundational)
         if "DirectoryConfig" in orders:
-            self.assertLess(orders["EntityReference"], orders["DirectoryConfig"])
-            self.assertLess(orders["ContentType"], orders["DirectoryConfig"])
+            self.assertLess(orders["DirectoryConfig"], orders["EntityReference"])
+            self.assertLess(orders["DirectoryConfig"], orders["ContentType"])
 
     def test_module_status_reporting(self):
         """Test module status reporting functionality."""
@@ -165,9 +165,9 @@ class TestIntegration(unittest.TestCase):
         self.assertIn("total_disabled", status)
         self.assertIn("errors", status)
 
-        # Should have 2 enabled, 1 disabled
-        self.assertEqual(status["total_enabled"], 2)
-        self.assertEqual(status["total_disabled"], 1)
+        # Should have 3 enabled (DirectoryConfig is now required), 0 disabled
+        self.assertEqual(status["total_enabled"], 3)
+        self.assertEqual(status["total_disabled"], 0)
         self.assertEqual(len(status["errors"]), 0)
 
     def test_configuration_validation(self):
@@ -260,8 +260,8 @@ class TestIntegration(unittest.TestCase):
                 # Cleanup
                 module.cleanup()
 
-        # Should have executed 2 modules
-        self.assertEqual(len(results), 2)
+        # Should have executed 3 modules (DirectoryConfig is now required)
+        self.assertEqual(len(results), 3)
         for result in results:
             self.assertTrue(result["success"])
 

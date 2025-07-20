@@ -19,7 +19,7 @@ class DirectoryConfigModule(ADTModule):
 
     @property
     def dependencies(self) -> List[str]:
-        return ["ContentType", "EntityReference"]
+        return []  # No dependencies - DirectoryConfig is foundational
 
     @property
     def release_status(self) -> str:
