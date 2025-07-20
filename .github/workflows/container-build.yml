@@ -7,7 +7,7 @@ on:
   #   branches: ['main']
   # release:
   #   types: [published]
-  workflow_dispatch: # To publish new containers after after a release, visit https://github.com/rolfedh/asciidoc-dita-toolkit/actions/workflows/container-build.yml and select "Run workflow".
+  workflow_dispatch: # To publish new containers after a release, visit https://github.com/rolfedh/asciidoc-dita-toolkit/actions/workflows/container-build.yml and select "Run workflow".
 
 env:
   REGISTRY_GHCR: ghcr.io
