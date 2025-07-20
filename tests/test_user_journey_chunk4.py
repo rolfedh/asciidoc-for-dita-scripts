@@ -426,17 +426,32 @@ class TestModuleSequencerIntegration(unittest.TestCase):
         
         workflow = manager.start_workflow("test_context", str(self.test_directory))
         
-        # Mock module execution
-        mock_module = Mock()
-        mock_module.process_file.return_value = ("success", "Processed successfully")
-        mock_sequencer.available_modules["DirectoryConfig"] = mock_module
-        
-        # Execute next module
-        result = manager.execute_next_module(workflow)
-        
-        # Verify module was called with proper context
-        self.assertIsNotNone(result)
-        self.assertEqual(result.status, "success")
+        # Mock the _execute_module_with_context method directly
+        # Note: We also mock save_to_disk to avoid Mock object serialization issues
+        # when the test framework tries to serialize Mock objects to JSON state files.
+        # This test focuses on context propagation, not disk persistence functionality.
+        with patch.object(manager, '_execute_module_with_context') as mock_execute, \
+             patch.object(workflow, 'save_to_disk') as mock_save:
+            
+            mock_execute.return_value = ExecutionResult(
+                status="success",
+                message="Processed successfully",
+                files_processed=2,
+                execution_time=0.1
+            )
+            
+            # Execute next module
+            result = manager.execute_next_module(workflow)
+            
+            # Verify module was called with proper context
+            self.assertIsNotNone(result)
+            self.assertEqual(result.status, "success")
+            
+            # Verify _execute_module_with_context was called with proper parameters
+            mock_execute.assert_called_once()
+            call_args = mock_execute.call_args
+            self.assertEqual(call_args[0][1], "DirectoryConfig")  # module name
+            self.assertEqual(call_args[0][0], workflow)  # workflow state
     
     def test_directory_config_special_handling(self):
         """Test DirectoryConfig receives special handling."""
