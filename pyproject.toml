@@ -72,6 +72,51 @@ dev = [
 ]
 
 [tool.pytest.ini_options]
+# Test discovery and execution settings
+testpaths = ["tests"]  # Only look for tests in tests/ directory
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+# Enforce test file location - fail if tests found outside tests/
+addopts = [
+    "-v",                              # Verbose output
+    "--strict-markers",                # Require markers to be defined
+    "--strict-config",                 # Strict configuration parsing  
+    "--tb=short",                      # Short traceback format
+    "--rootdir=.",                     # Set root directory explicitly
+]
+
+# Custom markers for test categorization
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests", 
+    "unit: marks tests as unit tests",
+    "cli: marks tests as CLI tests",
+    "plugin: marks tests as plugin-specific tests",
+]
+
+# Ignore patterns - explicitly exclude root-level test files
+collect_ignore = [
+    "test_*.py",           # No test files in root
+    "*_test.py",           # No test files in root  
+    "debug_*.py",          # No debug files as tests
+    "validate_*.py",       # No validation files as tests (unless in tests/)
+]
+
+# Test file discovery settings  
+norecursedirs = [
+    ".git", 
+    ".tox", 
+    "dist", 
+    "build", 
+    "*.egg",
+    "debug_env",
+    "archive",
+    ".venv",
+    "venv"
+]
+
 # Suppress common warnings that don't affect functionality
 filterwarnings = [
     "ignore::pytest.PytestReturnNotNoneWarning",
