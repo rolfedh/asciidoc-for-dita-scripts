@@ -17,7 +17,7 @@ from .exceptions import (
     VersionConflictError,
 )
 
-__version__ = "2.0.5"
+__version__ = "2.0.7"
 
 __all__ = [
     "ModuleSequencer",

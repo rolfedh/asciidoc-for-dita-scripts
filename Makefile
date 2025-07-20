@@ -1,15 +1,15 @@
 # Makefile for AsciiDoc DITA Toolkit
-# 
+#
 # GitHub Release Automation:
 #   - `make publish` now automatically creates GitHub releases after PyPI publication
-#   - `make release` creates tags, releases, and triggers container builds via GitHub Actions  
+#   - `make release` creates tags, releases, and triggers container builds via GitHub Actions
 #   - `make github-release` creates releases for existing versions
 #   - Requires `gh` CLI to be authenticated: `gh auth login`
 #
 .PHONY: help test test-coverage lint format clean install install-dev build publish-check publish github-release changelog changelog-version release bump-version dev venv setup container-build container-build-prod container-test container-shell container-push container-push-prod container-clean container-validate check
 
 # Changelog extraction pattern for reuse across targets
-CHANGELOG_AWK_PATTERN = {found=1; next} /^## \[/ {if(found) exit} found {if($$0 !~ /^$$/) print $$0}
+CHANGELOG_AWK_PATTERN = {found=1; next} /^## \[/ {if(found) exit} found {if($$0 !~ /^$/) print $$0}
 
 # Default target
 help:
@@ -204,12 +204,13 @@ publish-check:
 			echo "Note: You may need to run 'source .venv/bin/activate' in your current shell"; \
 		else \
 			echo "Virtual environment .venv exists. Checking if it has required dependencies..."; \
-			if .venv/bin/python -c "import twine" 2>/dev/null; then \
+			if .venv/bin/python -c "import twine, build" 2>/dev/null; then \
 				echo "✅ Virtual environment has required dependencies"; \
 			else \
 				echo "Installing missing dependencies..."; \
 				.venv/bin/pip install -e .; \
 				.venv/bin/pip install -r requirements-dev.txt; \
+				.venv/bin/pip install build twine; \
 				echo "✅ Dependencies installed"; \
 			fi; \
 		fi; \
@@ -217,10 +218,10 @@ publish-check:
 		echo "✅ Virtual environment active: $$VIRTUAL_ENV"; \
 	fi
 	@echo ""
-	@echo "Step 2: Checking twine installation..."
+	@echo "Step 2: Checking build and twine installation..."
 	@if [ -n "$$VIRTUAL_ENV" ]; then \
-		python_cmd="python3"; \
-		pip_cmd="pip"; \
+		python_cmd="$${VIRTUAL_ENV}/bin/python"; \
+		pip_cmd="$${VIRTUAL_ENV}/bin/pip"; \
 	elif [ -d ".venv" ]; then \
 		python_cmd=".venv/bin/python"; \
 		pip_cmd=".venv/bin/pip"; \
@@ -228,13 +229,15 @@ publish-check:
 		python_cmd="python3"; \
 		pip_cmd="pip"; \
 	fi; \
-	if ! $$python_cmd -c "import twine" 2>/dev/null; then \
-		echo "Installing twine..."; \
-		$$pip_cmd install twine; \
-		echo "✅ twine installed"; \
-	else \
-		echo "✅ twine is available"; \
-	fi
+	for pkg in build twine; do \
+		if ! $$python_cmd -c "import $$pkg" 2>/dev/null; then \
+			echo "Installing $$pkg..."; \
+			$$pip_cmd install $$pkg; \
+			echo "✅ $$pkg installed"; \
+		else \
+			echo "✅ $$pkg is available"; \
+		fi; \
+	done
 	@echo ""
 	@echo "Step 3: Checking PyPI credentials..."
 	@if [ -z "$$PYPI_API_TOKEN" ] && [ ! -f ~/.pypirc ]; then \
@@ -305,7 +308,7 @@ publish: publish-check
 	echo ""; \
 	echo "Step 8: Building package with new version..."; \
 	if [ -n "$$VIRTUAL_ENV" ]; then \
-		python3 -m build; \
+		"$${VIRTUAL_ENV}/bin/python" -m build; \
 	elif [ -d ".venv" ]; then \
 		.venv/bin/python -m build; \
 	else \
@@ -315,7 +318,7 @@ publish: publish-check
 	echo ""; \
 	echo "Step 9: Publishing to PyPI..."; \
 	if [ -n "$$VIRTUAL_ENV" ]; then \
-		python3 -m twine upload dist/*; \
+		"$${VIRTUAL_ENV}/bin/python" -m twine upload dist/*; \
 	elif [ -d ".venv" ]; then \
 		.venv/bin/python -m twine upload dist/*; \
 	else \
