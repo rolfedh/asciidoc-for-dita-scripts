@@ -69,28 +69,25 @@ pip install asciidoc-dita-toolkit
 
 ### Quick Start
 
-1. **Check what plugins are available:**
+1. **Start a comprehensive workflow (Recommended):**
    ```bash
-   adt --help
+   # Create a managed workflow for your documentation project
+   adt journey start --name "my-project" --directory "/path/to/docs"
+   
+   # Execute modules step by step with progress tracking
+   adt journey continue --name "my-project"
    ```
 
-2. **Run a plugin on a single file:**
-### Quick Start
-
-1. **Check what plugins are available:**
+2. **Check workflow status:**
    ```bash
-   adt --help
+   adt journey status --name "my-project"
+   adt journey list  # See all workflows
    ```
 
-2. **Run a plugin on a single file:**
+3. **Run individual plugins (Advanced usage):**
    ```bash
+   # For targeted fixes or testing
    adt ExampleBlock -f your-document.adoc
-   adt ExampleBlock -f your-document.adoc
-   ```
-
-3. **Process all files in a directory:**
-3. **Process all files in a directory:**
-   ```bash
    adt ExampleBlock -r -d /path/to/your/docs
    ```
 
@@ -99,7 +96,21 @@ pip install asciidoc-dita-toolkit
 {: .note }
 > Always backup your content by committing to version control before running ADT plugins.
 
-Follow this workflow to prepare your AsciiDoc content for DITA migration:
+**For most users, we recommend the UserJourney workflow orchestrator:**
+
+1. **Create a workflow** - UserJourney discovers your content and plans the optimal module sequence
+2. **Execute step-by-step** - Run modules in dependency order with automatic progress tracking
+3. **Handle interruptions gracefully** - Resume work anytime with persistent state management
+4. **Review comprehensive results** - Get detailed reports on all changes across all modules
+
+```bash
+# Complete workflow example
+adt journey start --name "dita-migration" --directory "./docs"
+adt journey continue --name "dita-migration"  # Repeat until complete
+adt journey status --name "dita-migration"    # Check final results
+```
+
+**Alternative: Manual plugin execution** (for advanced users or specific fixes):
 
 1. **Start with analysis** - Run plugins to understand the scope of issues
 2. **Process systematically** - Use one plugin at a time to understand changes  

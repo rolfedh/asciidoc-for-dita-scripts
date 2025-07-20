@@ -88,3 +88,23 @@ Coming Soon
 {: .label .label-yellow }
 
 Manages directory-level configuration for batch processing.
+
+---
+
+## Workflow Management Plugins
+
+These plugins orchestrate and manage multi-module processing workflows:
+
+### [UserJourney]({% link plugins/UserJourney.md %})
+{: .d-inline-block }
+
+Stable
+{: .label .label-green }
+
+Orchestrates multi-module document processing workflows with state persistence and progress tracking.
+
+**Key features:**
+- Persistent workflow state across interruptions
+- Module dependency resolution and sequencing
+- Rich CLI interface with progress visualization
+- Atomic state management with corruption recovery

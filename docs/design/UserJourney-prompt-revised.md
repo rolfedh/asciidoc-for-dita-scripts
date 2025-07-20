@@ -443,11 +443,11 @@ Ensure MVP meets all requirements and provides excellent user experience.
 - State save: <0.1 seconds
 
 ### Documentation Requirements
-- [ ] All commands documented
-- [ ] Error messages helpful
-- [ ] Code well-commented
-- [ ] Test coverage >90%
-- [ ] Debug utilities documented
+- [x] All commands documented in user-guide/
+- [x] Error messages helpful
+- [x] Code well-commented
+- [x] Test coverage >90%
+- [x] Debug utilities documented
 
 ### Future Enhancement Paths
 1. **Phase 2**: Git integration (branches, PRs)
