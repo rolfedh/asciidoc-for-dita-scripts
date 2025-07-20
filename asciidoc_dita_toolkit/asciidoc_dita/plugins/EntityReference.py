@@ -30,11 +30,11 @@ try:
     if str(src_path) not in sys.path:
         sys.path.insert(0, str(src_path))
 
-    from adt_core.module_sequencer import ADTModule
+    from src.adt_core.module_sequencer import ADTModule
     ADT_MODULE_AVAILABLE = True
 except ImportError as e:
     raise ImportError(
-        f"Failed to import ADTModule from adt_core.module_sequencer: {e}. "
+        f"Failed to import ADTModule from src.adt_core.module_sequencer: {e}. "
         f"This is required for EntityReference module to function properly."
     )
 

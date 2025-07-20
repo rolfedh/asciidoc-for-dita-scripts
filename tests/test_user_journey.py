@@ -453,12 +453,20 @@ class TestWorkflowManager(unittest.TestCase):
         (self.test_directory / "doc1.adoc").write_text("= Document 1")
         
         # Mock ModuleSequencer
+        from src.adt_core.module_sequencer import ModuleState
         self.mock_sequencer = Mock()
+        
+        # Create properly configured mock resolution objects
+        mock_directory_config = Mock()
+        mock_directory_config.name = "DirectoryConfig"
+        mock_directory_config.state = ModuleState.ENABLED
+        
+        mock_content_type = Mock()
+        mock_content_type.name = "ContentType"  
+        mock_content_type.state = ModuleState.ENABLED
+        
         self.mock_sequencer.sequence_modules.return_value = (
-            [
-                Mock(name="DirectoryConfig", state="enabled"),
-                Mock(name="ContentType", state="enabled"),
-            ],
+            [mock_directory_config, mock_content_type],
             []  # No errors
         )
         
