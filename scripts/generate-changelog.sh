@@ -68,31 +68,31 @@ echo "  1. Edit CHANGELOG.md"
 echo "  2. Add the content above after the [Unreleased] section"
 echo "  3. Update the [Unreleased] section with new changes if needed"
 
-# Optionally auto-update CHANGELOG.md
-read -p "Automatically update CHANGELOG.md? (y/n): " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    # Check if version already exists
-    if grep -q "## \[$VERSION\]" CHANGELOG.md; then
-        echo "Version $VERSION already exists in CHANGELOG.md"
-        exit 1
+"# Optionally auto-update CHANGELOG.md"
+if [[ -t 0 ]]; then
+    # Only prompt when input is a terminal
+    read -p "Automatically update CHANGELOG.md? (y/n): " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        # Check if version already exists
+        if grep -q "## \[$VERSION\]" CHANGELOG.md; then
+            echo "Version $VERSION already exists in CHANGELOG.md"
+            exit 1
+        fi
+        # Create backup
+        cp CHANGELOG.md CHANGELOG.md.bak
+        # Update changelog
+        {
+            sed '/## \[Unreleased\]/q' CHANGELOG.md
+            echo
+            cat changelog_entry.txt
+            echo
+            sed -n '/## \[Unreleased\]/,$p' CHANGELOG.md | tail -n +2
+        } > CHANGELOG_new.md
+        mv CHANGELOG_new.md CHANGELOG.md
+        echo "CHANGELOG.md updated successfully!"
+        echo "Backup saved as CHANGELOG.md.bak"
     fi
-    
-    # Create backup
-    cp CHANGELOG.md CHANGELOG.md.bak
-    
-    # Update changelog
-    {
-        sed '/## \[Unreleased\]/q' CHANGELOG.md
-        echo ""
-        cat changelog_entry.txt
-        echo ""
-        sed -n '/## \[Unreleased\]/,$p' CHANGELOG.md | tail -n +2
-    } > CHANGELOG_new.md
-    
-    mv CHANGELOG_new.md CHANGELOG.md
-    echo "CHANGELOG.md updated successfully!"
-    echo "Backup saved as CHANGELOG.md.bak"
 fi
 
 rm -f changelog_entry.txt
