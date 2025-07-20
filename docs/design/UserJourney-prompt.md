@@ -1,6 +1,6 @@
-# ADT UserJourney Plugin MVP Implementation Guide for Claude Sonnet 4
+# ADT UserJourney Plugin MVP Implementation Guide for AI-Assisted Development
 
-This document provides step-by-step instructions for implementing the ADT UserJourney plugin using GitHub Copilot with Claude Sonnet 4. The plugin orchestrates multi-module document processing workflows for technical writers.
+This document provides step-by-step instructions for implementing the ADT UserJourney plugin. It leverages GitHub Copilot for code suggestions and Claude Sonnet 4 for advanced AI-driven insights. The plugin orchestrates multi-module document processing workflows for technical writers.
 
 **IMPORTANT**: Feed these instructions in sequential chunks to maintain context and ensure successful implementation.
 
@@ -912,7 +912,7 @@ if __name__ == "__main__":
 
 ---
 
-## Usage Instructions for Claude Sonnet 4 Implementation
+## Usage Instructions for AI-Assisted Implementation
 
 ### Implementation Sequence
 1. **CHUNK 1-2 First**: Implement core state management and persistence - this is the foundation
