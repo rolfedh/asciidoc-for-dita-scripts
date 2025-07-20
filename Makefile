@@ -36,7 +36,7 @@ help:
 	@echo "  build      - Build distribution packages"
 	@echo "  publish-check - Check publishing prerequisites (twine, credentials)"
 	@echo "  bump-version - Bump version in both pyproject.toml and __init__.py (VERSION=x.y.z to specify)"
-	@echo "  publish    - Complete automated release: setup environment, auto-bump patch version (or VERSION=x.y.z), build, publish to PyPI, create GitHub release & trigger container builds (MAINTAINERS ONLY)"
+	@echo "  publish    - Complete automated release: setup environment, auto-bump patch version (or VERSION=x.y.z), update changelog, build, publish to PyPI, create GitHub release & trigger container builds (MAINTAINERS ONLY)"
 	@echo "  github-release - Create GitHub release for current version (VERSION=x.y.z to override)"
 	@echo "  check      - Run comprehensive quality checks"
 	@echo "  changelog  - Generate changelog entry for latest version"
@@ -273,7 +273,21 @@ publish: publish-check
 	fi; \
 	echo "Version updated to $$new_version"; \
 	echo ""; \
-	echo "Step 7: Building package with new version..."; \
+	echo "Step 7: Updating changelog for release..."; \
+	if [ -f "./scripts/generate-changelog.sh" ]; then \
+		changelog_output=$$(./scripts/generate-changelog.sh $$new_version 2>&1); \
+		if [ $$? -ne 0 ]; then \
+			echo "Warning: Changelog generation failed with the following error:"; \
+			echo "$$changelog_output"; \
+			echo "Continuing with the release process..."; \
+		else \
+			echo "✅ Changelog updated"; \
+		fi; \
+	else \
+		echo "⚠️ Changelog script not found at ./scripts/generate-changelog.sh, skipping changelog update"; \
+	fi; \
+	echo ""; \
+	echo "Step 8: Building package with new version..."; \
 	if [ -n "$$VIRTUAL_ENV" ]; then \
 		python3 -m build; \
 	elif [ -d ".venv" ]; then \
@@ -283,7 +297,7 @@ publish: publish-check
 	fi; \
 	echo "✅ Package built successfully"; \
 	echo ""; \
-	echo "Step 8: Publishing to PyPI..."; \
+	echo "Step 9: Publishing to PyPI..."; \
 	if [ -n "$$VIRTUAL_ENV" ]; then \
 		python3 -m twine upload dist/*; \
 	elif [ -d ".venv" ]; then \
@@ -293,7 +307,7 @@ publish: publish-check
 	fi; \
 	echo "✅ Successfully published to PyPI!"; \
 	echo ""; \
-	echo "Step 9: Creating GitHub release..."; \
+	echo "Step 10: Creating GitHub release..."; \
 	current_version="$$new_version"; \
 	tag_name="v$$current_version"; \
 	echo "Creating GitHub release for $$tag_name..."; \
