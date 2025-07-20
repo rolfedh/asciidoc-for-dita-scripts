@@ -11,7 +11,7 @@ This script demonstrates:
 
 import json
 import logging
-from src.adt_core.module_sequencer import ModuleSequencer, ModuleState
+from asciidoc_dita_toolkit.adt_core.module_sequencer import ModuleSequencer, ModuleState
 from modules.entity_reference import EntityReferenceModule
 from modules.content_type import ContentTypeModule
 from modules.directory_config import DirectoryConfigModule

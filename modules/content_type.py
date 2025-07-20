@@ -3,7 +3,7 @@
 import sys
 from pathlib import Path
 from typing import List, Dict, Any
-from src.adt_core.module_sequencer import ADTModule
+from asciidoc_dita_toolkit.adt_core.module_sequencer import ADTModule
 
 
 class ContentTypeModule(ADTModule):

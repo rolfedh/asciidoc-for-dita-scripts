@@ -1,0 +1,20 @@
+= Test Document
+:doctype: article
+
+This is a test AsciiDoc document for UserJourney testing.
+
+== Introduction
+
+UserJourney will orchestrate the processing of this document through multiple ADT modules.
+
+== Content
+
+Some sample content that the modules will process.
+
+* Item 1
+* Item 2  
+* Item 3
+
+== Conclusion
+
+This document will be processed by the workflow system.

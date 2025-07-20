@@ -1,0 +1,23 @@
+{
+  "resolutions": [
+    {
+      "name": "DirectoryConfig",
+      "state": "enabled",
+      "dependencies": [],
+      "execution_order": 1
+    },
+    {
+      "name": "ContentType", 
+      "state": "enabled",
+      "dependencies": ["DirectoryConfig"],
+      "execution_order": 2
+    },
+    {
+      "name": "CrossReference",
+      "state": "enabled", 
+      "dependencies": ["DirectoryConfig", "ContentType"],
+      "execution_order": 3
+    }
+  ],
+  "errors": []
+}

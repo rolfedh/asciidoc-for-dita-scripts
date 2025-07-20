@@ -1,0 +1,49 @@
+{
+  "name": "failed_workflow",
+  "directory": "/test/docs",
+  "created": "2024-01-01T10:00:00",
+  "last_activity": "2024-01-01T11:45:00",
+  "status": "failed",
+  "modules": {
+    "DirectoryConfig": {
+      "status": "completed",
+      "started_at": "2024-01-01T10:00:00",
+      "completed_at": "2024-01-01T10:15:00",
+      "files_processed": 3,
+      "files_modified": 0,
+      "execution_time": 900.0,
+      "error_message": null,
+      "retry_count": 0
+    },
+    "ContentType": {
+      "status": "failed",
+      "started_at": "2024-01-01T10:15:00",
+      "completed_at": "2024-01-01T11:45:00",
+      "files_processed": 1,
+      "files_modified": 0,
+      "execution_time": 5400.0,
+      "error_message": "Failed to process document: Invalid YAML metadata in guide.adoc",
+      "retry_count": 2
+    },
+    "CrossReference": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "files_processed": 0,
+      "files_modified": 0,
+      "execution_time": null,
+      "error_message": null,
+      "retry_count": 0
+    }
+  },
+  "files_discovered": ["/test/docs/guide.adoc", "/test/docs/reference.adoc", "/test/docs/tutorial.adoc"],
+  "directory_config": {
+    "source_dir": "/test/docs",
+    "output_dir": "/test/output",
+    "file_patterns": ["*.adoc"]
+  },
+  "metadata": {
+    "version": "1.0",
+    "adt_version": "2.0.0"
+  }
+}

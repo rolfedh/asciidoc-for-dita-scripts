@@ -55,14 +55,24 @@ help:
 	@echo "  container-validate  - Validate all container configurations"
 
 # Test targets
-test:
+test: check-test-locations
 	@echo "Running all tests with pytest..."
 	python3 -m pytest tests/ -v
 
-test-coverage:
+test-coverage: check-test-locations
 	@echo "Running tests with coverage..."
 	python3 -m pytest tests/ --cov=src --cov-report=term-missing --cov-report=html
 	@echo "Coverage report generated in htmlcov/"
+
+check-test-locations:
+	@echo "Checking for misplaced test files..."
+	@if find . -maxdepth 1 -name "test_*.py" -o -name "*_test.py" | grep -q .; then \
+		echo "❌ Found test files in root directory:"; \
+		find . -maxdepth 1 -name "test_*.py" -o -name "*_test.py"; \
+		echo "Please move these files to tests/ directory"; \
+		exit 1; \
+	fi
+	@echo "✅ All test files are properly located in tests/ directory"
 
 # Code quality targets
 lint:

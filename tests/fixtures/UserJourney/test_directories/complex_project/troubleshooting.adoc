@@ -1,0 +1,19 @@
+= Troubleshooting
+
+== Common Issues
+
+=== Workflow Errors
+
+If you encounter workflow errors:
+
+1. Check the workflow status: `adt journey status <name>`
+2. Review the error messages
+3. Try resuming: `adt journey continue <name>`
+
+=== Module Failures
+
+For module-specific failures, see <<reference.adoc#module-debugging,Module Debugging>>.
+
+== Advanced Topics
+
+For advanced configuration, see <<advanced.adoc#configuration,Advanced Configuration>>.

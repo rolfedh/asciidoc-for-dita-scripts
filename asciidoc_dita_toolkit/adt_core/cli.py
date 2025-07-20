@@ -47,6 +47,7 @@ PLUGIN_DESCRIPTIONS = {
     "DirectoryConfig": "Manage directory-specific plugin configurations",
     "EntityReference": "Convert HTML entities to AsciiDoc equivalents",
     "ExampleBlock": "Detect and process example blocks in documentation",
+    "journey": "Workflow orchestration for multi-module document processing",
 }
 
 
@@ -468,6 +469,142 @@ def create_new_plugin_subcommand(subparsers, name, plugin_info):
     parser.set_defaults(func=run_new_plugin)
 
 
+def create_user_journey_subcommands(subparsers):
+    """Create UserJourney workflow management subcommands."""
+    try:
+        # Import UserJourney module
+        from asciidoc_dita_toolkit.asciidoc_dita.plugins.UserJourney import UserJourneyModule
+        
+        # Initialize UserJourney module
+        user_journey_module = UserJourneyModule()
+        init_result = user_journey_module.initialize()
+        
+        if init_result.get("status") != "success":
+            raise ImportError(f"Failed to initialize UserJourney: {init_result.get('message')}")
+        
+        # Create the journey command group
+        journey_parser = subparsers.add_parser(
+            'journey', 
+            help='Workflow orchestration commands for multi-module document processing'
+        )
+        
+        # Create subcommands for journey
+        journey_subparsers = journey_parser.add_subparsers(
+            dest='journey_command',
+            required=True,
+            metavar='<action>',
+            help='Available workflow actions'
+        )
+        
+        # journey start
+        start_parser = journey_subparsers.add_parser(
+            'start',
+            help='Create and start a new workflow'
+        )
+        start_parser.add_argument(
+            '--name', '-n',
+            required=True,
+            help='Unique name for the workflow'
+        )
+        start_parser.add_argument(
+            '--directory', '-d',
+            required=True,
+            help='Directory containing .adoc files to process'
+        )
+        
+        # journey resume
+        resume_parser = journey_subparsers.add_parser(
+            'resume',
+            help='Resume an existing workflow'
+        )
+        resume_parser.add_argument(
+            '--name', '-n',
+            required=True,
+            help='Name of the workflow to resume'
+        )
+        
+        # journey continue
+        continue_parser = journey_subparsers.add_parser(
+            'continue',
+            help='Execute the next module in a workflow'
+        )
+        continue_parser.add_argument(
+            '--name', '-n',
+            required=True,
+            help='Name of the workflow to continue'
+        )
+        
+        # journey status
+        status_parser = journey_subparsers.add_parser(
+            'status',
+            help='Show workflow status and progress'
+        )
+        status_parser.add_argument(
+            '--name', '-n',
+            help='Name of specific workflow to show (omit to show all)'
+        )
+        
+        # journey list
+        list_parser = journey_subparsers.add_parser(
+            'list',
+            help='List all available workflows'
+        )
+        
+        # journey cleanup
+        cleanup_parser = journey_subparsers.add_parser(
+            'cleanup',
+            help='Delete workflows'
+        )
+        cleanup_group = cleanup_parser.add_mutually_exclusive_group(required=True)
+        cleanup_group.add_argument(
+            '--name', '-n',
+            help='Name of specific workflow to delete'
+        )
+        cleanup_group.add_argument(
+            '--completed',
+            action='store_true',
+            help='Delete all completed workflows'
+        )
+        cleanup_group.add_argument(
+            '--all',
+            action='store_true',
+            help='Delete all workflows (use with caution!)'
+        )
+        
+        # Set the function to handle all journey commands
+        def run_user_journey_command(args):
+            try:
+                exit_code = user_journey_module.process_cli_command(args)
+                sys.exit(exit_code)
+                
+            except SystemExit:
+                raise  # Re-raise SystemExit to preserve exit codes
+            except Exception as e:
+                print(f"❌ UserJourney command failed: {e}", file=sys.stderr)
+                import traceback
+                traceback.print_exc()
+                sys.exit(1)
+        
+        # Set the handler function for all journey subcommands
+        for subparser in [start_parser, resume_parser, continue_parser, status_parser, list_parser, cleanup_parser]:
+            subparser.set_defaults(func=run_user_journey_command)
+            
+    except ImportError as e:
+        # UserJourney module not available - add a placeholder that shows a helpful message
+        def journey_not_available(args):
+            print("❌ UserJourney module not available", file=sys.stderr)
+            print(f"   Import error: {e}", file=sys.stderr)
+            print("   Make sure the package is properly installed and up-to-date", file=sys.stderr)
+            sys.exit(1)
+        
+        # Create a basic journey command that shows the error
+        journey_parser = subparsers.add_parser(
+            'journey',
+            help='Workflow orchestration (currently unavailable)'
+        )
+        journey_parser.set_defaults(func=journey_not_available)
+
+
 class CustomHelpAction(argparse.Action):
     """Custom help action that prints our formatted help."""
 
@@ -552,6 +689,9 @@ def main(args=None):
         # Only add if not already added by legacy plugins
         if name not in legacy_plugins:
             create_new_plugin_subcommand(subparsers, name, info)
+
+    # Add UserJourney CLI commands
+    create_user_journey_subcommands(subparsers)
 
     # Parse arguments
     if args is None:

@@ -1,0 +1,25 @@
+= Advanced Usage
+
+== Custom Modules
+
+You can create custom modules for specialized processing.
+
+For the basic concepts, see <<overview.adoc#architecture,Architecture>>.
+
+== Configuration
+
+Advanced configuration options include:
+
+* Custom module paths
+* Dependency overrides  
+* Performance tuning
+
+== Module Debugging
+
+Use these techniques for debugging module issues:
+
+* Enable verbose logging
+* Check module dependencies
+* Review execution context
+
+For common problems, see <<troubleshooting.adoc#module-failures,Module Failures>>.

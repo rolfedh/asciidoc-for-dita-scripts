@@ -1,0 +1,34 @@
+= Tutorial
+
+== Getting Started
+
+This tutorial will guide you through the basics.
+
+See the <<overview.adoc#architecture,Architecture>> section for background.
+
+=== Prerequisites
+
+Before you begin, ensure you have:
+
+* AsciiDoc installed
+* Basic understanding of markup
+
+=== Step 1: Initial Setup
+
+Configure your environment:
+
+[source,bash]
+----
+adt init my-project
+----
+
+=== Step 2: Process Documents
+
+Run the workflow:
+
+[source,bash]
+----
+adt journey start tutorial-workflow ./docs
+----
+
+For more details, see <<reference.adoc#workflow-commands,Workflow Commands>>.

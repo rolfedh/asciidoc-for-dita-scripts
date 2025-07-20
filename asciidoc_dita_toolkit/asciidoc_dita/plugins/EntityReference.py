@@ -22,22 +22,15 @@ from ..file_utils import (
     write_text_preserve_endings,
 )
 
-# Try to import ADTModule for the new pattern
+# Import ADTModule from core
 try:
-    # Add the path to find the ADTModule
-    package_root = Path(__file__).parent.parent.parent.parent
-    if str(package_root / "src") not in sys.path:
-        sys.path.insert(0, str(package_root / "src"))
-
-    from adt_core.module_sequencer import ADTModule
-
+    from asciidoc_dita_toolkit.adt_core.module_sequencer import ADTModule
     ADT_MODULE_AVAILABLE = True
-except ImportError:
-    ADT_MODULE_AVAILABLE = False
-
-    # Create a dummy ADTModule for backward compatibility
-    class ADTModule:
-        pass
+except ImportError as e:
+    raise ImportError(
+        f"Failed to import ADTModule from asciidoc_dita_toolkit.adt_core.module_sequencer: {e}. "
+        f"This is required for EntityReference module to function properly."
+    )
 
 
 # Supported XML entities in DITA 1.3 (these should not be replaced)

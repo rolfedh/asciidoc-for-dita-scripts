@@ -1,0 +1,15 @@
+{
+  "resolutions": [
+    {
+      "name": "DirectoryConfig",
+      "state": "enabled", 
+      "dependencies": [],
+      "execution_order": 1
+    }
+  ],
+  "errors": [
+    "ContentType module not found in available modules",
+    "CrossReference module has unresolved dependency: ContentType",
+    "Circular dependency detected between CrossReference and EntityReference"
+  ]
+}

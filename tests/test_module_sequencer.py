@@ -6,15 +6,16 @@ import tempfile
 import unittest
 from unittest.mock import patch, MagicMock
 
-from src.adt_core.module_sequencer import (
+from asciidoc_dita_toolkit.adt_core.module_sequencer import (
     ModuleSequencer,
+    ADTModule,
     ModuleState,
     ModuleResolution,
-    ADTModule,
     determine_module_state,
 )
-from src.adt_core.exceptions import (
+from asciidoc_dita_toolkit.adt_core.exceptions import (
     ConfigurationError,
+    ModuleNotFoundError,
     CircularDependencyError,
     MissingDependencyError,
 )
@@ -244,7 +245,7 @@ class TestModuleSequencer(unittest.TestCase):
         errors = self.sequencer.validate_configuration()
         self.assertGreater(len(errors), 0)
 
-    @patch('src.adt_core.module_sequencer.entry_points')
+    @patch('asciidoc_dita_toolkit.adt_core.module_sequencer.entry_points')
     def test_discover_modules(self, mock_entry_points):
         """Test module discovery via entry points."""
         # Mock entry points

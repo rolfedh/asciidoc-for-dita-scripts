@@ -17,22 +17,15 @@ from ..cli_utils import common_arg_parser
 from ..plugin_manager import is_plugin_enabled
 from ..workflow_utils import process_adoc_files
 
-# Try to import ADTModule for the new pattern
+# Import ADTModule from core
 try:
-    # Add the path to find the ADTModule
-    package_root = Path(__file__).parent.parent.parent.parent
-    if str(package_root / "src") not in sys.path:
-        sys.path.insert(0, str(package_root / "src"))
-
-    from adt_core.module_sequencer import ADTModule
-
+    from asciidoc_dita_toolkit.adt_core.module_sequencer import ADTModule
     ADT_MODULE_AVAILABLE = True
-except ImportError:
-    ADT_MODULE_AVAILABLE = False
-
-    # Create a dummy ADTModule for backward compatibility
-    class ADTModule:
-        pass
+except ImportError as e:
+    raise ImportError(
+        f"Failed to import ADTModule from asciidoc_dita_toolkit.adt_core.module_sequencer: {e}. "
+        f"This is required for ExampleBlock module to function properly."
+    )
 
 
 # Setup logging
@@ -687,6 +680,68 @@ def create_processor(
     return ExampleBlockProcessor(
         detector, interactive=not batch_mode, quiet_mode=quiet_mode
     )
+
+
+class ExampleBlockModule(ADTModule):
+    """
+    ADTModule implementation for ExampleBlock plugin.
+    
+    Detects and fixes AsciiDoc example blocks that are placed in invalid locations
+    according to DITA 1.3 specification (within sections, other blocks, or lists).
+    """
+    
+    @property
+    def name(self) -> str:
+        """Module name identifier."""
+        return "ExampleBlock"
+    
+    @property
+    def version(self) -> str:
+        """Module version."""
+        return "1.0.0"
+    
+    @property
+    def dependencies(self) -> List[str]:
+        """List of required module names."""
+        return []
+    
+    def initialize(self, config: Dict[str, Any]) -> None:
+        """Initialize the module with configuration."""
+        # ExampleBlock doesn't require special initialization
+        pass
+    
+    def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Execute the module to process files and detect/fix example block issues.
+        
+        Args:
+            context: Processing context containing files and configuration
+            
+        Returns:
+            Dict containing processing results and statistics
+        """
+        files = context.get('files', [])
+        results = {
+            'files_processed': 0,
+            'files_modified': 0,
+            'issues_found': 0,
+            'issues_fixed': 0
+        }
+        
+        processor = create_processor(
+            batch_mode=context.get('batch_mode', True),
+            quiet_mode=context.get('quiet_mode', False)
+        )
+        
+        for file_path in files:
+            if file_path.endswith('.adoc'):
+                success = process_example_block_file(file_path, processor)
+                if success:
+                    results['files_processed'] += 1
+                    # Note: More detailed statistics would require modifying 
+                    # the process_example_block_file function
+        
+        return results
 
 
 def main():

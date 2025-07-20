@@ -27,7 +27,7 @@ def test_adtmodule_interface_documentation():
     print("-" * 50)
 
     try:
-        from adt_core.module_sequencer import ADTModule
+        from asciidoc_dita_toolkit.adt_core.module_sequencer import ADTModule
 
         # Check class docstring
         class_docstring = inspect.getdoc(ADTModule)
