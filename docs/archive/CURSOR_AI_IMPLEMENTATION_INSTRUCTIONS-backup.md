@@ -13,7 +13,7 @@ Migrate the legacy plugin architecture to the standardized ADTModule pattern to 
 **Task**: Modify the plugin discovery mechanism to suppress the warning messages:
 ```
 Module ContentType does not inherit from ADTModule
-Module DirectoryConfig does not inherit from ADTModule  
+Module DirectoryConfig does not inherit from ADTModule
 Module EntityReference does not inherit from ADTModule
 ```
 
@@ -81,30 +81,30 @@ class EntityReferenceModule(ADTModule):
     @property
     def name(self) -> str:
         return "EntityReference"
-    
+
     @property
     def version(self) -> str:
         return "1.2.1"  # Use semantic versioning
-    
+
     @property
     def dependencies(self) -> List[str]:
         return []  # No dependencies
-    
+
     @property
     def release_status(self) -> str:
         return "GA"
-    
+
     def initialize(self, config: Dict[str, Any]) -> None:
         """Initialize with configuration."""
         self.timeout_seconds = config.get("timeout_seconds", 30)
         self.cache_size = config.get("cache_size", 1000)
-    
+
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
         """Execute the entity reference replacement."""
         # Move main() logic here
         # Return results dict
         return {"files_processed": count, "entities_replaced": total}
-    
+
     def cleanup(self) -> None:
         """Clean up resources."""
         pass
@@ -158,15 +158,15 @@ class PluginLoader:
         self.legacy_plugins = {}
         self.adt_modules = {}
         self.module_sequencer = ModuleSequencer()
-    
+
     def discover_plugins(self):
         """Discover both legacy and ADTModule plugins."""
         # Legacy plugin discovery (existing logic)
         self._discover_legacy_plugins()
-        
+
         # ADTModule discovery via entry points
         self._discover_adt_modules()
-    
+
     def load_plugin(self, name: str, config: Dict[str, Any] = None):
         """Load plugin with automatic type detection."""
         if name in self.adt_modules:
@@ -212,62 +212,62 @@ from adt_core import ADTModule
 
 class MyPluginModule(ADTModule):
     """Template plugin - replace with your implementation."""
-    
+
     @property
     def name(self) -> str:
         return "MyPlugin"  # Change this to your plugin name
-    
+
     @property
     def version(self) -> str:
         return "1.0.0"  # Use semantic versioning
-    
+
     @property
     def dependencies(self) -> List[str]:
         return []  # List any required dependencies
-    
+
     @property
     def release_status(self) -> str:
         return "preview"  # "GA" for stable, "preview" for beta
-    
+
     def initialize(self, config: Dict[str, Any]) -> None:
         """
         Initialize your plugin with configuration.
-        
+
         Args:
             config: Configuration dictionary from JSON files
         """
         # Store configuration values
         self.debug_mode = config.get("debug_mode", False)
         self.max_files = config.get("max_files", 1000)
-        
+
         # Initialize any resources
         # e.g., database connections, file handles, etc.
-    
+
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
         """
         Execute your plugin logic.
-        
+
         Args:
             context: Execution context including results from dependencies
-            
+
         Returns:
             Dictionary with your plugin's results
         """
         # Your plugin implementation here
-        
+
         # Example: Access dependency results
         dependency_result = context.get("SomeDependency", {})
-        
+
         # Example: Process files or data
         processed_count = 0
-        
+
         # Return results for other plugins to use
         return {
             "files_processed": processed_count,
             "success": True,
             "data": {"key": "value"}
         }
-    
+
     def cleanup(self) -> None:
         """Clean up any resources."""
         # Close files, database connections, etc.
@@ -282,7 +282,7 @@ Add section about plugin development:
 ```markdown
 ## 🔌 Plugin Development
 
-ADT supports external plugins for extending functionality. 
+ADT supports external plugins for extending functionality.
 
 ### Quick Start
 1. Clone the plugin template: `git clone https://github.com/your-org/adt-plugin-template`
@@ -310,19 +310,19 @@ class TestPluginArchitecture:
     def test_legacy_plugin_compatibility(self):
         """Ensure legacy plugins still work during transition."""
         pass
-    
+
     def test_adt_module_discovery(self):
         """Test automatic discovery of ADTModule plugins."""
         pass
-    
+
     def test_dependency_resolution(self):
         """Test dependency resolution for ADTModule plugins."""
         pass
-    
+
     def test_configuration_passing(self):
         """Test configuration is properly passed to plugins."""
         pass
-    
+
     def test_mixed_plugin_types(self):
         """Test system with both legacy and ADTModule plugins."""
         pass
