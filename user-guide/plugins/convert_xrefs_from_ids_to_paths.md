@@ -1,8 +1,8 @@
-# Context Migration User Guide
+# Convert xrefs from IDs to paths
 
 ## Overview
 
-This guide explains how to use the AsciiDoc DITA Toolkit's context migration system to safely migrate from context-suffixed IDs to context-free IDs with path-based cross-references.
+This guide explains how to safely migrate from context-suffixed IDs to path-based cross-references.
 
 The migration system consists of three plugins that work together in a phased approach:
 
