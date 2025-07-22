@@ -8,7 +8,7 @@ This directory contains documentation for developers and maintainers of the Asci
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Main developer guide with setup instructions
 - **[RELEASE_MANAGEMENT.md](RELEASE_MANAGEMENT.md)** - Release workflows and `make publish` usage (maintainers only)
 
-### 🔧 Development Guides  
+### 🔧 Development Guides
 - **[development/](development/)** - Specialized development documentation
   - `CONTAINER_DISTRIBUTION.md` - Container build and distribution
   - `PLUGIN_DEVELOPMENT_PATTERN.md` - How to develop new plugins
@@ -19,9 +19,15 @@ This directory contains documentation for developers and maintainers of the Asci
 - **[CONTEXT_MIGRATION_GUIDE.md](CONTEXT_MIGRATION_GUIDE.md)** - Context migration guide
 - **[BETA_TESTING.md](BETA_TESTING.md)** - Beta testing procedures
 
+{: .note }
+**ValeFlagger User Documentation**: See [user-guide/plugins/ValeFlagger.md](../user-guide/plugins/ValeFlagger.md) for technical writer documentation (published via GitHub Pages)
+
+### 🛡️ ValeFlagger Developer Documentation
+- **[design/ValeFlagger/](design/ValeFlagger/)** - Design documents and specifications
+
 ### 🗄️ Archives
 - **[archive/](archive/)** - Historical documentation and completed phase reports
-- **[design/](design/)** - Design documents and specifications  
+- **[design/](design/)** - Design documents and specifications
 - **[development-notes/](development-notes/)** - Implementation notes and fixes
 - **[examples/](examples/)** - Code examples and samples
 

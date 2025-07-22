@@ -562,3 +562,20 @@ release: check
 	echo "1. GitHub Actions will automatically build and push container images"; \
 	echo "2. Monitor the workflow: https://github.com/rolfedh/asciidoc-dita-toolkit/actions"; \
 	echo "3. If needed, publish to PyPI with: make publish"
+
+# ValeFlagger targets
+.PHONY: valeflag-test
+valeflag-test:
+	@echo "Testing ValeFlagger..."
+	cd docker/vale-adv && ./build.sh
+	python -m pytest tests/test_vale_flagger.py -v
+
+.PHONY: valeflag-check
+valeflag-check:
+	@echo "Running ValeFlagger on project..."
+	python -m asciidoc_dita_toolkit.plugins.vale_flagger.cli --path ./docs --dry-run
+
+.PHONY: valeflag-build
+valeflag-build:
+	@echo "Building Vale Docker container..."
+	cd docker/vale-adv && ./build.sh

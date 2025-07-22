@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Wrapper script for ValeFlagger
+
+set -e
+
+# Find the project root (where .git directory is)
+PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+
+# Check if running from within the project
+if [ -f "$PROJECT_ROOT/asciidoc_dita_toolkit/plugins/vale_flagger/__init__.py" ]; then
+    # Development mode - use local version
+    export PYTHONPATH="$PROJECT_ROOT:$PYTHONPATH"
+    exec python -m asciidoc_dita_toolkit.plugins.vale_flagger.cli "$@"
+else
+    # Installed mode - use system installation
+    exec valeflag "$@"
+fi

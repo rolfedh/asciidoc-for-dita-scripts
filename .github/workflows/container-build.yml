@@ -26,6 +26,9 @@ jobs:
           #   suffix: ""
           - path: "Dockerfile.production"
             suffix: "-prod"
+          - path: "docker/vale-adv/Dockerfile"
+            suffix: "-vale-adv"
+            context: "docker/vale-adv"
 
     steps:
     - name: Checkout repository
@@ -66,7 +69,7 @@ jobs:
       id: build
       uses: docker/build-push-action@v5
       with:
-        context: .
+        context: ${{ matrix.dockerfile.context || '.' }}
         file: ./${{ matrix.dockerfile.path }}
         push: ${{ github.event_name != 'pull_request' }}
         tags: ${{ steps.meta.outputs.tags }}

@@ -1,0 +1,23 @@
+= this heading needs capitalization
+
+== Introduction TO The System
+
+This is a test document with known violations.
+
+* We use the repo for storage.
+* The URL is http://example.com
+* Contact support@example.com for help
+
+.Table Title Needs Capitalization
+|===
+|Column 1 |column 2
+
+|Data |more data
+|===
+
+[source,python]
+----
+# this code block is fine
+def hello():
+    print("Hello")
+----

@@ -48,6 +48,7 @@ PLUGIN_DESCRIPTIONS = {
     "EntityReference": "Convert HTML entities to AsciiDoc equivalents",
     "ExampleBlock": "Detect and process example blocks in documentation",
     "journey": "Workflow orchestration for multi-module document processing",
+    "ValeFlagger": "Check AsciiDoc files for DITA compatibility issues using Vale linter",
 }
 
 
