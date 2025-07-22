@@ -1,4 +1,4 @@
-rolfedh: I need to run vale linter with the vale ruleset in asciidoctor-dita-vale and get its output as json. The json file contains key information like the rule being violated, the filename, and the line number. Then I want to run a script or plugin that takes the json and uses it to insert comments into the file at the location of the issues the value linter flagged. The script or plugin is named ValeFlagger. I need your advice: How should i do this?
+rolfedh: I need to run vale linter with the vale ruleset in asciidoctor-dita-vale and get its output as json. The json file contains key information like the rule being violated, the filename, and the line number. Then I want to run a script or plugin that takes the json and uses it to insert comments into the file at the location of the issues the Vale linter flagged. The script or plugin is named ValeFlagger. I need your advice: How should i do this?
 
 GitHub Copilot: Here’s a step-by-step approach to achieve your workflow using the `asciidoctor-dita-vale` ruleset and a custom `ValeFlagger` script:
 
