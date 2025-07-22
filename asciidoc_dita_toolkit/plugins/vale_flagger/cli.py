@@ -122,7 +122,7 @@ def main(args=None):
                 print(f"\n📄 {file_path} ({len(issues)} issues):")
                 for issue in sorted(issues, key=lambda x: x['Line']):
                     severity_icon = "❌" if issue.get('Severity') == 'error' else "⚠️"
-                    rule_name = issue['Check'].replace('asciidoctor-dita-vale.', '')
+                    rule_name = issue['Check'].replace('AsciiDocDITA.', '')
                     print(f"  {severity_icon} Line {issue['Line']}: [{rule_name}]")
                     print(f"     {issue['Message']}")
         else:

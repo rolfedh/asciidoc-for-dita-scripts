@@ -11,7 +11,31 @@ logger = logging.getLogger(__name__)
 
 
 class ValeFlagger:
-    """Integrates Vale linter with AsciiDoc files for DITA compatibility checking."""
+    """
+    Integrates Vale linter with AsciiDoc files for DITA compatibility checking.
+    
+    This class provides functionality to run the Vale linter on AsciiDoc files,
+    process the results, and optionally insert flags into the files based on the
+    linter's output. The implementation uses Docker to run Vale with pre-configured
+    AsciiDocDITA rules for consistent DITA compliance checking.
+    
+    Args:
+        config_path (str, optional): Path to the configuration file. If not provided,
+            a default configuration will be used.
+        flag_format (str, optional): Custom format string for flags. If not provided,
+            the default format from the configuration will be used.
+        dry_run (bool, optional): If True, the class will simulate operations without
+            making any changes to files. Defaults to False.
+    
+    Example:
+        >>> from vale_flagger import ValeFlagger
+        >>> flagger = ValeFlagger(config_path="config.yaml", dry_run=True)
+        >>> results = flagger.run(target_path="docs/", include_rules=["Headings.Capitalization"])
+        >>> print(f"Found {len(results)} files with issues")
+    
+    Note:
+        Requires Docker to be installed and running for Vale execution.
+    """
 
     DEFAULT_FLAG_FORMAT = "// ADT-FLAG [{rule}]: {message}"
 
@@ -77,15 +101,20 @@ class ValeFlagger:
                   include_rules: List[str] = None,
                   exclude_rules: List[str] = None) -> Dict[str, List[dict]]:
         """Execute Vale via Docker and parse JSON output."""
+        # Validate and sanitize the target path to prevent directory traversal
+        safe_parent = target_path.parent.resolve()
+        if not safe_parent.exists():
+            raise ValueError(f"Target directory does not exist: {safe_parent}")
+        
         cmd = [
             "docker", "run", "--rm",
-            "-v", f"{target_path.parent}:/docs",
+            "-v", f"{safe_parent}:/docs",
             self.config.docker_image,
             "--output=JSON"
         ]
 
         # Build dynamic .vale.ini content if rules specified OR no local config exists
-        local_vale_config = target_path.parent / ".vale.ini"
+        local_vale_config = safe_parent / ".vale.ini"
         if include_rules or exclude_rules or not local_vale_config.exists():
             config_content = self._build_vale_config(include_rules, exclude_rules)
             cmd.extend(["--config=/dev/stdin"])
@@ -121,7 +150,12 @@ class ValeFlagger:
             logger.error(f"Failed to parse Vale output: {result.stdout}")
             raise ValueError(f"Invalid JSON from Vale: {e}")
         except subprocess.TimeoutExpired:
-            raise RuntimeError(f"Vale execution timed out after {self.config.timeout_seconds} seconds")
+            raise RuntimeError(
+                f"Vale execution timed out after {self.config.timeout_seconds} seconds. "
+                f"This may indicate large document sets, network issues downloading rules, "
+                f"or Docker performance problems. Consider increasing timeout_seconds in configuration "
+                f"or processing smaller file sets."
+            )
 
     def _build_vale_config(self,
                           include_rules: List[str] = None,
@@ -177,7 +211,18 @@ class ValeFlagger:
                 flag = self._format_flag(issues_by_line[line_num])
                 # Adjust for 0-based indexing
                 insert_pos = max(0, line_num - 1)
-                lines.insert(insert_pos, flag + '\n')
+                # Preserve original line endings from the file
+                line_ending = '\n'
+                if lines:
+                    # Try to detect line ending from existing content
+                    for line in lines:
+                        if line.endswith('\r\n'):
+                            line_ending = '\r\n'
+                            break
+                        elif line.endswith('\n'):
+                            line_ending = '\n'
+                            break
+                lines.insert(insert_pos, flag + line_ending)
 
             # Write back to file
             file_path.write_text(''.join(lines), encoding='utf-8')

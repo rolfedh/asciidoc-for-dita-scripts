@@ -2,6 +2,9 @@ import yaml
 from pathlib import Path
 from typing import Dict, Any
 
+# Default Docker image for Vale with AsciiDocDITA rules
+DEFAULT_DOCKER_IMAGE = "ghcr.io/rolfedh/asciidoc-dita-toolkit-vale-adv:latest"
+
 
 class ValeFlaggerConfig:
     """Configuration management for ValeFlagger."""
@@ -11,7 +14,7 @@ class ValeFlaggerConfig:
             'enabled_rules': [],
             'disabled_rules': [],
             'timeout_seconds': 300,  # 5 minute default timeout
-            'docker_image': 'ghcr.io/rolfedh/asciidoc-dita-toolkit-vale-adv:latest'
+            'docker_image': DEFAULT_DOCKER_IMAGE
         },
         'valeflag': {
             'flag_format': '// ADT-FLAG [{rule}]: {message}',
