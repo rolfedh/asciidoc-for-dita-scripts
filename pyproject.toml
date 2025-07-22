@@ -32,7 +32,8 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "importlib-metadata>=1.0; python_version<'3.8'"
+    "importlib-metadata>=1.0; python_version<'3.8'",
+    "pyyaml>=5.1"
 ]
 
 [project.urls]
@@ -52,6 +53,7 @@ adg = "asciidoc_dita_toolkit.adt_core.cli:launch_gui"
 adt-test-files = "asciidoc_dita_toolkit.adt_core.cli:adt_test_files_main"
 asciidoc-dita-toolkit = "asciidoc_dita_toolkit.adt_core.cli:main"
 asciidoc-dita-toolkit-gui = "asciidoc_dita_toolkit.adt_core.cli:launch_gui"
+valeflag = "asciidoc_dita_toolkit.plugins.vale_flagger.cli:main"
 
 [project.entry-points."adt.modules"]
 EntityReference = "asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference:EntityReferenceModule"
@@ -62,6 +64,7 @@ ContextMigrator = "asciidoc_dita_toolkit.asciidoc_dita.plugins.ContextMigrator:C
 CrossReference = "asciidoc_dita_toolkit.asciidoc_dita.plugins.CrossReference:CrossReferenceModule"
 ExampleBlock = "asciidoc_dita_toolkit.asciidoc_dita.plugins.ExampleBlock:ExampleBlockModule"
 UserJourney = "asciidoc_dita_toolkit.asciidoc_dita.plugins.UserJourney:UserJourneyModule"
+ValeFlagger = "asciidoc_dita_toolkit.plugins.vale_flagger.plugin:ValeFlaggerModule"
 
 [project.optional-dependencies]
 dev = [

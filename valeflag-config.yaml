@@ -1,0 +1,32 @@
+# ValeFlagger Configuration
+# Place this in your project root or specify with --config
+
+vale:
+  # Rules to always enable
+  enabled_rules:
+    - "Headings.Capitalization"
+    - "Terms.Use"
+    - "Spelling.Terms"
+    - "Links.External"
+
+  # Rules to always disable
+  disabled_rules:
+    - "Style.Passive"
+    - "Style.WordChoice"
+
+valeflag:
+  # Format for inserted flags
+  flag_format: "// ADT-FLAG [{rule}]: {message}"
+
+  # Future: backup original files before flagging
+  backup_files: false
+
+# Future: directory configuration integration
+directory_config:
+  include:
+    - "docs/"
+    - "modules/"
+  exclude:
+    - "build/"
+    - "archive/"
+    - ".git/"
