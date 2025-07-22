@@ -74,7 +74,8 @@ class ValeFlagger:
         # Add exclusions
         if exclude_dirs:
             for dir in exclude_dirs:
-                cmd.extend(["--glob", f"!{dir}/**/*.adoc"])
+                cmd.append("--glob")
+                cmd.append(f"!{dir}/**/*.adoc")
 
         cmd.extend(["--output=JSON"] + paths)
 
