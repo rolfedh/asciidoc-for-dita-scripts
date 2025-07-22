@@ -80,7 +80,7 @@ class ValeFlagger:
         cmd = [
             "docker", "run", "--rm",
             "-v", f"{target_path.parent}:/docs",
-            "ghcr.io/rolfedh/asciidoc-dita-toolkit-vale-adv:latest",
+            self.config.docker_image,
             "--output=JSON"
         ]
 
@@ -105,7 +105,7 @@ class ValeFlagger:
                 capture_output=True,
                 text=True,
                 input=input_text,
-                timeout=300  # 5 minute timeout
+                timeout=self.config.timeout_seconds
             )
 
             if result.returncode not in (0, 1):  # Vale returns 1 if issues found
@@ -121,7 +121,7 @@ class ValeFlagger:
             logger.error(f"Failed to parse Vale output: {result.stdout}")
             raise ValueError(f"Invalid JSON from Vale: {e}")
         except subprocess.TimeoutExpired:
-            raise RuntimeError("Vale execution timed out after 5 minutes")
+            raise RuntimeError(f"Vale execution timed out after {self.config.timeout_seconds} seconds")
 
     def _build_vale_config(self,
                           include_rules: List[str] = None,
@@ -190,12 +190,12 @@ class ValeFlagger:
         """Format multiple issues on the same line into a single flag."""
         if len(issues) == 1:
             return self.flag_format.format(
-                rule=issues[0]['Check'].replace('asciidoctor-dita-vale.', ''),
+                rule=issues[0]['Check'].replace('AsciiDocDITA.', ''),
                 message=issues[0]['Message']
             )
         else:
             # Multiple issues on same line
-            rules = [i['Check'].replace('asciidoctor-dita-vale.', '') for i in issues]
+            rules = [i['Check'].replace('AsciiDocDITA.', '') for i in issues]
             messages = [i['Message'] for i in issues]
             return self.flag_format.format(
                 rule=', '.join(rules),

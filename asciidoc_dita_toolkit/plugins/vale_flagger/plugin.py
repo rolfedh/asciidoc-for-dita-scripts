@@ -68,48 +68,6 @@ class ValeFlaggerModule(ADTModule):
                 "message": f"ValeFlagger execution failed: {e}"
             }
 
-    def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Execute ValeFlagger with the given context.
-
-        Args:
-            context: Execution context with file, directory, and options
-
-        Returns:
-            Dictionary with execution results
-        """
-        # Convert context to CLI arguments
-        args = []
-
-        if context.get("file"):
-            args.extend(["--path", context["file"]])
-        elif context.get("directory"):
-            args.extend(["--path", context["directory"]])
-
-        if context.get("verbose"):
-            args.append("--verbose")
-
-        # Always run in dry-run mode when called as a plugin
-        # to avoid modifying files without explicit user consent
-        args.append("--dry-run")
-
-        # Execute CLI
-        try:
-            exit_code = cli_main(args)
-            return {
-                "status": "success" if exit_code == 0 else "warning",
-                "exit_code": exit_code,
-                "modified_files": [],  # Dry run doesn't modify files
-                "message": "ValeFlagger completed successfully" if exit_code == 0 else "ValeFlagger found issues"
-            }
-        except Exception as e:
-            return {
-                "status": "error",
-                "exit_code": 1,
-                "error": str(e),
-                "message": f"ValeFlagger failed: {e}"
-            }
-
     def cleanup(self):
         """Cleanup resources (no-op for ValeFlagger)."""
         pass

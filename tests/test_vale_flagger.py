@@ -14,14 +14,14 @@ class TestValeFlagger(unittest.TestCase):
         self.sample_vale_output = {
             "test.adoc": [
                 {
-                    "Check": "asciidoctor-dita-vale.Headings.Capitalization",
+                    "Check": "AsciiDocDITA.Headings.Capitalization",
                     "Message": "Heading should use sentence-style capitalization.",
                     "Line": 5,
                     "Span": [1, 25],
                     "Severity": "error"
                 },
                 {
-                    "Check": "asciidoctor-dita-vale.Terms.Use",
+                    "Check": "AsciiDocDITA.Terms.Use",
                     "Message": "Use 'repository' instead of 'repo'.",
                     "Line": 10,
                     "Span": [15, 19],
@@ -65,7 +65,7 @@ class TestValeFlagger(unittest.TestCase):
 
         # Single issue
         single_issue = [{
-            "Check": "asciidoctor-dita-vale.Headings.Capitalization",
+            "Check": "AsciiDocDITA.Headings.Capitalization",
             "Message": "Test message"
         }]
         flag = flagger._format_flag(single_issue)
@@ -73,8 +73,8 @@ class TestValeFlagger(unittest.TestCase):
 
         # Multiple issues
         multiple_issues = [
-            {"Check": "asciidoctor-dita-vale.Rule1", "Message": "Message 1"},
-            {"Check": "asciidoctor-dita-vale.Rule2", "Message": "Message 2"}
+            {"Check": "AsciiDocDITA.Rule1", "Message": "Message 1"},
+            {"Check": "AsciiDocDITA.Rule2", "Message": "Message 2"}
         ]
         flag = flagger._format_flag(multiple_issues)
         self.assertIn("Rule1, Rule2", flag)

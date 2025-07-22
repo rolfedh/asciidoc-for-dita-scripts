@@ -9,7 +9,9 @@ class ValeFlaggerConfig:
     DEFAULT_CONFIG = {
         'vale': {
             'enabled_rules': [],
-            'disabled_rules': []
+            'disabled_rules': [],
+            'timeout_seconds': 300,  # 5 minute default timeout
+            'docker_image': 'ghcr.io/rolfedh/asciidoc-dita-toolkit-vale-adv:latest'
         },
         'valeflag': {
             'flag_format': '// ADT-FLAG [{rule}]: {message}',
@@ -49,3 +51,11 @@ class ValeFlaggerConfig:
     @property
     def flag_format(self):
         return self.config['valeflag'].get('flag_format', self.DEFAULT_CONFIG['valeflag']['flag_format'])
+
+    @property
+    def timeout_seconds(self):
+        return self.config['vale'].get('timeout_seconds', self.DEFAULT_CONFIG['vale']['timeout_seconds'])
+
+    @property
+    def docker_image(self):
+        return self.config['vale'].get('docker_image', self.DEFAULT_CONFIG['vale']['docker_image'])
