@@ -91,7 +91,7 @@ Let me know if you want a more robust script or integration with your toolkit!
 rolfedh: I need to give end users a reliable way to run vale and the https://github.com/jhradilek/asciidoctor-dita-vale ruleset with asciidoc-dita-toolkit.
 I think this might involve:
 - Serving Vale as a container. (It is available on Docker Hub at jdkato/vale. See https://vale.sh/docs/install#docker.)
-- I'm not sure what the best way to provide the asciidoctor-dita-vale ruleset. How should I ship the .vale.ini file? How should I provide the asciidoctor-dita-vale ruleset - by running `vale sync` or by shipping it in another container, or shipping both in my asciidoc-dita-toolkit container?
+- I'm not sure what the best way to provide the asciidoctor-dita-vale ruleset. How should I ship the .vale.ini file? Should I provide the asciidoctor-dita-vale ruleset by running `vale sync`, shipping it in another container, or including both in my asciidoc-dita-toolkit container?
 What do you recommend?
 
 
