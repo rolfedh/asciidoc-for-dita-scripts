@@ -293,8 +293,8 @@ publish: publish-check
 	echo "Version updated to $$new_version"; \
 	echo ""; \
 	echo "Step 7: Updating changelog for release..."; \
-	@if [ -f "./scripts/generate-changelog.sh" ]; then \
-	   changelog_output=$$(./scripts/generate-changelog.sh $$new_version 2>&1); \
+	if [ -f "./scripts/generate-changelog.sh" ]; then \
+		changelog_output=$$(./scripts/generate-changelog.sh $$new_version 2>&1); \
 		if [ $$? -ne 0 ]; then \
 			echo "Warning: Changelog generation failed with the following error:"; \
 			echo "$$changelog_output"; \
