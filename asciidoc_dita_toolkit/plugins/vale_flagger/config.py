@@ -1,3 +1,4 @@
+import copy
 import yaml
 from pathlib import Path
 from typing import Dict, Any
@@ -27,7 +28,7 @@ class ValeFlaggerConfig:
 
     def _load_config(self, config_path: str = None) -> Dict[str, Any]:
         """Load configuration from file or use defaults."""
-        config = self.DEFAULT_CONFIG.copy()
+        config = copy.deepcopy(self.DEFAULT_CONFIG)
 
         if config_path:
             path = Path(config_path)

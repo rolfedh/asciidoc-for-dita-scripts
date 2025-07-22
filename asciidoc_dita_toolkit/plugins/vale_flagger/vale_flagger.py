@@ -13,12 +13,12 @@ logger = logging.getLogger(__name__)
 class ValeFlagger:
     """
     Integrates Vale linter with AsciiDoc files for DITA compatibility checking.
-    
+
     This class provides functionality to run the Vale linter on AsciiDoc files,
     process the results, and optionally insert flags into the files based on the
     linter's output. The implementation uses Docker to run Vale with pre-configured
     AsciiDocDITA rules for consistent DITA compliance checking.
-    
+
     Args:
         config_path (str, optional): Path to the configuration file. If not provided,
             a default configuration will be used.
@@ -26,13 +26,13 @@ class ValeFlagger:
             the default format from the configuration will be used.
         dry_run (bool, optional): If True, the class will simulate operations without
             making any changes to files. Defaults to False.
-    
+
     Example:
         >>> from vale_flagger import ValeFlagger
         >>> flagger = ValeFlagger(config_path="config.yaml", dry_run=True)
         >>> results = flagger.run(target_path="docs/", include_rules=["Headings.Capitalization"])
         >>> print(f"Found {len(results)} files with issues")
-    
+
     Note:
         Requires Docker to be installed and running for Vale execution.
     """
@@ -105,7 +105,7 @@ class ValeFlagger:
         safe_parent = target_path.parent.resolve()
         if not safe_parent.exists():
             raise ValueError(f"Target directory does not exist: {safe_parent}")
-        
+
         cmd = [
             "docker", "run", "--rm",
             "-v", f"{safe_parent}:/docs",
