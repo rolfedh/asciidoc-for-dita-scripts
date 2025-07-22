@@ -120,9 +120,9 @@ class TestValeFlagger(unittest.TestCase):
             exclude_rules=["Rule3"]
         )
 
-        self.assertIn("asciidoctor-dita-vale.Rule1 = YES", config)
-        self.assertIn("asciidoctor-dita-vale.Rule2 = YES", config)
-        self.assertIn("asciidoctor-dita-vale.Rule3 = NO", config)
+        self.assertIn("AsciiDocDITA.Rule1 = YES", config)
+        self.assertIn("AsciiDocDITA.Rule2 = YES", config)
+        self.assertIn("AsciiDocDITA.Rule3 = NO", config)
 
 
 if __name__ == '__main__':
