@@ -28,6 +28,13 @@ python docs/examples/demo_example_block.py
 python docs/examples/demo_example_block_clean.py
 ```
 
+{: .note }
+**ValeFlagger Configuration Examples**: Configuration examples and usage guides are now included in the [user-guide documentation](../../user-guide/plugins/ValeFlagger.md#configuration-examples) for technical writers.
+cp docs/examples/vscode-tasks.json .vscode/tasks.json
+
+# Access via Command Palette: Ctrl+Shift+P -> "Tasks: Run Task"
+```
+
 ## Learning Path
 
 1. **Start here** - Use these demos to understand basic plugin usage

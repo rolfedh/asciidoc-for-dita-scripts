@@ -431,11 +431,11 @@ vale:
     - "Headings.Capitalization"
     - "Terms.Use"
     - "Structure.ShortDescription"
-  
+
   disabled_rules:
     - "Readability.TooWordy"
     - "Style.Contractions"
-  
+
   timeout_seconds: 300
 
 valeflag:
@@ -453,13 +453,13 @@ vale:
     - "Structure.ShortDescription"
     - "Structure.SectionOrder"
     - "Structure.ListFormat"
-    
+
     # Content quality
     - "Headings.Capitalization"
     - "Headings.Length"
     - "Terms.Use"
     - "Terms.Spelling"
-    
+
     # DITA-specific requirements
     - "DITA.CrossReferences"
     - "DITA.Metadata"

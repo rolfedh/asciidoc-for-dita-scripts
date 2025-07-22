@@ -44,17 +44,17 @@ ADT provides specialized plugins to address different DITA compliance issues:
 ### Content Validation Plugins
 
 {: .highlight }
-**[ExampleBlock]({% link plugins/ExampleBlock.md %})** - Ensures example blocks comply with DITA placement requirements  
-**[ValeFlagger]({% link plugins/ValeFlagger.md %})** - Automated DITA compatibility checking with helpful flags  
-**ContentType** - Validates content type declarations *(coming soon)*  
-**CrossReference** - Fixes cross-reference formats *(coming soon)*  
+**[ExampleBlock]({% link plugins/ExampleBlock.md %})** - Ensures example blocks comply with DITA placement requirements
+**[ValeFlagger]({% link plugins/ValeFlagger.md %})** - Automated DITA compatibility checking with helpful flags
+**ContentType** - Validates content type declarations *(coming soon)*
+**CrossReference** - Fixes cross-reference formats *(coming soon)*
 **EntityReference** - Converts HTML entities *(coming soon)*
 
 ### Analysis and Migration Plugins
 
-**ContextAnalyzer** - Analyzes document context usage *(coming soon)*  
-**ContextMigrator** - Migrates context-suffixed IDs *(coming soon)*  
-**DirectoryConfig** - Manages directory-level configuration *(coming soon)*  
+**ContextAnalyzer** - Analyzes document context usage *(coming soon)*
+**ContextMigrator** - Migrates context-suffixed IDs *(coming soon)*
+**DirectoryConfig** - Manages directory-level configuration *(coming soon)*
 **MetaDataExtractor** - Extracts and formats metadata *(coming soon)*
 
 [View All Plugins →]({% link plugins.md %}){: .btn .btn-outline }
@@ -74,7 +74,7 @@ pip install asciidoc-dita-toolkit
    ```bash
    # Create a managed workflow for your documentation project
    adt journey start --name "my-project" --directory "/path/to/docs"
-   
+
    # Execute modules step by step with progress tracking
    adt journey continue --name "my-project"
    ```
@@ -114,7 +114,7 @@ adt journey status --name "dita-migration"    # Check final results
 **Alternative: Manual plugin execution** (for advanced users or specific fixes):
 
 1. **Start with analysis** - Run plugins to understand the scope of issues
-2. **Process systematically** - Use one plugin at a time to understand changes  
+2. **Process systematically** - Use one plugin at a time to understand changes
 3. **Review each change** - Examine plugin output before proceeding
 4. **Test conversion** - Validate your content with DITA conversion tools
 
@@ -153,7 +153,7 @@ Create `.adt-modules.json` in your project root to configure plugin behavior:
   "version": "1.0",
   "modules": [
     {
-      "name": "ExampleBlock", 
+      "name": "ExampleBlock",
       "required": false,
       "config": {
         "interactive": false,
