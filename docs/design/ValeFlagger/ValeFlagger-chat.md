@@ -446,8 +446,8 @@ class ValeFlagger:
         # Add exclusions
         if exclude_dirs:
             for dir in exclude_dirs:
-                cmd.extend(["--glob", f"!{dir}/**/*.adoc"])
-
+                # Add a separate --glob flag for each exclusion
+                cmd.append(f"--glob=!{dir}/**/*.adoc")
         cmd.extend(["--output=JSON"] + paths)
 
         result = subprocess.run(cmd, capture_output=True, text=True)
