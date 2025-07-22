@@ -45,6 +45,7 @@ ADT provides specialized plugins to address different DITA compliance issues:
 
 {: .highlight }
 **[ExampleBlock]({% link plugins/ExampleBlock.md %})** - Ensures example blocks comply with DITA placement requirements  
+**[ValeFlagger]({% link plugins/ValeFlagger.md %})** - Automated DITA compatibility checking with helpful flags  
 **ContentType** - Validates content type declarations *(coming soon)*  
 **CrossReference** - Fixes cross-reference formats *(coming soon)*  
 **EntityReference** - Converts HTML entities *(coming soon)*

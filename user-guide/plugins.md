@@ -39,6 +39,22 @@ Validates and fixes content type declarations for DITA compatibility.
 
 ---
 
+### [ValeFlagger]({% link plugins/ValeFlagger.md %})
+{: .d-inline-block }
+
+Stable
+{: .label .label-green }
+
+Automatically checks AsciiDoc files for DITA compatibility using Vale linter and inserts helpful flags.
+
+**Common issues detected:**
+- Heading capitalization problems
+- Terminology inconsistencies
+- Missing content structure elements
+- Style and grammar issues
+
+---
+
 ### CrossReference
 {: .d-inline-block }
 
