@@ -80,12 +80,13 @@ class ValeFlagger:
         cmd = [
             "docker", "run", "--rm",
             "-v", f"{target_path.parent}:/docs",
-            "asciidoc-dita-toolkit/vale-adv",
+            "ghcr.io/rolfedh/asciidoc-dita-toolkit-vale-adv:latest",
             "--output=JSON"
         ]
 
-        # Build dynamic .vale.ini content if rules specified
-        if include_rules or exclude_rules:
+        # Build dynamic .vale.ini content if rules specified OR no local config exists
+        local_vale_config = target_path.parent / ".vale.ini"
+        if include_rules or exclude_rules or not local_vale_config.exists():
             config_content = self._build_vale_config(include_rules, exclude_rules)
             cmd.extend(["--config=/dev/stdin"])
             input_text = config_content
@@ -127,23 +128,20 @@ class ValeFlagger:
                           exclude_rules: List[str] = None) -> str:
         """Build dynamic Vale configuration."""
         config = [
-            "StylesPath = /vale/styles",
+            "StylesPath = /root/.local/share/vale/styles",
             "MinAlertLevel = suggestion",
             "",
-            "[formats]",
-            "adoc = md",
-            "",
-            "[*.{adoc,md}]",
-            "BasedOnStyles = asciidoctor-dita-vale"
+            "[*.adoc]",
+            "BasedOnStyles = AsciiDocDITA"
         ]
 
         if include_rules:
             for rule in include_rules:
-                config.append(f"asciidoctor-dita-vale.{rule} = YES")
+                config.append(f"AsciiDocDITA.{rule} = YES")
 
         if exclude_rules:
             for rule in exclude_rules:
-                config.append(f"asciidoctor-dita-vale.{rule} = NO")
+                config.append(f"AsciiDocDITA.{rule} = NO")
 
         return "\n".join(config)
 

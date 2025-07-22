@@ -1,72 +1,30 @@
 """
-ValeFlagger Plugin for AsciiDoc DITA Toolkit.
+ValeFlagger Module for AsciiDoc DITA Toolkit.
 
-This module integrates Vale linter with AsciiDoc files for DITA compatibility checking.
+This module wrapper enables ValeFlagger to be discovered by ModuleSequencer
+by following the expected naming pattern (vale_flagger_module.py).
 """
 
 import sys
 from typing import Dict, Any
 
-from ...adt_core.module_sequencer import ADTModule
-from .cli import main as cli_main
-from .vale_flagger import ValeFlagger
+from ..plugins.vale_flagger.cli import main as cli_main
 
 __description__ = "Check AsciiDoc files for DITA compatibility issues using Vale linter"
+__version__ = "0.1.0"
 
 
-class ValeFlaggerModule(ADTModule):
-    """ValeFlagger plugin module following ADT plugin architecture."""
+class ValeFlaggerModule:
+    """ValeFlagger module following ADT module architecture."""
 
-    @property
-    def name(self) -> str:
-        """Module name identifier."""
-        return "ValeFlagger"
+    def __init__(self):
+        self.name = "ValeFlagger"
+        self.description = __description__
+        self.version = __version__
 
-    @property
-    def version(self) -> str:
-        """Module version."""
-        return "0.1.0"
-
-    def initialize(self, config: Dict[str, Any]) -> None:
-        """Initialize the ValeFlagger module with configuration."""
-        self._initialized = True
-        # Initialize any additional configuration if needed
-
-    def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        """Execute ValeFlagger processing on files in the given context."""
-        try:
-            # Extract files to process from context
-            files = context.get('files', [])
-            if not files:
-                return {
-                    "status": "warning",
-                    "message": "No files provided for ValeFlagger processing"
-                }
-
-            # Create a ValeFlagger instance
-            vale_flagger = ValeFlagger()
-
-            # Process the files
-            total_modified = 0
-            for file_path in files:
-                result = vale_flagger.process_file(file_path, dry_run=False)
-                if result.get("status") == "success":
-                    total_modified += len(result.get("modified_files", []))
-
-            return {
-                "status": "success",
-                "exit_code": 0,
-                "modified_files_count": total_modified,
-                "message": f"ValeFlagger processed {len(files)} files, modified {total_modified}"
-            }
-
-        except Exception as e:
-            return {
-                "status": "error",
-                "exit_code": 1,
-                "error": str(e),
-                "message": f"ValeFlagger execution failed: {e}"
-            }
+    def initialize(self, config: Dict[str, Any] = None) -> Dict[str, Any]:
+        """Initialize the module."""
+        return {"status": "success", "message": "ValeFlagger initialized"}
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -85,13 +43,31 @@ class ValeFlaggerModule(ADTModule):
             args.extend(["--path", context["file"]])
         elif context.get("directory"):
             args.extend(["--path", context["directory"]])
+        else:
+            args.extend(["--path", "."])
 
         if context.get("verbose"):
             args.append("--verbose")
 
-        # Always run in dry-run mode when called as a plugin
-        # to avoid modifying files without explicit user consent
-        args.append("--dry-run")
+        # Run in dry-run mode by default for plugin integration
+        if not context.get("execute_changes", False):
+            args.append("--dry-run")
+
+        # Add rule specifications if provided
+        if context.get("enable_rules"):
+            rules = context["enable_rules"]
+            if isinstance(rules, list):
+                rules = ",".join(rules)
+            args.extend(["--enable-rules", rules])
+
+        if context.get("disable_rules"):
+            rules = context["disable_rules"]
+            if isinstance(rules, list):
+                rules = ",".join(rules)
+            args.extend(["--disable-rules", rules])
+
+        if context.get("config"):
+            args.extend(["--config", context["config"]])
 
         # Execute CLI
         try:
@@ -99,7 +75,7 @@ class ValeFlaggerModule(ADTModule):
             return {
                 "status": "success" if exit_code == 0 else "warning",
                 "exit_code": exit_code,
-                "modified_files": [],  # Dry run doesn't modify files
+                "modified_files": [] if args and "--dry-run" in args else [],
                 "message": "ValeFlagger completed successfully" if exit_code == 0 else "ValeFlagger found issues"
             }
         except Exception as e:
@@ -110,9 +86,9 @@ class ValeFlaggerModule(ADTModule):
                 "message": f"ValeFlagger failed: {e}"
             }
 
-    def cleanup(self):
+    def cleanup(self) -> Dict[str, Any]:
         """Cleanup resources (no-op for ValeFlagger)."""
-        pass
+        return {"status": "success", "message": "ValeFlagger cleanup completed"}
 
 
 def main(args):
@@ -124,9 +100,21 @@ def main(args):
         cli_args.extend(["--path", args.file])
     elif hasattr(args, 'directory') and args.directory:
         cli_args.extend(["--path", args.directory])
+    else:
+        cli_args.extend(["--path", "."])
 
     if hasattr(args, 'verbose') and args.verbose:
         cli_args.append("--verbose")
+
+    # Check for rule specifications
+    if hasattr(args, 'enable_rules') and args.enable_rules:
+        cli_args.extend(["--enable-rules", args.enable_rules])
+
+    if hasattr(args, 'disable_rules') and args.disable_rules:
+        cli_args.extend(["--disable-rules", args.disable_rules])
+
+    if hasattr(args, 'config') and args.config:
+        cli_args.extend(["--config", args.config])
 
     # Check if this is a dry run (default for plugin integration)
     if not hasattr(args, 'execute_changes') or not args.execute_changes:
