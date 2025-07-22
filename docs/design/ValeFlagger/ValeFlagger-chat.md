@@ -451,6 +451,8 @@ class ValeFlagger:
         cmd.extend(["--output=JSON"] + paths)
 
         result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode != 0:
+            raise RuntimeError(f"Vale command failed with return code {result.returncode}. Error: {result.stderr.strip()}")
         return json.loads(result.stdout)
 
     def insert_flags(self, vale_output):
