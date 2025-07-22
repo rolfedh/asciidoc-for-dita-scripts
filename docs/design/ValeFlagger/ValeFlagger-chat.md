@@ -453,7 +453,12 @@ class ValeFlagger:
         result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode != 0:
             raise RuntimeError(f"Vale command failed with return code {result.returncode}. Error: {result.stderr.strip()}")
-        return json.loads(result.stdout)
+        if result.returncode != 0:
+            raise RuntimeError(f"Vale command failed with return code {result.returncode}. Error: {result.stderr}")
+        try:
+            return json.loads(result.stdout)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Failed to parse Vale output as JSON. Error: {e}. Output: {result.stdout}")
 
     def insert_flags(self, vale_output):
         for file_path, issues in vale_output.items():
