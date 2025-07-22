@@ -19,14 +19,14 @@ PREV_TAG=$(git tag --sort=-version:refname | grep -A1 "^v${VERSION}$" | tail -n1
 if [ -z "$PREV_TAG" ]; then
     echo "Warning: No previous tag found. This should only happen for the very first release."
     echo "If this is not the first release, there may be an issue with tag naming or versioning."
-    
+
     # In automated contexts, fail safely rather than including full history
     if [[ ! -t 0 || ! -t 1 || -n "$CI" || -n "$MAKE_LEVEL" ]]; then
         echo "Running in automated context - aborting to prevent including full project history."
         echo "Please manually verify the version number and tag existence."
         exit 1
     fi
-    
+
     read -p "Continue with full project history? This will include ALL commits (y/n): " -n 1 -r
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
