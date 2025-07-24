@@ -5,7 +5,7 @@ This plugin adds a :_mod-docs-content-type: label in .adoc files where those are
 Refactored for improved separation of concerns, testability, and extensibility.
 """
 
-__description__ = "Add a :_mod-docs-content-type: label in .adoc files where those are missing, based on filename."
+__description__ = "Add/update content type attributes"
 
 import logging
 import sys

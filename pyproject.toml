@@ -65,6 +65,7 @@ CrossReference = "asciidoc_dita_toolkit.asciidoc_dita.plugins.CrossReference:Cro
 ExampleBlock = "asciidoc_dita_toolkit.asciidoc_dita.plugins.ExampleBlock:ExampleBlockModule"
 UserJourney = "asciidoc_dita_toolkit.asciidoc_dita.plugins.UserJourney:UserJourneyModule"
 ValeFlagger = "asciidoc_dita_toolkit.plugins.vale_flagger.plugin:ValeFlaggerModule"
+ArchiveUnusedFiles = "asciidoc_dita_toolkit.asciidoc_dita.plugins.ArchiveUnusedFiles:ArchiveUnusedFilesModule"
 
 [project.optional-dependencies]
 dev = [
@@ -85,7 +86,7 @@ python_functions = ["test_*"]
 addopts = [
     "-v",                              # Verbose output
     "--strict-markers",                # Require markers to be defined
-    "--strict-config",                 # Strict configuration parsing  
+    "--strict-config",                 # Strict configuration parsing
     "--tb=short",                      # Short traceback format
     "--rootdir=.",                     # Set root directory explicitly
     "--ignore=test_*.py",              # Ignore root-level test files
@@ -97,18 +98,18 @@ addopts = [
 # Custom markers for test categorization
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-    "integration: marks tests as integration tests", 
+    "integration: marks tests as integration tests",
     "unit: marks tests as unit tests",
     "cli: marks tests as CLI tests",
     "plugin: marks tests as plugin-specific tests",
 ]
 
-# Test file discovery settings  
+# Test file discovery settings
 norecursedirs = [
-    ".git", 
-    ".tox", 
-    "dist", 
-    "build", 
+    ".git",
+    ".tox",
+    "dist",
+    "build",
     "*.egg",
     "debug_env",
     "archive",

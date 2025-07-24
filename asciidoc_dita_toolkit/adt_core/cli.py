@@ -22,7 +22,7 @@ from .module_sequencer import ModuleSequencer
 def handle_system_exit(component_name: str, component_type: str, exit_exception: SystemExit) -> None:
     """
     Handle SystemExit exceptions from plugins gracefully.
-    
+
     Args:
         component_name: Name of the plugin that exited
         component_type: Type of component (always 'plugin')
@@ -33,23 +33,7 @@ def handle_system_exit(component_name: str, component_type: str, exit_exception:
     sys.exit(exit_exception.code)
 
 
-# =============================================================================
-# PLUGIN DESCRIPTIONS
-# =============================================================================
 
-# Centralized plugin descriptions used across help functions
-# This avoids duplication and ensures consistency
-PLUGIN_DESCRIPTIONS = {
-    "ContentType": "Add/update content type attributes in AsciiDoc files",
-    "ContextAnalyzer": "Analyze context IDs and cross-references",
-    "ContextMigrator": "Migrate context-dependent IDs to context-free format",
-    "CrossReference": "Validate and fix cross-references between files",
-    "DirectoryConfig": "Manage directory-specific plugin configurations",
-    "EntityReference": "Convert HTML entities to AsciiDoc equivalents",
-    "ExampleBlock": "Detect and process example blocks in documentation",
-    "journey": "Workflow orchestration for multi-module document processing",
-    "ValeFlagger": "Check AsciiDoc files for DITA compatibility issues using Vale linter",
-}
 
 
 def print_custom_help():
@@ -119,37 +103,37 @@ def print_version_with_plugins():
     print("AsciiDoc DITA Toolkit - unified package for technical documentation workflows")
     print("https://github.com/rolfedh/asciidoc-dita-toolkit")
     print()
-    
+
     # Get plugin information
     legacy_plugins = get_legacy_plugins()
     new_plugins = get_new_plugins_for_help()
-    
+
     # Combine and sort all plugins with version info
     all_plugins = []
-    
+
     # Add new plugins first (they have proper version info)
     for name, info in new_plugins.items():
-        desc = PLUGIN_DESCRIPTIONS.get(name, info['description'])
+        desc = info['description']
         version_str = getattr(info['plugin'], 'version', 'unknown')
         all_plugins.append((name, version_str, desc))
-    
+
     # Add legacy plugins only if they don't exist in new plugins
     for name, info in legacy_plugins.items():
         if name not in new_plugins:
-            desc = PLUGIN_DESCRIPTIONS.get(name, info['description'])
+            desc = info['description']
             # Try to get version from plugin, fallback to 'legacy'
             version_str = getattr(info.get('plugin'), '__version__', 'legacy')
             all_plugins.append((name, version_str, desc))
-    
+
     if all_plugins:
         print("AVAILABLE PLUGINS:")
         # Sort by plugin name
         all_plugins.sort(key=lambda x: x[0])
-        
+
         # Calculate dynamic column widths
         name_width = max(len(name) for name, _, _ in all_plugins) + 2
         version_width = max(len(version_str) for _, version_str, _ in all_plugins) + 2
-        
+
         # Print each plugin with dynamic widths
         for name, version_str, desc in all_plugins:
             print(f"  {name:<{name_width}} v{version_str:<{version_width}} {desc}")
@@ -231,12 +215,25 @@ def get_new_plugins_for_help():
             sequencer.discover_modules()
 
             for name, plugin in sequencer.available_modules.items():
-                # Use plugin's description property if available, otherwise use generic description
-                description = getattr(
-                    plugin,
-                    'description',
-                    f"New plugin system: {name} v{plugin.version}",
-                )
+                # Try to get description from plugin's module first, then plugin instance
+                description = None
+
+                # Try to get the module that contains this plugin class
+                try:
+                    plugin_module = sys.modules.get(plugin.__class__.__module__)
+                    if plugin_module:
+                        description = getattr(plugin_module, '__description__', None)
+                except:
+                    pass
+
+                # Fallback to plugin instance description or generic description
+                if not description:
+                    description = getattr(
+                        plugin,
+                        'description',
+                        f"New plugin system: {name} v{plugin.version}",
+                    )
+
                 plugins[name] = {"plugin": plugin, "description": description}
         finally:
             # Restore original logging level
@@ -258,10 +255,22 @@ def get_new_plugins():
         sequencer.discover_modules()
 
         for name, plugin in sequencer.available_modules.items():
-            # Use plugin's description property if available, otherwise use generic description
-            description = getattr(
-                plugin, 'description', f"New plugin system: {name} v{plugin.version}"
-            )
+            # Try to get description from plugin's module first, then plugin instance
+            description = None
+
+            # Try to get the module that contains this plugin class
+            try:
+                plugin_module = sys.modules.get(plugin.__class__.__module__)
+                if plugin_module:
+                    description = getattr(plugin_module, '__description__', None)
+            except:
+                pass
+
+            # Fallback to plugin instance description or generic description
+            if not description:
+                description = getattr(
+                    plugin, 'description', f"New plugin system: {name} v{plugin.version}"
+                )
             plugins[name] = {"plugin": plugin, "description": description}
     except Exception as e:
         print(f"Warning: Could not load new plugins: {e}", file=sys.stderr)
@@ -279,10 +288,22 @@ def get_new_plugins_with_warnings_control(suppress_warnings: bool = True):
         sequencer.discover_modules()
 
         for name, plugin in sequencer.available_modules.items():
-            # Use plugin's description property if available, otherwise use generic description
-            description = getattr(
-                plugin, 'description', f"New plugin system: {name} v{plugin.version}"
-            )
+            # Try to get description from plugin's module first, then plugin instance
+            description = None
+
+            # Try to get the module that contains this plugin class
+            try:
+                plugin_module = sys.modules.get(plugin.__class__.__module__)
+                if plugin_module:
+                    description = getattr(plugin_module, '__description__', None)
+            except:
+                pass
+
+            # Fallback to plugin instance description or generic description
+            if not description:
+                description = getattr(
+                    plugin, 'description', f"New plugin system: {name} v{plugin.version}"
+                )
             plugins[name] = {"plugin": plugin, "description": description}
     except Exception as e:
         print(f"Warning: Could not load new plugins: {e}", file=sys.stderr)
@@ -340,7 +361,7 @@ def print_detailed_plugin_list(suppress_warnings: bool = True):
 
     # Print plugins with clear descriptions
     for name in sorted(all_plugins.keys()):
-        desc = PLUGIN_DESCRIPTIONS.get(name, all_plugins[name]['description'])
+        desc = all_plugins[name]['description']
         print(f"  {name:<16} {desc}")
 
     print(f"\nUSAGE EXAMPLES:")
@@ -381,7 +402,7 @@ def print_plugin_list_with_warnings_control(suppress_warnings: bool = True):
 
 def create_legacy_subcommand(subparsers, name, plugin_info):
     """Create a subcommand for a legacy plugin."""
-    description = PLUGIN_DESCRIPTIONS.get(name, plugin_info["description"])
+    description = plugin_info["description"]
     parser = subparsers.add_parser(name, help=description)
 
     # Add common arguments that legacy plugins expect
@@ -411,13 +432,13 @@ def create_legacy_subcommand(subparsers, name, plugin_info):
         except Exception as e:
             print(f"Error running plugin {name}: {e}", file=sys.stderr)
             sys.exit(1)
-    
+
     parser.set_defaults(func=run_legacy_plugin)
 
 
 def create_new_plugin_subcommand(subparsers, name, plugin_info):
     """Create a subcommand for a new plugin."""
-    description = PLUGIN_DESCRIPTIONS.get(name, plugin_info["description"])
+    description = plugin_info["description"]
     parser = subparsers.add_parser(name, help=description)
 
     # Add common arguments
@@ -475,20 +496,20 @@ def create_user_journey_subcommands(subparsers):
     try:
         # Import UserJourney module
         from asciidoc_dita_toolkit.asciidoc_dita.plugins.UserJourney import UserJourneyModule
-        
+
         # Initialize UserJourney module
         user_journey_module = UserJourneyModule()
         init_result = user_journey_module.initialize()
-        
+
         if init_result.get("status") != "success":
             raise ImportError(f"Failed to initialize UserJourney: {init_result.get('message')}")
-        
+
         # Create the journey command group
         journey_parser = subparsers.add_parser(
-            'journey', 
+            'journey',
             help='Workflow orchestration commands for multi-module document processing'
         )
-        
+
         # Create subcommands for journey
         journey_subparsers = journey_parser.add_subparsers(
             dest='journey_command',
@@ -496,7 +517,7 @@ def create_user_journey_subcommands(subparsers):
             metavar='<action>',
             help='Available workflow actions'
         )
-        
+
         # journey start
         start_parser = journey_subparsers.add_parser(
             'start',
@@ -512,7 +533,7 @@ def create_user_journey_subcommands(subparsers):
             required=True,
             help='Directory containing .adoc files to process'
         )
-        
+
         # journey resume
         resume_parser = journey_subparsers.add_parser(
             'resume',
@@ -523,7 +544,7 @@ def create_user_journey_subcommands(subparsers):
             required=True,
             help='Name of the workflow to resume'
         )
-        
+
         # journey continue
         continue_parser = journey_subparsers.add_parser(
             'continue',
@@ -534,7 +555,7 @@ def create_user_journey_subcommands(subparsers):
             required=True,
             help='Name of the workflow to continue'
         )
-        
+
         # journey status
         status_parser = journey_subparsers.add_parser(
             'status',
@@ -544,13 +565,13 @@ def create_user_journey_subcommands(subparsers):
             '--name', '-n',
             help='Name of specific workflow to show (omit to show all)'
         )
-        
+
         # journey list
         list_parser = journey_subparsers.add_parser(
             'list',
             help='List all available workflows'
         )
-        
+
         # journey cleanup
         cleanup_parser = journey_subparsers.add_parser(
             'cleanup',
@@ -571,13 +592,13 @@ def create_user_journey_subcommands(subparsers):
             action='store_true',
             help='Delete all workflows (use with caution!)'
         )
-        
+
         # Set the function to handle all journey commands
         def run_user_journey_command(args):
             try:
                 exit_code = user_journey_module.process_cli_command(args)
                 sys.exit(exit_code)
-                
+
             except SystemExit:
                 raise  # Re-raise SystemExit to preserve exit codes
             except Exception as e:
@@ -585,11 +606,11 @@ def create_user_journey_subcommands(subparsers):
                 import traceback
                 traceback.print_exc()
                 sys.exit(1)
-        
+
         # Set the handler function for all journey subcommands
         for subparser in [start_parser, resume_parser, continue_parser, status_parser, list_parser, cleanup_parser]:
             subparser.set_defaults(func=run_user_journey_command)
-            
+
     except ImportError as e:
         # UserJourney module not available - add a placeholder that shows a helpful message
         def journey_not_available(args):
@@ -597,7 +618,7 @@ def create_user_journey_subcommands(subparsers):
             print(f"   Import error: {e}", file=sys.stderr)
             print("   Make sure the package is properly installed and up-to-date", file=sys.stderr)
             sys.exit(1)
-        
+
         # Create a basic journey command that shows the error
         journey_parser = subparsers.add_parser(
             'journey',

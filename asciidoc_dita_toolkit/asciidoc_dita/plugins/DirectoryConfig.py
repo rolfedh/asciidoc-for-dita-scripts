@@ -9,7 +9,7 @@ This is a preview feature that must be explicitly enabled via:
 export ADT_ENABLE_DIRECTORY_CONFIG=true
 """
 
-__description__ = "Configure directory scoping for AsciiDoc processing (preview)"
+__description__ = "Manage directory-specific configurations"
 
 import logging
 import os

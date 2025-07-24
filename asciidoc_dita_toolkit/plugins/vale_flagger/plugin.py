@@ -11,7 +11,7 @@ from ...adt_core.module_sequencer import ADTModule
 from .cli import main as cli_main
 from .vale_flagger import ValeFlagger
 
-__description__ = "Check AsciiDoc files for DITA compatibility issues using Vale linter"
+__description__ = "Flag DITA compatibility issues found by Vale"
 
 
 class ValeFlaggerModule(ADTModule):

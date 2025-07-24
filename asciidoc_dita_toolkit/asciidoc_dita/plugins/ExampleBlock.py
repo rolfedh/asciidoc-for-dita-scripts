@@ -5,7 +5,7 @@ This plugin detects and fixes AsciiDoc example blocks that are placed in invalid
 according to DITA 1.3 specification (within sections, other blocks, or lists).
 """
 
-__description__ = "Flag or fix example blocks in problematic locations."
+__description__ = "Detect and process example blocks"
 
 import logging
 import re
@@ -328,7 +328,7 @@ class ExampleBlockProcessor:
         self.interactive = interactive
         self.quiet_mode = quiet_mode
         self.comment_template = """//
-// ADT ExampleBlock: Move this example block to the main body of the topic 
+// ADT ExampleBlock: Move this example block to the main body of the topic
 // (before the first section header) for DITA 1.3 compliance.
 //
 """
@@ -685,38 +685,38 @@ def create_processor(
 class ExampleBlockModule(ADTModule):
     """
     ADTModule implementation for ExampleBlock plugin.
-    
+
     Detects and fixes AsciiDoc example blocks that are placed in invalid locations
     according to DITA 1.3 specification (within sections, other blocks, or lists).
     """
-    
+
     @property
     def name(self) -> str:
         """Module name identifier."""
         return "ExampleBlock"
-    
+
     @property
     def version(self) -> str:
         """Module version."""
         return "1.0.0"
-    
+
     @property
     def dependencies(self) -> List[str]:
         """List of required module names."""
         return []
-    
+
     def initialize(self, config: Dict[str, Any]) -> None:
         """Initialize the module with configuration."""
         # ExampleBlock doesn't require special initialization
         pass
-    
+
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
         """
         Execute the module to process files and detect/fix example block issues.
-        
+
         Args:
             context: Processing context containing files and configuration
-            
+
         Returns:
             Dict containing processing results and statistics
         """
@@ -727,20 +727,20 @@ class ExampleBlockModule(ADTModule):
             'issues_found': 0,
             'issues_fixed': 0
         }
-        
+
         processor = create_processor(
             batch_mode=context.get('batch_mode', True),
             quiet_mode=context.get('quiet_mode', False)
         )
-        
+
         for file_path in files:
             if file_path.endswith('.adoc'):
                 success = process_example_block_file(file_path, processor)
                 if success:
                     results['files_processed'] += 1
-                    # Note: More detailed statistics would require modifying 
+                    # Note: More detailed statistics would require modifying
                     # the process_example_block_file function
-        
+
         return results
 
 

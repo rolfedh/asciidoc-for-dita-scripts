@@ -8,7 +8,7 @@ See:
 - https://github.com/jhradilek/asciidoctor-dita-vale/tree/main/fixtures/EntityReference
 """
 
-__description__ = "Replace unsupported HTML character entity references in .adoc files with AsciiDoc attribute references."
+__description__ = "Convert HTML entities to AsciiDoc"
 
 import re
 import sys

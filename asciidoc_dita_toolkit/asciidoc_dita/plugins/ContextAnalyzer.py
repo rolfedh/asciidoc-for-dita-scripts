@@ -8,9 +8,7 @@ with _{context} suffixes, xref usage, and potential collision scenarios.
 This is Phase 1 of the context migration strategy - analysis only, no changes.
 """
 
-__description__ = (
-    "Analyze AsciiDoc documentation for context usage and migration complexity"
-)
+__description__ = "Analyze context IDs and references"
 
 import json
 import os

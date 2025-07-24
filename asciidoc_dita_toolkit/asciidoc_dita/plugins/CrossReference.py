@@ -10,7 +10,7 @@ Original author: Roger Heslop
 Enhanced for AsciiDoc DITA Toolkit framework
 """
 
-__description__ = "Fix cross-references in AsciiDoc files by updating xref links to include proper file paths"
+__description__ = "Validate and fix cross-references"
 
 import json
 import os
