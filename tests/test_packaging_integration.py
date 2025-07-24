@@ -128,8 +128,9 @@ except Exception as e:
 
         return wheel_files[0]
 
-    def test_wheel_contains_required_modules(self, build_wheel):
+    def test_wheel_contains_required_modules(self, build_wheel, notify_user):
         """Test that the wheel contains both asciidoc_dita_toolkit and modules packages."""
+        notify_user.notify_slow_test_start("Analyzing wheel contents", 8)
         wheel_path = build_wheel
 
         with zipfile.ZipFile(wheel_path, 'r') as wheel:
@@ -167,8 +168,9 @@ except Exception as e:
             assert 'modules' not in top_level_dirs, "Top-level 'modules' directory should be removed after refactoring"
             assert 'asciidoc_dita_toolkit' in top_level_dirs, "Top-level 'asciidoc_dita_toolkit' directory missing from wheel"
 
-    def test_entry_points_defined_correctly(self, build_wheel):
+    def test_entry_points_defined_correctly(self, build_wheel, notify_user):
         """Test that all entry points are properly defined in the wheel metadata."""
+        notify_user.notify_slow_test_start("Validating entry points", 6)
         wheel_path = build_wheel
 
         with zipfile.ZipFile(wheel_path, 'r') as wheel:
@@ -197,8 +199,9 @@ except Exception as e:
             for plugin in expected_plugins:
                 assert plugin in entry_points_content, f"Plugin entry point '{plugin}' not found in metadata"
 
-    def test_fresh_install_and_import(self, build_wheel, tmp_path):
+    def test_fresh_install_and_import(self, build_wheel, tmp_path, notify_user):
         """Test installing the wheel in a clean environment and importing modules."""
+        notify_user.notify_slow_test_start("Setting up clean environment and testing imports", 12)
         wheel_path = build_wheel
         venv_dir = tmp_path / "test_venv"
 
@@ -236,8 +239,9 @@ except Exception as e:
         assert "SUCCESS: asciidoc_dita_toolkit.modules.entity_reference imported" in result.stdout
         assert "SUCCESS: asciidoc_dita_toolkit.modules.content_type imported" in result.stdout
 
-    def test_cli_commands_accessible(self, build_wheel, tmp_path):
+    def test_cli_commands_accessible(self, build_wheel, tmp_path, notify_user):
         """Test that CLI commands are accessible after installation."""
+        notify_user.notify_slow_test_start("Testing CLI command accessibility", 10)
         wheel_path = build_wheel
         venv_dir = tmp_path / "test_venv"
 
@@ -284,8 +288,9 @@ except Exception as e:
                     assert "No module named 'modules'" not in result.stderr, \
                         f"CLI command '{cmd}' failed with module import error: {result.stderr}"
 
-    def test_plugin_discovery_works(self, build_wheel, tmp_path):
-        """Test that plugin discovery works after installation."""
+    def test_plugin_discovery_works(self, build_wheel, tmp_path, notify_user):
+        """Test that plugin entry points can be discovered and loaded."""
+        notify_user.notify_slow_test_start("Testing plugin discovery and loading", 9)
         wheel_path = build_wheel
         venv_dir = tmp_path / "test_venv"
 
@@ -313,8 +318,9 @@ except Exception as e:
 
         assert "SUCCESS: Loaded EntityReference plugin class" in result.stdout
 
-    def test_version_consistency(self, build_wheel):
+    def test_version_consistency(self, build_wheel, notify_user):
         """Test that version is consistent between pyproject.toml and package."""
+        notify_user.notify_slow_test_start("Verifying version consistency", 7)
         # Read version from pyproject.toml
         project_root = Path(__file__).parent.parent
         pyproject_path = project_root / "pyproject.toml"
