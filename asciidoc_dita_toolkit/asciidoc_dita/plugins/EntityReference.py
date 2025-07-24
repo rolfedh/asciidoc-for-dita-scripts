@@ -296,5 +296,3 @@ def process_file(filepath, callback=None):
         print(f"Processed {filepath} (preserved per-line endings)")
     except Exception as e:
         print(f"Error processing {filepath}: {e}")
-
-
