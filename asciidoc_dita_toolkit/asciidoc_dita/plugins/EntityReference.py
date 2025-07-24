@@ -16,7 +16,6 @@ from pathlib import Path
 from typing import List, Dict, Any
 
 from ..file_utils import (
-    common_arg_parser,
     process_adoc_files,
     read_text_preserve_endings,
     write_text_preserve_endings,
@@ -299,42 +298,3 @@ def process_file(filepath, callback=None):
         print(f"Error processing {filepath}: {e}")
 
 
-def main(args):
-    """Legacy main function for backward compatibility."""
-    if ADT_MODULE_AVAILABLE:
-        # Use the new ADTModule implementation
-        module = EntityReferenceModule()
-
-        # Initialize with basic configuration
-        config = {
-            "verbose": getattr(args, "verbose", False),
-            "timeout_seconds": 30,
-            "cache_size": 1000,
-            "skip_comments": True,
-        }
-        module.initialize(config)
-
-        # Execute with context
-        context = {
-            "file": getattr(args, "file", None),
-            "recursive": getattr(args, "recursive", False),
-            "directory": getattr(args, "directory", "."),
-            "verbose": getattr(args, "verbose", False),
-        }
-
-        result = module.execute(context)
-
-        # Cleanup
-        module.cleanup()
-
-        return result
-    else:
-        # Fallback to legacy implementation
-        process_adoc_files(args, process_file)
-
-
-def register_subcommand(subparsers):
-    """Register this plugin as a subcommand."""
-    parser = subparsers.add_parser("EntityReference", help=__description__)
-    common_arg_parser(parser)
-    parser.set_defaults(func=main)

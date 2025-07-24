@@ -154,57 +154,6 @@ class TestContentTypePlugin(unittest.TestCase):
         self.assertEqual(len(result), 4)  # Should not add another blank line
 
 
-class TestContentTypeCLIIntegration(unittest.TestCase):
-    """Test cases for ContentType plugin CLI integration."""
-
-    @patch.dict(os.environ, {}, clear=True)
-    @patch("sys.argv", ["toolkit", "--help"])
-    @patch("sys.stdout", new_callable=StringIO)
-    def test_content_type_disabled_by_default(self, mock_stdout):
-        """Test that ContentType plugin is disabled by default."""
-        from asciidoc_dita_toolkit.asciidoc_dita import toolkit
-
-        try:
-            toolkit.main()
-        except SystemExit:
-            pass  # argparse calls sys.exit after showing help
-
-        output = mock_stdout.getvalue()
-        # ContentType should not appear in subcommands when disabled
-        self.assertNotIn("ContentType", output)
-
-    @patch.dict(os.environ, {"ADT_ENABLE_CONTENT_TYPE": "true"})
-    @patch("sys.argv", ["toolkit", "--help"])
-    @patch("sys.stdout", new_callable=StringIO)
-    def test_content_type_enabled_via_env(self, mock_stdout):
-        """Test that ContentType plugin can be enabled via environment variable."""
-        from asciidoc_dita_toolkit.asciidoc_dita import toolkit
-
-        try:
-            toolkit.main()
-        except SystemExit:
-            pass  # argparse calls sys.exit after showing help
-
-        output = mock_stdout.getvalue()
-        # ContentType should appear in subcommands when enabled
-        self.assertIn("ContentType", output)
-
-    @patch.dict(os.environ, {"ADT_ENABLE_CONTENT_TYPE": "false"})
-    @patch("sys.argv", ["toolkit", "--help"])
-    @patch("sys.stdout", new_callable=StringIO)
-    def test_content_type_explicitly_disabled(self, mock_stdout):
-        """Test that ContentType plugin can be explicitly disabled."""
-        from asciidoc_dita_toolkit.asciidoc_dita import toolkit
-
-        try:
-            toolkit.main()
-        except SystemExit:
-            pass  # argparse calls sys.exit after showing help
-
-        output = mock_stdout.getvalue()
-        # ContentType should not appear when explicitly disabled
-        self.assertNotIn("ContentType", output)
-
 
 if __name__ == "__main__":
     unittest.main()
