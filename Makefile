@@ -359,7 +359,7 @@ publish: publish-check
 	fi; \
 	echo "🚀 GitHub release created: https://github.com/rolfedh/asciidoc-dita-toolkit/releases/tag/$$tag_name"; \
 	echo ""; \
-	echo "� PyPI publishing and container builds will be handled automatically by GitHub Actions"; \
+	echo "📦 PyPI publishing and container builds will be handled automatically by GitHub Actions"; \
 	echo "📦 Monitor progress: https://github.com/rolfedh/asciidoc-dita-toolkit/actions"; \
 	echo ""; \
 	echo "✅ Release process complete! GitHub Actions will:"; \
