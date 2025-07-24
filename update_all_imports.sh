@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Script to update all old plugin imports to new module locations
-cd /home/rolfedh/asciidoc-dita-toolkit
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR" || { echo "Error: Cannot change to script directory"; exit 1; }
 
 echo "Updating imports to use new module locations..."
 

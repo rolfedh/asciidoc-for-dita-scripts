@@ -8,7 +8,7 @@ by following the expected naming pattern (vale_flagger_module.py).
 import sys
 from typing import Dict, Any
 
-from asciidoc_dita_toolkit.asciidoc_ditaplugins.vale_flagger.cli import main as cli_main
+from asciidoc_dita_toolkit.plugins.vale_flagger.cli import main as cli_main
 
 __description__ = "Flag DITA compatibility issues found by Vale linter"
 __version__ = "0.1.0"

@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Script to fix broken imports after the migration
-cd /home/rolfedh/asciidoc-dita-toolkit
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR" || { echo "Error: Cannot change to script directory"; exit 1; }
 
 echo "Fixing broken imports in migrated modules..."
 
