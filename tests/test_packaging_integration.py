@@ -13,10 +13,11 @@ Key scenarios tested:
 """
 
 import os
-import sys
-import subprocess
-import tempfile
+import re
 import shutil
+import subprocess
+import sys
+import tempfile
 import zipfile
 from pathlib import Path
 import pytest
@@ -27,6 +28,76 @@ import importlib.util
 @pytest.mark.slow
 class TestPackagingIntegration:
     """Test packaging and distribution integrity."""
+
+    @staticmethod
+    def _get_import_test_script():
+        """Get the script for testing imports in a clean environment."""
+        return '''
+import sys
+try:
+    import asciidoc_dita_toolkit
+    print("SUCCESS: asciidoc_dita_toolkit imported")
+
+    # Test importing modules that caused the v2.0.11 failure
+    from modules.entity_reference import EntityReferenceModule
+    print("SUCCESS: modules.entity_reference imported")
+
+    from modules.content_type import ContentTypeModule
+    print("SUCCESS: modules.content_type imported")
+
+    # Test that version is accessible
+    from asciidoc_dita_toolkit.adt_core import __version__
+    print(f"SUCCESS: Version {__version__} accessible")
+
+except ImportError as e:
+    print(f"FAILED: Import error - {e}")
+    sys.exit(1)
+except Exception as e:
+    print(f"FAILED: Unexpected error - {e}")
+    sys.exit(1)
+'''
+
+    @staticmethod
+    def _get_plugin_discovery_script():
+        """Get the script for testing plugin discovery in a clean environment."""
+        return '''
+import sys
+try:
+    # Use importlib.metadata for modern Python versions
+    try:
+        from importlib.metadata import entry_points
+    except ImportError:
+        # Fallback for Python < 3.8
+        from importlib_metadata import entry_points
+
+    # Test that entry points can be discovered
+    eps = entry_points()
+    adt_modules = eps.select(group='adt.modules') if hasattr(eps, 'select') else eps.get('adt.modules', [])
+    entry_points_list = list(adt_modules)
+    print(f"Found {len(entry_points_list)} plugin entry points")
+
+    if len(entry_points_list) == 0:
+        print("ERROR: No plugin entry points found")
+        sys.exit(1)
+
+    # Test that we can load at least one plugin
+    for ep in entry_points_list:
+        if ep.name == 'EntityReference':
+            try:
+                plugin_class = ep.load()
+                print(f"SUCCESS: Loaded {ep.name} plugin class: {plugin_class}")
+                break
+            except Exception as e:
+                print(f"ERROR: Failed to load {ep.name} plugin: {e}")
+                sys.exit(1)
+    else:
+        print("ERROR: EntityReference plugin not found in entry points")
+        sys.exit(1)
+
+except Exception as e:
+    print(f"ERROR: Plugin discovery test failed: {e}")
+    sys.exit(1)
+'''
 
     @pytest.fixture
     def build_wheel(self, tmp_path):
@@ -44,7 +115,10 @@ class TestPackagingIntegration:
         ], cwd=project_root, capture_output=True, text=True)
 
         if result.returncode != 0:
-            pytest.fail(f"Wheel build failed: {result.stderr}")
+            error_msg = f"Wheel build failed: {result.stderr}"
+            if "No module named 'build'" in result.stderr:
+                error_msg += "\n\nTo install build dependencies, run: pip install build"
+            pytest.fail(error_msg)
 
         # Find the wheel file
         wheel_files = list(build_dir.glob("*.whl"))
@@ -146,30 +220,7 @@ class TestPackagingIntegration:
             pytest.fail(f"Wheel installation failed: {result.stderr}")
 
         # Test importing the main package
-        import_test_script = '''
-import sys
-try:
-    import asciidoc_dita_toolkit
-    print("SUCCESS: asciidoc_dita_toolkit imported")
-
-    # Test importing modules that caused the v2.0.11 failure
-    from modules.entity_reference import EntityReferenceModule
-    print("SUCCESS: modules.entity_reference imported")
-
-    from modules.content_type import ContentTypeModule
-    print("SUCCESS: modules.content_type imported")
-
-    # Test that version is accessible
-    from asciidoc_dita_toolkit.adt_core import __version__
-    print(f"SUCCESS: Version {__version__} accessible")
-
-except ImportError as e:
-    print(f"FAILED: Import error - {e}")
-    sys.exit(1)
-except Exception as e:
-    print(f"FAILED: Unexpected error - {e}")
-    sys.exit(1)
-'''
+        import_test_script = self._get_import_test_script()
 
         result = subprocess.run([
             str(python_exe), "-c", import_test_script
@@ -249,44 +300,7 @@ except Exception as e:
         subprocess.run([str(pip_exe), "install", str(wheel_path)], check=True)
 
         # Test plugin discovery
-        plugin_test_script = '''
-import sys
-try:
-    # Use importlib.metadata for modern Python versions
-    try:
-        from importlib.metadata import entry_points
-    except ImportError:
-        # Fallback for Python < 3.8
-        from importlib_metadata import entry_points
-
-    # Test that entry points can be discovered
-    eps = entry_points()
-    adt_modules = eps.select(group='adt.modules') if hasattr(eps, 'select') else eps.get('adt.modules', [])
-    entry_points_list = list(adt_modules)
-    print(f"Found {len(entry_points_list)} plugin entry points")
-
-    if len(entry_points_list) == 0:
-        print("ERROR: No plugin entry points found")
-        sys.exit(1)
-
-    # Test that we can load at least one plugin
-    for ep in entry_points_list:
-        if ep.name == 'EntityReference':
-            try:
-                plugin_class = ep.load()
-                print(f"SUCCESS: Loaded {ep.name} plugin class: {plugin_class}")
-                break
-            except Exception as e:
-                print(f"ERROR: Failed to load {ep.name} plugin: {e}")
-                sys.exit(1)
-    else:
-        print("ERROR: EntityReference plugin not found in entry points")
-        sys.exit(1)
-
-except Exception as e:
-    print(f"ERROR: Plugin discovery test failed: {e}")
-    sys.exit(1)
-'''
+        plugin_test_script = self._get_plugin_discovery_script()
 
         result = subprocess.run([
             str(python_exe), "-c", plugin_test_script
@@ -307,7 +321,6 @@ except Exception as e:
             pyproject_content = f.read()
 
         # Extract version from pyproject.toml
-        import re
         version_match = re.search(r'version = "([^"]+)"', pyproject_content)
         assert version_match, "Could not find version in pyproject.toml"
         pyproject_version = version_match.group(1)
