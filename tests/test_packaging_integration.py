@@ -38,12 +38,13 @@ try:
     import asciidoc_dita_toolkit
     print("SUCCESS: asciidoc_dita_toolkit imported")
 
-    # Test importing modules that caused the v2.0.11 failure
-    from modules.entity_reference import EntityReferenceModule
-    print("SUCCESS: modules.entity_reference imported")
+    # Test importing modules that were consolidated in v2.1.0 refactoring
+    from asciidoc_dita_toolkit.modules.entity_reference import EntityReferenceModule
+    print("SUCCESS: asciidoc_dita_toolkit.modules.entity_reference imported")
 
-    from modules.content_type import ContentTypeModule
-    print("SUCCESS: modules.content_type imported")
+    # Test import from new module location
+    from asciidoc_dita_toolkit.modules.content_type import ContentTypeModule
+    print("SUCCESS: asciidoc_dita_toolkit.modules.content_type imported")
 
     # Test that version is accessible
     from asciidoc_dita_toolkit.adt_core import __version__
@@ -127,8 +128,9 @@ except Exception as e:
 
         return wheel_files[0]
 
-    def test_wheel_contains_required_modules(self, build_wheel):
+    def test_wheel_contains_required_modules(self, build_wheel, notify_user):
         """Test that the wheel contains both asciidoc_dita_toolkit and modules packages."""
+        notify_user.notify_slow_test_start("Analyzing wheel contents", 8)
         wheel_path = build_wheel
 
         with zipfile.ZipFile(wheel_path, 'r') as wheel:
@@ -138,17 +140,17 @@ except Exception as e:
             asciidoc_dita_files = [f for f in file_list if f.startswith('asciidoc_dita_toolkit/')]
             assert asciidoc_dita_files, "asciidoc_dita_toolkit package not found in wheel"
 
-            # Check for modules package (this was missing in v2.0.11)
-            modules_files = [f for f in file_list if f.startswith('modules/')]
-            assert modules_files, "modules package not found in wheel - this was the v2.0.11 bug!"
+            # Check for modules package under asciidoc_dita_toolkit (new v2.1.0+ structure)
+            modules_files = [f for f in file_list if f.startswith('asciidoc_dita_toolkit/modules/')]
+            assert modules_files, "asciidoc_dita_toolkit.modules package not found in wheel - refactoring failed!"
 
-            # Verify specific critical files that were missing in v2.0.11
+            # Verify specific critical files in the new structure
             expected_files = [
                 'asciidoc_dita_toolkit/__init__.py',
                 'asciidoc_dita_toolkit/adt_core/__init__.py',
-                'modules/__init__.py',
-                'modules/content_type.py',
-                'modules/entity_reference.py',
+                'asciidoc_dita_toolkit/modules/__init__.py',
+                'asciidoc_dita_toolkit/modules/content_type/__init__.py',
+                'asciidoc_dita_toolkit/modules/entity_reference/__init__.py',
             ]
 
             for expected_file in expected_files:
@@ -162,11 +164,13 @@ except Exception as e:
                     top_level_dir = file_path.split('/')[0]
                     top_level_dirs.add(top_level_dir)
 
-            assert 'modules' in top_level_dirs, "Top-level 'modules' directory missing from wheel"
+            # After v2.1.0 refactoring, we should NOT have top-level 'modules' directory
+            assert 'modules' not in top_level_dirs, "Top-level 'modules' directory should be removed after refactoring"
             assert 'asciidoc_dita_toolkit' in top_level_dirs, "Top-level 'asciidoc_dita_toolkit' directory missing from wheel"
 
-    def test_entry_points_defined_correctly(self, build_wheel):
+    def test_entry_points_defined_correctly(self, build_wheel, notify_user):
         """Test that all entry points are properly defined in the wheel metadata."""
+        notify_user.notify_slow_test_start("Validating entry points", 6)
         wheel_path = build_wheel
 
         with zipfile.ZipFile(wheel_path, 'r') as wheel:
@@ -188,15 +192,16 @@ except Exception as e:
 
             # Check for plugin entry points
             expected_plugins = [
-                'EntityReference = asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference:EntityReferenceModule',
-                'ContentType = asciidoc_dita_toolkit.asciidoc_dita.plugins.ContentType:ContentTypeModule',
+                'EntityReference = asciidoc_dita_toolkit.modules.entity_reference:EntityReferenceModule',
+                'ContentType = asciidoc_dita_toolkit.modules.content_type:ContentTypeModule',
             ]
 
             for plugin in expected_plugins:
                 assert plugin in entry_points_content, f"Plugin entry point '{plugin}' not found in metadata"
 
-    def test_fresh_install_and_import(self, build_wheel, tmp_path):
+    def test_fresh_install_and_import(self, build_wheel, tmp_path, notify_user):
         """Test installing the wheel in a clean environment and importing modules."""
+        notify_user.notify_slow_test_start("Setting up clean environment and testing imports", 12)
         wheel_path = build_wheel
         venv_dir = tmp_path / "test_venv"
 
@@ -231,11 +236,12 @@ except Exception as e:
 
         # Verify success messages
         assert "SUCCESS: asciidoc_dita_toolkit imported" in result.stdout
-        assert "SUCCESS: modules.entity_reference imported" in result.stdout
-        assert "SUCCESS: modules.content_type imported" in result.stdout
+        assert "SUCCESS: asciidoc_dita_toolkit.modules.entity_reference imported" in result.stdout
+        assert "SUCCESS: asciidoc_dita_toolkit.modules.content_type imported" in result.stdout
 
-    def test_cli_commands_accessible(self, build_wheel, tmp_path):
+    def test_cli_commands_accessible(self, build_wheel, tmp_path, notify_user):
         """Test that CLI commands are accessible after installation."""
+        notify_user.notify_slow_test_start("Testing CLI command accessibility", 10)
         wheel_path = build_wheel
         venv_dir = tmp_path / "test_venv"
 
@@ -282,8 +288,9 @@ except Exception as e:
                     assert "No module named 'modules'" not in result.stderr, \
                         f"CLI command '{cmd}' failed with module import error: {result.stderr}"
 
-    def test_plugin_discovery_works(self, build_wheel, tmp_path):
-        """Test that plugin discovery works after installation."""
+    def test_plugin_discovery_works(self, build_wheel, tmp_path, notify_user):
+        """Test that plugin entry points can be discovered and loaded."""
+        notify_user.notify_slow_test_start("Testing plugin discovery and loading", 9)
         wheel_path = build_wheel
         venv_dir = tmp_path / "test_venv"
 
@@ -311,8 +318,9 @@ except Exception as e:
 
         assert "SUCCESS: Loaded EntityReference plugin class" in result.stdout
 
-    def test_version_consistency(self, build_wheel):
+    def test_version_consistency(self, build_wheel, notify_user):
         """Test that version is consistent between pyproject.toml and package."""
+        notify_user.notify_slow_test_start("Verifying version consistency", 7)
         # Read version from pyproject.toml
         project_root = Path(__file__).parent.parent
         pyproject_path = project_root / "pyproject.toml"
@@ -347,13 +355,13 @@ except Exception as e:
         with open(pyproject_path, 'r') as f:
             pyproject_content = f.read()
 
-        # Check that the include list contains "modules*"
-        assert 'include = ["asciidoc_dita_toolkit*", "modules*"]' in pyproject_content, \
-            "pyproject.toml must explicitly include 'modules*' to prevent v2.0.11 packaging regression"
+        # Check that modules are now under asciidoc_dita_toolkit (v2.1.0+ structure)
+        assert 'include = ["asciidoc_dita_toolkit*"]' in pyproject_content, \
+            "pyproject.toml must only include 'asciidoc_dita_toolkit*' after refactoring"
 
-        # Additional check: make sure it's not accidentally excluded
-        assert '"modules*"' in pyproject_content, \
-            "modules* must be listed in the include section of pyproject.toml"
+        # Additional check: make sure old "modules*" is NOT included anymore
+        assert '"modules*"' not in pyproject_content, \
+            "modules* should no longer be needed after consolidation into asciidoc_dita_toolkit.modules"
 
 
 if __name__ == "__main__":

@@ -20,7 +20,7 @@ from unittest.mock import patch
 # Add the project root to the path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference import (
+from asciidoc_dita_toolkit.modules.entity_reference import (
     process_file,
     replace_entities,
 )

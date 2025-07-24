@@ -12,7 +12,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from asciidoc_dita_toolkit.asciidoc_dita.plugins.ArchiveUnusedFiles import (
+from asciidoc_dita_toolkit.modules.archive_unused_files import (
     UnusedFilesDetector,
     UnusedFilesArchiver,
     process_unused_files,

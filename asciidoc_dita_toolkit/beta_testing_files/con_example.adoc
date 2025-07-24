@@ -1,3 +1,5 @@
+:_mod-docs-content-type: CONCEPT
+
 = Concept Test
 
 This is a concept file that should be detected by its filename prefix.

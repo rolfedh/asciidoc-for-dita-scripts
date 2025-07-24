@@ -11,7 +11,7 @@ print("Testing UserJourney with Real Module Discovery")
 print("=" * 50)
 
 try:
-    from asciidoc_dita_toolkit.asciidoc_dita.plugins.UserJourney import WorkflowManager
+    from asciidoc_dita_toolkit.modules.user_journey import WorkflowManager
     
     # Create workflow manager
     print("Creating WorkflowManager...")

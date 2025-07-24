@@ -105,7 +105,7 @@ def measure_execution_time(func, *args, **kwargs) -> Tuple[float, any]:
     def test_legacy_performance(self) -> None:
         """Test legacy plugin performance."""
         try:
-            from asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference import main
+            from asciidoc_dita_toolkit.modules.entity_reference import main
 
             # Create mock args
             class MockArgs:
@@ -132,7 +132,7 @@ def measure_execution_time(func, *args, **kwargs) -> Tuple[float, any]:
                         f.write(content)
 
                 # Force legacy mode by temporarily disabling ADTModule
-                import asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference as er_module
+                import asciidoc_dita_toolkit.modules.entity_reference as er_module
 
                 original_available = er_module.ADT_MODULE_AVAILABLE
                 er_module.ADT_MODULE_AVAILABLE = False
@@ -174,7 +174,7 @@ def measure_execution_time(func, *args, **kwargs) -> Tuple[float, any]:
     def test_adtmodule_performance(self) -> None:
         """Test ADTModule plugin performance."""
         try:
-            from asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference import (
+            from asciidoc_dita_toolkit.modules.entity_reference import (
                 EntityReferenceModule,
             )
 

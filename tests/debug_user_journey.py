@@ -28,7 +28,7 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 try:
-    from asciidoc_dita_toolkit.asciidoc_dita.plugins.UserJourney import (
+    from asciidoc_dita_toolkit.modules.user_journey import (
         WorkflowState, WorkflowManager, UserJourneyProcessor, UserJourneyModule,
         WorkflowNotFoundError, WorkflowStateError
     )
@@ -349,7 +349,7 @@ def debug_directory_config():
     try:
         print("🚀 Testing DirectoryConfig import...")
         try:
-            from asciidoc_dita_toolkit.asciidoc_dita.plugins.DirectoryConfig import (
+            from asciidoc_dita_toolkit.modules.directory_config import (
                 load_directory_config, get_filtered_adoc_files, DirectoryConfigModule
             )
             from asciidoc_dita_toolkit.asciidoc_dita.file_utils import find_adoc_files

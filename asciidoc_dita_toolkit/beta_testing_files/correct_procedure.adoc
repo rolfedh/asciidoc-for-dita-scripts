@@ -1,4 +1,5 @@
 :_mod-docs-content-type: PROCEDURE
+
 = Correct Procedure Test
 
 This file has a correct content type.

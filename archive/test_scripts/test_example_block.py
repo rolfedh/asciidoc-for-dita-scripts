@@ -10,7 +10,7 @@ import shutil
 package_root = Path(__file__).parent
 sys.path.insert(0, str(package_root))
 
-from asciidoc_dita_toolkit.asciidoc_dita.plugins.ExampleBlock import (
+from asciidoc_dita_toolkit.modules.example_block import (
     ExampleBlockDetector,
     ExampleBlockProcessor,
     process_example_block_file,

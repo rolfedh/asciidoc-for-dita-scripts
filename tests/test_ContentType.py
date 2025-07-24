@@ -17,13 +17,13 @@ class TestContentTypePlugin(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures."""
-        from asciidoc_dita_toolkit.asciidoc_dita.plugins.content_type_detector import (
+        from asciidoc_dita_toolkit.modules.content_type.content_type_detector import (
             ContentTypeDetector,
         )
-        from asciidoc_dita_toolkit.asciidoc_dita.plugins.content_type_processor import (
+        from asciidoc_dita_toolkit.modules.content_type.content_type_processor import (
             ContentTypeProcessor,
         )
-        from asciidoc_dita_toolkit.asciidoc_dita.plugins.ui_interface import MockUI
+        from asciidoc_dita_toolkit.modules.content_type.ui_interface import MockUI
 
         self.detector = ContentTypeDetector()
         self.ui = MockUI()

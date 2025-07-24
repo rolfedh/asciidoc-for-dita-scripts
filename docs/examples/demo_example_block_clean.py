@@ -3,7 +3,7 @@
 Clean demo script showing ExampleBlock plugin functionality.
 """
 
-from asciidoc_dita_toolkit.asciidoc_dita.plugins.ExampleBlock import (
+from asciidoc_dita_toolkit.modules.example_block import (
     ExampleBlockProcessor,
     ExampleBlockDetector,
 )

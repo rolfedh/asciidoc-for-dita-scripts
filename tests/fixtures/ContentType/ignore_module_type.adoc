@@ -1,5 +1,5 @@
 // A topic with a deprecated content type definition:
-:_module-type: PROCEDURE
+:_mod-docs-content-type: PROCEDURE
 
 = Topic title
 

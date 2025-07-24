@@ -22,7 +22,7 @@ import json
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 try:
-    from asciidoc_dita_toolkit.asciidoc_dita.plugins.CrossReference import (
+    from asciidoc_dita_toolkit.modules.cross_reference import (
         CrossReferenceProcessor,
         BrokenXref,
         XrefFix,

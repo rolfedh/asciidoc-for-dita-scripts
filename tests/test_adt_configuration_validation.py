@@ -27,7 +27,7 @@ def test_entityreference_config_validation():
     print("-" * 50)
 
     try:
-        from asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference import (
+        from asciidoc_dita_toolkit.modules.entity_reference import (
             EntityReferenceModule,
         )
 
@@ -140,7 +140,7 @@ def test_configuration_error_messages():
     print("-" * 50)
 
     try:
-        from asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference import (
+        from asciidoc_dita_toolkit.modules.entity_reference import (
             EntityReferenceModule,
         )
 
@@ -176,7 +176,7 @@ def test_context_parameter_validation():
     print("-" * 50)
 
     try:
-        from asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference import (
+        from asciidoc_dita_toolkit.modules.entity_reference import (
             EntityReferenceModule,
         )
 
@@ -286,7 +286,7 @@ def test_result_structure_validation():
     print("-" * 50)
 
     try:
-        from asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference import (
+        from asciidoc_dita_toolkit.modules.entity_reference import (
             EntityReferenceModule,
         )
 
@@ -353,7 +353,7 @@ def test_edge_case_handling():
     print("-" * 50)
 
     try:
-        from asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference import (
+        from asciidoc_dita_toolkit.modules.entity_reference import (
             EntityReferenceModule,
         )
 

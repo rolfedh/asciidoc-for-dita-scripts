@@ -22,7 +22,7 @@ from unittest.mock import Mock, patch, MagicMock
 from types import SimpleNamespace
 
 # Import UserJourney components
-from asciidoc_dita_toolkit.asciidoc_dita.plugins.UserJourney import (
+from asciidoc_dita_toolkit.modules.user_journey import (
     WorkflowState, 
     WorkflowManager,
     UserJourneyProcessor,

@@ -81,7 +81,7 @@ def test_entityreference_documentation():
     print("-" * 50)
 
     try:
-        from asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference import (
+        from asciidoc_dita_toolkit.modules.entity_reference import (
             EntityReferenceModule,
         )
 
@@ -143,7 +143,7 @@ def test_docstring_style_consistency():
     print("-" * 50)
 
     try:
-        from asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference import (
+        from asciidoc_dita_toolkit.modules.entity_reference import (
             EntityReferenceModule,
         )
 
@@ -195,7 +195,7 @@ def test_type_hints_consistency():
     print("-" * 50)
 
     try:
-        from asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference import (
+        from asciidoc_dita_toolkit.modules.entity_reference import (
             EntityReferenceModule,
         )
 
@@ -253,7 +253,7 @@ def test_property_documentation():
     print("-" * 50)
 
     try:
-        from asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference import (
+        from asciidoc_dita_toolkit.modules.entity_reference import (
             EntityReferenceModule,
         )
 
@@ -355,7 +355,7 @@ def test_error_message_quality():
     print("-" * 50)
 
     try:
-        from asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference import (
+        from asciidoc_dita_toolkit.modules.entity_reference import (
             EntityReferenceModule,
         )
 

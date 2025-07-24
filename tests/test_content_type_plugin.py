@@ -9,13 +9,13 @@ from unittest.mock import Mock, patch
 import tempfile
 import os
 
-from asciidoc_dita_toolkit.asciidoc_dita.plugins.content_type_detector import (
+from asciidoc_dita_toolkit.modules.content_type.content_type_detector import (
     ContentTypeDetector,
     ContentTypeConfig,
     ContentTypeAttribute,
     DetectionResult,
 )
-from asciidoc_dita_toolkit.asciidoc_dita.plugins.ui_interface import (
+from asciidoc_dita_toolkit.modules.content_type.ui_interface import (
     UIInterface,
     ConsoleUI,
     BatchUI,
@@ -23,7 +23,7 @@ from asciidoc_dita_toolkit.asciidoc_dita.plugins.ui_interface import (
     MinimalistConsoleUI,
     QuietModeUI,
 )
-from asciidoc_dita_toolkit.asciidoc_dita.plugins.content_type_processor import (
+from asciidoc_dita_toolkit.modules.content_type.content_type_processor import (
     ContentTypeProcessor,
 )
 
