@@ -11,10 +11,13 @@ import argparse
 import sys
 from pathlib import Path
 
-# Add the parent directory to the path to import the plugin
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-
-from asciidoc_dita_toolkit.asciidoc_dita.plugins.ArchiveUnusedFiles import process_unused_files
+# Try to import from the installed package first, fallback to relative import
+try:
+    from asciidoc_dita_toolkit.asciidoc_dita.plugins.ArchiveUnusedFiles import process_unused_files
+except ImportError:
+    # Fallback for development/testing when package isn't installed
+    sys.path.insert(0, str(Path(__file__).parent.parent))
+    from asciidoc_dita_toolkit.asciidoc_dita.plugins.ArchiveUnusedFiles import process_unused_files
 
 
 def main():

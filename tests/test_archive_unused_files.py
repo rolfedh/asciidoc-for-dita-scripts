@@ -6,6 +6,7 @@ unused AsciiDoc files and optionally archives them.
 """
 
 import os
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -25,7 +26,7 @@ class TestArchiveUnusedFiles(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.test_dir = tempfile.mkdtemp()
-        self.addCleanup(lambda: os.system(f'rm -rf {self.test_dir}'))
+        self.addCleanup(lambda: shutil.rmtree(self.test_dir, ignore_errors=True))
 
         # Create test directory structure
         modules_dir = os.path.join(self.test_dir, 'modules')

@@ -158,7 +158,8 @@ class UnusedFilesArchiver:
     def write_manifest_and_archive(self, unused_files: List[str],
                                  manifest_prefix: str = 'unused-files',
                                  archive_prefix: str = 'unused-files',
-                                 archive: bool = False) -> Tuple[Optional[str], Optional[str]]:
+                                 archive: bool = False,
+                                 verbose: bool = False) -> Tuple[Optional[str], Optional[str]]:
         """
         Write a manifest of unused files and optionally archive them.
 
@@ -167,6 +168,7 @@ class UnusedFilesArchiver:
             manifest_prefix: Prefix for manifest filename
             archive_prefix: Prefix for archive filename
             archive: Whether to create ZIP archive and delete files
+            verbose: Whether to print file names to console
 
         Returns:
             Tuple of (manifest_path, archive_path)
@@ -187,7 +189,8 @@ class UnusedFilesArchiver:
 
         with open(manifest_path, 'w', encoding='utf-8') as f:
             for file_path in unused_files:
-                print(file_path)  # Print to console
+                if verbose:
+                    print(f"Found unused file: {file_path}")  # User feedback
                 f.write(file_path + '\n')
 
         logger.info(f"Manifest written to: {manifest_path}")
@@ -214,7 +217,8 @@ def process_unused_files(scan_dirs: List[str],
                         archive: bool = False,
                         exclude_dirs: Optional[List[str]] = None,
                         exclude_files: Optional[List[str]] = None,
-                        exclude_list: Optional[str] = None) -> Dict[str, Any]:
+                        exclude_list: Optional[str] = None,
+                        verbose: bool = False) -> Dict[str, Any]:
     """
     Main processing function to find and optionally archive unused files.
 
@@ -254,7 +258,7 @@ def process_unused_files(scan_dirs: List[str],
     # Archive if requested
     archiver = UnusedFilesArchiver(archive_dir)
     manifest_path, archive_path = archiver.write_manifest_and_archive(
-        unused_files, archive=archive
+        unused_files, archive=archive, verbose=verbose
     )
 
     return {
