@@ -36,9 +36,31 @@ def handle_system_exit(component_name: str, component_type: str, exit_exception:
 
 
 
+def get_plugins_for_help():
+    """Get formatted plugin list for help display."""
+    try:
+        plugins = get_new_plugins_for_help()
+        if not plugins:
+            return "    No plugins available"
+        
+        # Format plugins for help display
+        lines = []
+        for name, info in sorted(plugins.items()):
+            desc = info['description']
+            # Truncate long descriptions for clean help display
+            if len(desc) > 50:
+                desc = desc[:47] + "..."
+            lines.append(f"    {name:<17} {desc}")
+        return "\n".join(lines)
+    except Exception:
+        return "    No plugins available"
+
+
 def print_custom_help():
-    """Print custom help message with clear usage patterns."""
-    help_text = """Usage: adt <plugin> [options]
+    """Print custom help message with dynamically generated plugin list."""
+    plugins_section = get_plugins_for_help()
+    
+    help_text = f"""Usage: adt <plugin> [options]
        adt --list-plugins
        adt --version
        adt --help
@@ -48,13 +70,7 @@ ADT - AsciiDoc DITA Toolkit
 PLUGINS:
   Run one plugin at a time to process your AsciiDoc files:
 
-    ContentType       Add/update content type attributes
-    ContextAnalyzer   Analyze context IDs and references
-    ContextMigrator   Migrate context-dependent IDs
-    CrossReference    Validate and fix cross-references
-    DirectoryConfig   Manage directory-specific configurations
-    EntityReference   Convert HTML entities to AsciiDoc
-    ExampleBlock      Detect and process example blocks
+{plugins_section}
 
 TARGET FILES:
   -f, --file FILE       Process a specific file
@@ -104,26 +120,17 @@ def print_version_with_plugins():
     print("https://github.com/rolfedh/asciidoc-dita-toolkit")
     print()
 
-    # Get plugin information
-    legacy_plugins = get_legacy_plugins()
+    # Get plugin information from the new system
     new_plugins = get_new_plugins_for_help()
 
-    # Combine and sort all plugins with version info
+    # Sort plugins by name
     all_plugins = []
 
-    # Add new plugins first (they have proper version info)
+    # Add new plugins
     for name, info in new_plugins.items():
         desc = info['description']
         version_str = getattr(info['plugin'], 'version', 'unknown')
         all_plugins.append((name, version_str, desc))
-
-    # Add legacy plugins only if they don't exist in new plugins
-    for name, info in legacy_plugins.items():
-        if name not in new_plugins:
-            desc = info['description']
-            # Try to get version from plugin, fallback to 'legacy'
-            version_str = getattr(info.get('plugin'), '__version__', 'legacy')
-            all_plugins.append((name, version_str, desc))
 
     if all_plugins:
         print("AVAILABLE PLUGINS:")
@@ -139,63 +146,6 @@ def print_version_with_plugins():
             print(f"  {name:<{name_width}} v{version_str:<{version_width}} {desc}")
     else:
         print("No plugins available")
-
-
-def get_legacy_plugins():
-    """Get available legacy plugins from the old system."""
-    plugins = {}
-
-    # Try to import the old plugin system
-    try:
-        # Get the path to the old plugins directory
-        package_root = Path(__file__).parent.parent.parent
-        legacy_plugins_path = (
-            package_root / "asciidoc_dita_toolkit" / "asciidoc_dita" / "plugins"
-        )
-
-        if legacy_plugins_path.exists():
-            # Add the legacy path to sys.path temporarily
-            if str(package_root) not in sys.path:
-                sys.path.insert(0, str(package_root))
-
-            # Import available plugins
-            from asciidoc_dita_toolkit.asciidoc_dita.plugin_manager import (
-                is_plugin_enabled,
-            )
-
-            for plugin_file in legacy_plugins_path.glob("*.py"):
-                if plugin_file.name.startswith("_"):
-                    continue
-
-                plugin_name = plugin_file.stem
-
-                # Skip if not enabled
-                if not is_plugin_enabled(plugin_name):
-                    continue
-
-                try:
-                    plugin_module = importlib.import_module(
-                        f"asciidoc_dita_toolkit.asciidoc_dita.plugins.{plugin_name}"
-                    )
-
-                    # Check if it has the required functions
-                    if hasattr(plugin_module, "register_subcommand") and hasattr(
-                        plugin_module, "main"
-                    ):
-                        description = getattr(plugin_module, "__description__", plugin_name)
-                        plugins[plugin_name] = {
-                            "plugin": plugin_module,
-                            "description": description,
-                        }
-                except Exception as e:
-                    # Suppress warnings during help operations by only logging to debug level
-                    pass
-
-    except Exception as e:
-        # Suppress warnings during help operations by only logging to debug level
-        pass
-
-    return plugins
 
 
 def get_new_plugins_for_help():
@@ -315,21 +265,13 @@ def print_plugin_list():
     """Print a list of all available plugins."""
     print("Available plugins:")
 
-    # Get legacy plugins
-    legacy_plugins = get_legacy_plugins()
-    if legacy_plugins:
-        print("\nLegacy plugins:")
-        for name, info in legacy_plugins.items():
-            print(f"  {name:20} {info['description']}")
-
-    # Get new plugins
+    # Get plugins from new system
     new_plugins = get_new_plugins()
     if new_plugins:
-        print("\nNew plugins:")
+        print("\nPlugins:")
         for name, info in new_plugins.items():
             print(f"  {name:20} {info['description']}")
-
-    if not legacy_plugins and not new_plugins:
+    else:
         print("  No plugins available")
 
 
@@ -337,23 +279,15 @@ def print_detailed_plugin_list(suppress_warnings: bool = True):
     """Print a detailed, well-formatted list of all available plugins."""
     print("AVAILABLE PLUGINS:\n")
 
-    # Get legacy plugins (warnings already suppressed in function)
-    legacy_plugins = get_legacy_plugins()
-
-    # Get new plugins with warnings completely suppressed for help display
+    # Get plugins with warnings completely suppressed for help display
     new_plugins = get_new_plugins_for_help()
 
-    # Combine and sort all plugins
+    # Organize plugins
     all_plugins = {}
 
-    # Add legacy plugins
-    for name, info in legacy_plugins.items():
-        all_plugins[name] = {"description": info['description'], "type": "legacy"}
-
-    # Add new plugins (avoid duplicates)
+    # Add new plugins
     for name, info in new_plugins.items():
-        if name not in all_plugins:
-            all_plugins[name] = {"description": info['description'], "type": "plugin"}
+        all_plugins[name] = {"description": info['description'], "type": "plugin"}
 
     if not all_plugins:
         print("  No plugins available")
@@ -382,58 +316,14 @@ def print_plugin_list_with_warnings_control(suppress_warnings: bool = True):
     """Print a list of all available plugins with warning control."""
     print("Available plugins:")
 
-    # Get legacy plugins
-    legacy_plugins = get_legacy_plugins()
-    if legacy_plugins:
-        print("\nLegacy plugins:")
-        for name, info in legacy_plugins.items():
-            print(f"  {name:20} {info['description']}")
-
-    # Get new plugins
+    # Get plugins from new system
     new_plugins = get_new_plugins_with_warnings_control(suppress_warnings)
     if new_plugins:
-        print("\nNew plugins:")
+        print("\nPlugins:")
         for name, info in new_plugins.items():
             print(f"  {name:20} {info['description']}")
-
-    if not legacy_plugins and not new_plugins:
+    else:
         print("  No plugins available")
-
-
-def create_legacy_subcommand(subparsers, name, plugin_info):
-    """Create a subcommand for a legacy plugin."""
-    description = plugin_info["description"]
-    parser = subparsers.add_parser(name, help=description)
-
-    # Add common arguments that legacy plugins expect
-    parser.add_argument("-f", "--file", help="Process a specific file")
-    parser.add_argument(
-        "-r",
-        "--recursive",
-        action="store_true",
-        help="Process all .adoc files recursively in the current directory",
-    )
-    parser.add_argument(
-        "-d",
-        "--directory",
-        default=".",
-        help="Specify the root directory to search (default: current directory)",
-    )
-    parser.add_argument(
-        "-v", "--verbose", action="store_true", help="Enable verbose output"
-    )
-
-    # Set the function to call
-    def run_legacy_plugin(args):
-        try:
-            plugin_info["plugin"].main(args)
-        except SystemExit as e:
-            handle_system_exit(name, "plugin", e)
-        except Exception as e:
-            print(f"Error running plugin {name}: {e}", file=sys.stderr)
-            sys.exit(1)
-
-    parser.set_defaults(func=run_legacy_plugin)
 
 
 def create_new_plugin_subcommand(subparsers, name, plugin_info):
@@ -682,11 +572,6 @@ def main(args=None):
         dest="command", required=False, metavar="<plugin>"
     )
 
-    # Load legacy plugins (warnings suppressed)
-    legacy_plugins = get_legacy_plugins()
-    for name, info in legacy_plugins.items():
-        create_legacy_subcommand(subparsers, name, info)
-
     # Load new modules with warning control
     suppress_warnings = True  # Default
     if args:
@@ -708,9 +593,8 @@ def main(args=None):
         new_plugins = get_new_plugins_with_warnings_control(suppress_warnings)
 
     for name, info in new_plugins.items():
-        # Only add if not already added by legacy plugins
-        if name not in legacy_plugins:
-            create_new_plugin_subcommand(subparsers, name, info)
+        # Add plugin subcommand
+        create_new_plugin_subcommand(subparsers, name, info)
 
     # Add UserJourney CLI commands
     create_user_journey_subcommands(subparsers)
