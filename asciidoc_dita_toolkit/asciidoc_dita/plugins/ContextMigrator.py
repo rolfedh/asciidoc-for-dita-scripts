@@ -8,7 +8,7 @@ migration with safety checks and backups.
 This is Phase 2 of the context migration strategy - performs actual migration.
 """
 
-__description__ = "Migrate AsciiDoc files from context-suffixed IDs to context-free IDs with validation and rollback"
+__description__ = "Migrate context-dependent IDs"
 
 import json
 import os

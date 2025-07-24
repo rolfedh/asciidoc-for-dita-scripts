@@ -10,7 +10,7 @@ from typing import Dict, Any
 
 from ..plugins.vale_flagger.cli import main as cli_main
 
-__description__ = "Check AsciiDoc files for DITA compatibility issues using Vale linter"
+__description__ = "Flag DITA compatibility issues found by Vale linter"
 __version__ = "0.1.0"
 
 

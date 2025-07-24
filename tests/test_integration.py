@@ -35,8 +35,8 @@ class TestIntegration(unittest.TestCase):
         # Verify configurations loaded correctly
         self.assertEqual(self.sequencer.dev_config["version"], "1.0")
         self.assertEqual(
-            len(self.sequencer.dev_config["modules"]), 4
-        )  # Updated for ExampleBlock
+            len(self.sequencer.dev_config["modules"]), 5
+        )  # Updated for ExampleBlock and ArchiveUnusedFiles
         self.assertIn("DirectoryConfig", self.sequencer.user_config["disabledModules"])
 
     def test_full_sequencing_workflow(self):

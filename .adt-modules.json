@@ -44,6 +44,18 @@
         "interactive": true,
         "verbose": false
       }
+    },
+    {
+      "name": "ArchiveUnusedFiles",
+      "required": false,
+      "version": ">=1.0.0",
+      "dependencies": [],
+      "init_order": 5,
+      "config": {
+        "scan_dirs": ["./modules", "./modules/rn", "./assemblies"],
+        "archive_dir": "./archive",
+        "archive": false
+      }
     }
   ],
   "global_config": {
