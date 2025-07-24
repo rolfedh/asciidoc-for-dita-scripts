@@ -7,7 +7,7 @@ from pathlib import Path
 # Add the project to the path
 sys.path.insert(0, '/home/rolfedh/asciidoc-dita-toolkit')
 
-from asciidoc_dita_toolkit.asciidoc_dita.plugins.UserJourney import WorkflowState, ExecutionResult
+from asciidoc_dita_toolkit.modules.user_journey import WorkflowState, ExecutionResult
 
 def debug_save_behavior():
     """Debug the save_to_disk behavior to understand why backup isn't cleaned up."""

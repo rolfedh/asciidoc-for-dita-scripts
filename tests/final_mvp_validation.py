@@ -134,7 +134,7 @@ def test_persistence():
     print("💾 Testing State Persistence...")
     
     try:
-        from asciidoc_dita_toolkit.asciidoc_dita.plugins.UserJourney import WorkflowState, ExecutionResult
+        from asciidoc_dita_toolkit.modules.user_journey import WorkflowState, ExecutionResult
         
         # Create and save workflow
         modules = ["DirectoryConfig", "ContentType"]

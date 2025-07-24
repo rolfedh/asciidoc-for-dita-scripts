@@ -36,7 +36,7 @@ def test_pyproject_entry_point():
     content = pyproject_path.read_text()
     
     # Check for UserJourney entry point
-    if 'UserJourney = "asciidoc_dita_toolkit.asciidoc_dita.plugins.UserJourney:UserJourneyModule"' in content:
+    if 'UserJourney = "asciidoc_dita_toolkit.modules.user_journey:UserJourneyModule"' in content:
         print("   ✅ UserJourney entry point configured correctly")
         return True
     else:
@@ -49,7 +49,7 @@ def test_cli_integration():
     
     try:
         # Test that UserJourneyModule can be imported
-        from asciidoc_dita_toolkit.asciidoc_dita.plugins.UserJourney import UserJourneyModule
+        from asciidoc_dita_toolkit.modules.user_journey import UserJourneyModule
         module = UserJourneyModule()
         parser = module.get_cli_parser()
         
@@ -74,7 +74,7 @@ def test_module_wrapper():
     print("🔍 Testing UserJourneyModule wrapper...")
     
     try:
-        from asciidoc_dita_toolkit.asciidoc_dita.plugins.UserJourney import UserJourneyModule
+        from asciidoc_dita_toolkit.modules.user_journey import UserJourneyModule
         
         # Test module creation
         module = UserJourneyModule()
@@ -121,7 +121,7 @@ def test_logging_support():
     print("🔍 Testing logging support...")
     
     try:
-        from asciidoc_dita_toolkit.asciidoc_dita.plugins.UserJourney import UserJourneyModule
+        from asciidoc_dita_toolkit.modules.user_journey import UserJourneyModule
         
         # Test with verbose logging
         module = UserJourneyModule()
@@ -150,7 +150,7 @@ def test_full_integration():
     print("🔍 Testing full integration...")
     
     try:
-        from asciidoc_dita_toolkit.asciidoc_dita.plugins.UserJourney import UserJourneyModule
+        from asciidoc_dita_toolkit.modules.user_journey import UserJourneyModule
         
         # Create temporary directory for testing
         with tempfile.TemporaryDirectory() as temp_dir:

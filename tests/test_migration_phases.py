@@ -63,7 +63,7 @@ def test_phase_2_entity_reference_migration():
     print("=" * 60)
 
     try:
-        from asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference import (
+        from asciidoc_dita_toolkit.modules.entity_reference import (
             EntityReferenceModule,
             main,
             ADT_MODULE_AVAILABLE,
@@ -171,7 +171,7 @@ def test_entity_replacement_functionality():
     print("=" * 60)
 
     try:
-        from asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference import (
+        from asciidoc_dita_toolkit.modules.entity_reference import (
             replace_entities,
             ENTITY_TO_ASCIIDOC,
             SUPPORTED_ENTITIES,

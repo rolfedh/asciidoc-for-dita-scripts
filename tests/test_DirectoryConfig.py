@@ -20,7 +20,7 @@ from unittest.mock import MagicMock, mock_open, patch
 # Add the project root to the path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from asciidoc_dita_toolkit.asciidoc_dita.plugins.DirectoryConfig import (
+from asciidoc_dita_toolkit.modules.directory_config import (
     DirectoryConfigManager,
     run_directory_config,
     load_directory_config,
@@ -220,7 +220,7 @@ class TestDirectoryFiltering(unittest.TestCase):
             # Test that the drafts directory would be excluded
             # The function logs a warning but still returns the path since there's no alternative
             with patch(
-                'asciidoc_dita_toolkit.asciidoc_dita.plugins.DirectoryConfig.logger'
+                'asciidoc_dita_toolkit.modules.directory_config.logger'
             ) as mock_logger:
                 filtered_dirs = apply_directory_filters(drafts_dir, config)
                 # Check that the excluded directory warning was logged

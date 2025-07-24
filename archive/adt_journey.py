@@ -25,7 +25,7 @@ sys.path.insert(0, str(project_root))
 
 # Import and run the CLI
 try:
-    from asciidoc_dita_toolkit.asciidoc_dita.plugins.userjourney_cli import main
+    from asciidoc_dita_toolkit.modules.user_journey.userjourney_cli import main
     sys.exit(main())
 except ImportError as e:
     print(f"❌ Failed to import UserJourney CLI: {e}")

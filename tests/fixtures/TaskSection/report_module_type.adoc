@@ -1,5 +1,5 @@
 // Identify the document as a procedure module:
-:_module-type: PROCEDURE
+:_mod-docs-content-type: PROCEDURE
 
 = Topic title
 

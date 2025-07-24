@@ -1,3 +1,5 @@
+:_mod-docs-content-type: SNIPPET
+
 = Snippet Test
 
 This is a snippet file that should be detected by its filename prefix.

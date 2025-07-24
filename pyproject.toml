@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "asciidoc-dita-toolkit"
-version = "2.0.13"
+version = "2.1.0"
 description = "AsciiDoc DITA Toolkit - unified package for technical documentation workflows"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -44,7 +44,7 @@ dependencies = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["asciidoc_dita_toolkit*", "modules*"]
+include = ["asciidoc_dita_toolkit*"]
 exclude = ["tests*", "build*", "dist*", "*.egg-info*"]
 
 [project.scripts]
@@ -56,16 +56,16 @@ asciidoc-dita-toolkit-gui = "asciidoc_dita_toolkit.adt_core.cli:launch_gui"
 valeflag = "asciidoc_dita_toolkit.plugins.vale_flagger.cli:main"
 
 [project.entry-points."adt.modules"]
-EntityReference = "asciidoc_dita_toolkit.asciidoc_dita.plugins.EntityReference:EntityReferenceModule"
-ContentType = "asciidoc_dita_toolkit.asciidoc_dita.plugins.ContentType:ContentTypeModule"
-DirectoryConfig = "asciidoc_dita_toolkit.asciidoc_dita.plugins.DirectoryConfig:DirectoryConfigModule"
-ContextAnalyzer = "asciidoc_dita_toolkit.asciidoc_dita.plugins.ContextAnalyzer:ContextAnalyzerModule"
-ContextMigrator = "asciidoc_dita_toolkit.asciidoc_dita.plugins.ContextMigrator:ContextMigratorModule"
-CrossReference = "asciidoc_dita_toolkit.asciidoc_dita.plugins.CrossReference:CrossReferenceModule"
-ExampleBlock = "asciidoc_dita_toolkit.asciidoc_dita.plugins.ExampleBlock:ExampleBlockModule"
-UserJourney = "asciidoc_dita_toolkit.asciidoc_dita.plugins.UserJourney:UserJourneyModule"
+EntityReference = "asciidoc_dita_toolkit.modules.entity_reference:EntityReferenceModule"
+ContentType = "asciidoc_dita_toolkit.modules.content_type:ContentTypeModule"
+DirectoryConfig = "asciidoc_dita_toolkit.modules.directory_config:DirectoryConfigModule"
+ContextAnalyzer = "asciidoc_dita_toolkit.modules.context_analyzer:ContextAnalyzerModule"
+ContextMigrator = "asciidoc_dita_toolkit.modules.context_migrator:ContextMigratorModule"
+CrossReference = "asciidoc_dita_toolkit.modules.cross_reference:CrossReferenceModule"
+ExampleBlock = "asciidoc_dita_toolkit.modules.example_block:ExampleBlockModule"
+UserJourney = "asciidoc_dita_toolkit.modules.user_journey:UserJourneyModule"
 ValeFlagger = "asciidoc_dita_toolkit.plugins.vale_flagger.plugin:ValeFlaggerModule"
-ArchiveUnusedFiles = "asciidoc_dita_toolkit.asciidoc_dita.plugins.ArchiveUnusedFiles:ArchiveUnusedFilesModule"
+ArchiveUnusedFiles = "asciidoc_dita_toolkit.modules.archive_unused_files:ArchiveUnusedFilesModule"
 
 [project.optional-dependencies]
 dev = [

@@ -107,7 +107,7 @@ def test_cli_implementation():
     
     try:
         # Test CLI module imports
-        import asciidoc_dita_toolkit.asciidoc_dita.plugins.userjourney_cli as cli_module
+        import asciidoc_dita_toolkit.modules.user_journey.userjourney_cli as cli_module
         print("✅ CLI module imports successfully")
         
         # Test argument parser creation
@@ -148,7 +148,7 @@ def test_userjourney_processor_methods():
     
     try:
         # Import and check UserJourneyProcessor
-        from asciidoc_dita_toolkit.asciidoc_dita.plugins.UserJourney import UserJourneyProcessor
+        from asciidoc_dita_toolkit.modules.user_journey import UserJourneyProcessor
         
         processor = UserJourneyProcessor()
         
@@ -204,7 +204,7 @@ def test_userjourney_processor_methods():
                 'ModuleState': type('ModuleState', (), {}),
                 'ModuleResolution': type('ModuleResolution', (), {})
             })(),
-            'asciidoc_dita_toolkit.asciidoc_dita.plugins.DirectoryConfig': type('MockDirectoryConfig', (), {
+            'asciidoc_dita_toolkit.modules.directory_config': type('MockDirectoryConfig', (), {
                 'load_directory_config': lambda: None,
                 'get_filtered_adoc_files': lambda *args: []
             })(),
@@ -261,7 +261,7 @@ def test_class_definitions():
                 'ModuleState': type('ModuleState', (), {}),
                 'ModuleResolution': type('ModuleResolution', (), {})
             })(),
-            'asciidoc_dita_toolkit.asciidoc_dita.plugins.DirectoryConfig': type('MockDirectoryConfig', (), {
+            'asciidoc_dita_toolkit.modules.directory_config': type('MockDirectoryConfig', (), {
                 'load_directory_config': lambda: None,
                 'get_filtered_adoc_files': lambda *args: []
             })(),

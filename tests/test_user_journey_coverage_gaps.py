@@ -11,7 +11,7 @@ from pathlib import Path
 from unittest.mock import Mock, patch
 import json
 
-from asciidoc_dita_toolkit.asciidoc_dita.plugins.UserJourney import (
+from asciidoc_dita_toolkit.modules.user_journey import (
     WorkflowState, WorkflowManager, UserJourneyProcessor,
     ExecutionResult, ModuleExecutionState, WorkflowProgress,
     WorkflowError, WorkflowExecutionError, InvalidDirectoryError
@@ -41,9 +41,9 @@ class TestCoverageGaps:
         workflow = WorkflowState("test_workflow", "/test/docs", modules)
         
         # Now test the _refresh_file_discovery method with import failure
-        with patch('asciidoc_dita_toolkit.asciidoc_dita.plugins.UserJourney.logging') as mock_logging:
+        with patch('asciidoc_dita_toolkit.modules.user_journey.logging') as mock_logging:
             # Mock the specific import inside _refresh_file_discovery to fail
-            import_path = 'asciidoc_dita_toolkit.asciidoc_dita.plugins.DirectoryConfig'
+            import_path = 'asciidoc_dita_toolkit.modules.directory_config'
             with patch.dict('sys.modules', {import_path: None}):
                 # Force the method to take the exception path
                 original_path = workflow.directory

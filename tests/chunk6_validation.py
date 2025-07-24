@@ -69,7 +69,7 @@ def validate_chunk6_priorities():
         import subprocess
         result = subprocess.run([
             sys.executable, "-c", 
-            "from asciidoc_dita_toolkit.asciidoc_dita.plugins.UserJourney import UserJourneyModule; print('Import successful')"
+            "from asciidoc_dita_toolkit.modules.user_journey import UserJourneyModule; print('Import successful')"
         ], capture_output=True, text=True, cwd=Path(__file__).parent)
         
         if result.returncode == 0:

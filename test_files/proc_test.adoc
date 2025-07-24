@@ -1,4 +1,4 @@
-:_module-type: REFERENCE
+:_mod-docs-content-type: REFERENCE
 
 = Deprecated Module Type Test
 

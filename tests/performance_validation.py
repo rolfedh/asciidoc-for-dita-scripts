@@ -9,7 +9,7 @@ from pathlib import Path
 # Test workflow creation performance
 def test_workflow_creation_performance():
     """Test that workflow creation meets <1 second target."""
-    from asciidoc_dita_toolkit.asciidoc_dita.plugins.UserJourney import WorkflowManager
+    from asciidoc_dita_toolkit.modules.user_journey import WorkflowManager
     from asciidoc_dita_toolkit.adt_core.module_sequencer import ModuleSequencer
     
     # Setup
@@ -33,7 +33,7 @@ def test_workflow_creation_performance():
 
 def test_status_display_performance():
     """Test that status display meets <0.5 second target."""
-    from asciidoc_dita_toolkit.asciidoc_dita.plugins.UserJourney import WorkflowState, ExecutionResult
+    from asciidoc_dita_toolkit.modules.user_journey import WorkflowState, ExecutionResult
     
     # Create workflow with some progress
     modules = ["DirectoryConfig", "ContentType", "CrossReference", "EntityReference"]
@@ -53,7 +53,7 @@ def test_status_display_performance():
 def test_state_save_performance():
     """Test that state save meets <0.1 second target."""
     import tempfile
-    from asciidoc_dita_toolkit.asciidoc_dita.plugins.UserJourney import WorkflowState, ExecutionResult
+    from asciidoc_dita_toolkit.modules.user_journey import WorkflowState, ExecutionResult
     
     # Setup temporary storage
     temp_dir = tempfile.mkdtemp()

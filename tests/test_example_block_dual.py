@@ -19,7 +19,7 @@ sys.path.insert(0, '..')
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 # Import the plugin components
-from asciidoc_dita_toolkit.asciidoc_dita.plugins.ExampleBlock import (
+from asciidoc_dita_toolkit.modules.example_block import (
     ExampleBlockDetector,
     ExampleBlockProcessor,
 )

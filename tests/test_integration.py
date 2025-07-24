@@ -6,9 +6,9 @@ import logging
 from unittest.mock import patch, MagicMock
 
 from asciidoc_dita_toolkit.adt_core.module_sequencer import ModuleSequencer, ModuleState
-from modules.entity_reference import EntityReferenceModule
-from modules.content_type import ContentTypeModule
-from modules.directory_config import DirectoryConfigModule
+from asciidoc_dita_toolkit.modules.entity_reference import EntityReferenceModule
+from asciidoc_dita_toolkit.modules.content_type import ContentTypeModule
+from asciidoc_dita_toolkit.modules.directory_config import DirectoryConfigModule
 
 
 class TestIntegration(unittest.TestCase):

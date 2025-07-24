@@ -7,7 +7,7 @@ from pathlib import Path
 sys.path.insert(0, '.')
 
 try:
-    from asciidoc_dita_toolkit.asciidoc_dita.plugins.ExampleBlock import (
+    from asciidoc_dita_toolkit.modules.example_block import (
         ExampleBlockDetector,
     )
 
