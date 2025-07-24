@@ -37,7 +37,7 @@ help:
 	@echo "  build      - Build distribution packages"
 	@echo "  publish-check - Check publishing prerequisites (twine, credentials)"
 	@echo "  bump-version - Bump version in both pyproject.toml and __init__.py (VERSION=x.y.z to specify)"
-	@echo "  publish    - Complete automated release: setup environment, auto-bump patch version (or VERSION=x.y.z), update changelog, build, publish to PyPI, create GitHub release & trigger container builds (MAINTAINERS ONLY)"
+	@echo "  publish    - Complete automated release: setup environment, auto-bump patch version (or VERSION=x.y.z), update changelog, build package for validation, commit changes, create & push tag, create GitHub release. PyPI publishing handled automatically by GitHub Actions (MAINTAINERS ONLY)"
 	@echo "  github-release - Create GitHub release for current version (VERSION=x.y.z to override)"
 	@echo "  check      - Run comprehensive quality checks"
 	@echo "  changelog  - Generate changelog entry for latest version"
@@ -218,7 +218,7 @@ publish-check:
 		echo "✅ Virtual environment active: $$VIRTUAL_ENV"; \
 	fi
 	@echo ""
-	@echo "Step 2: Checking build and twine installation..."
+	@echo "Step 2: Checking build installation..."
 	@if [ -n "$$VIRTUAL_ENV" ]; then \
 		python_cmd="$${VIRTUAL_ENV}/bin/python"; \
 		pip_cmd="$${VIRTUAL_ENV}/bin/pip"; \
@@ -229,22 +229,24 @@ publish-check:
 		python_cmd="python3"; \
 		pip_cmd="pip"; \
 	fi; \
-	for pkg in build twine; do \
-		if ! $$python_cmd -c "import $$pkg" 2>/dev/null; then \
-			echo "Installing $$pkg..."; \
-			$$pip_cmd install $$pkg; \
-			echo "✅ $$pkg installed"; \
-		else \
-			echo "✅ $$pkg is available"; \
-		fi; \
-	done
+	if ! $$python_cmd -c "import build" 2>/dev/null; then \
+		echo "Installing build..."; \
+		$$pip_cmd install build; \
+		echo "✅ build installed"; \
+	else \
+		echo "✅ build is available"; \
+	fi
 	@echo ""
-	@echo "Step 3: Checking PyPI credentials..."
-	@if [ -z "$$PYPI_API_TOKEN" ] && [ ! -f ~/.pypirc ]; then \
-		echo "❌ No PyPI credentials found. Set PYPI_API_TOKEN or configure ~/.pypirc"; \
+	@echo "Step 3: Checking GitHub CLI authentication..."
+	@if ! command -v gh >/dev/null 2>&1; then \
+		echo "❌ GitHub CLI (gh) not found. Please install it: https://cli.github.com/"; \
 		exit 1; \
 	fi
-	@echo "✅ PyPI credentials configured"
+	@if ! gh auth status >/dev/null 2>&1; then \
+		echo "❌ GitHub CLI not authenticated. Run: gh auth login"; \
+		exit 1; \
+	fi
+	@echo "✅ GitHub CLI authenticated"
 	@echo ""
 	@echo "Step 4: Checking git state..."
 	@if [ -n "$$(git status --porcelain 2>/dev/null)" ]; then \
@@ -259,7 +261,7 @@ publish-check:
 		echo "✅ Working directory is clean"; \
 	fi
 	@echo ""
-	@echo "✅ All prerequisites satisfied - ready to publish!"
+	@echo "✅ All prerequisites satisfied - ready to publish via GitHub Actions!"
 
 publish: publish-check
 	@echo ""
@@ -306,7 +308,7 @@ publish: publish-check
 		echo "⚠️ Changelog script not found at ./scripts/generate-changelog.sh, skipping changelog update"; \
 	fi; \
 	echo ""; \
-	echo "Step 8: Building package with new version..."; \
+	echo "Step 8: Building package for validation..."; \
 	if [ -n "$$VIRTUAL_ENV" ]; then \
 		"$${VIRTUAL_ENV}/bin/python" -m build; \
 	elif [ -d ".venv" ]; then \
@@ -314,37 +316,41 @@ publish: publish-check
 	else \
 		python3 -m build; \
 	fi; \
-	echo "✅ Package built successfully"; \
+	echo "✅ Package built successfully (for validation only)"; \
 	echo ""; \
-	echo "Step 9: Publishing to PyPI..."; \
-	if [ -n "$$VIRTUAL_ENV" ]; then \
-		"$${VIRTUAL_ENV}/bin/python" -m twine upload dist/* || { echo "❌ PyPI upload failed"; exit 1; }; \
-	elif [ -d ".venv" ]; then \
-		.venv/bin/python -m twine upload dist/* || { echo "❌ PyPI upload failed"; exit 1; }; \
-	else \
-		python3 -m twine upload dist/* || { echo "❌ PyPI upload failed"; exit 1; }; \
+	echo "Step 9: Committing version changes..."; \
+	git add pyproject.toml; \
+	if [ -f asciidoc_dita_toolkit/adt_core/__init__.py ]; then \
+		git add asciidoc_dita_toolkit/adt_core/__init__.py; \
 	fi; \
-	echo "✅ Successfully published to PyPI!"; \
+	if [ -f CHANGELOG.md ]; then \
+		git add CHANGELOG.md; \
+	fi; \
+	git commit -m "chore: bump version to $$new_version" || echo "No changes to commit"; \
+	echo "✅ Changes committed"; \
 	echo ""; \
-	echo "Step 10: Creating GitHub release..."; \
+	echo "Step 10: Creating and pushing tag to trigger automated PyPI publish..."; \
 	current_version="$$new_version"; \
 	tag_name="v$$current_version"; \
-	echo "Creating GitHub release for $$tag_name..."; \
+	echo "Creating tag $$tag_name to trigger GitHub Actions PyPI publish..."; \
 	if git tag -l | grep -q "^$$tag_name$$"; then \
-		echo "Tag $$tag_name already exists, creating release from existing tag..."; \
+		echo "Tag $$tag_name already exists, pushing existing tag..."; \
 	else \
-		echo "Creating tag $$tag_name..."; \
+		echo "Creating new tag $$tag_name..."; \
 		git tag $$tag_name; \
-		git push origin $$tag_name; \
 	fi; \
+	git push origin $$tag_name; \
+	echo "✅ Tag pushed - GitHub Actions will handle PyPI publishing"; \
+	echo ""; \
+	echo "Step 11: Creating GitHub release..."; \
 	release_notes=""; \
 	if [ -f "CHANGELOG.md" ]; then \
 		release_notes=$$(awk "/^## \[$$current_version\]/ $(CHANGELOG_AWK_PATTERN)" CHANGELOG.md | head -20); \
 		if [ -z "$$release_notes" ]; then \
-			release_notes="Release $$current_version"; \
+			release_notes="Release $$current_version - Published via automated GitHub Actions workflow"; \
 		fi; \
 	else \
-		release_notes="Release $$current_version"; \
+		release_notes="Release $$current_version - Published via automated GitHub Actions workflow"; \
 	fi; \
 	echo "Creating GitHub release with notes..."; \
 	if ! echo "$$release_notes" | gh release create $$tag_name --title "Release $$tag_name" --notes-file - --verify-tag; then \
@@ -353,8 +359,13 @@ publish: publish-check
 	fi; \
 	echo "🚀 GitHub release created: https://github.com/rolfedh/asciidoc-dita-toolkit/releases/tag/$$tag_name"; \
 	echo ""; \
-	echo "🐳 Container images will be automatically built and published by GitHub Actions"; \
-	echo "📦 Monitor progress: https://github.com/rolfedh/asciidoc-dita-toolkit/actions"
+	echo "� PyPI publishing and container builds will be handled automatically by GitHub Actions"; \
+	echo "📦 Monitor progress: https://github.com/rolfedh/asciidoc-dita-toolkit/actions"; \
+	echo ""; \
+	echo "✅ Release process complete! GitHub Actions will:"; \
+	echo "   1. Build and publish package to PyPI"; \
+	echo "   2. Build and push container images"; \
+	echo "   3. Update any other automated release tasks"
 
 # Create GitHub release for current or specified version
 github-release:
