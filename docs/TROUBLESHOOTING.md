@@ -35,6 +35,8 @@ This error occurs when you have conflicting Python packages installed. Specifica
    pip uninstall dita-toolkit
    ```
 
+   **Note:** For detailed upgrade instructions from `adt-core`, see the [Upgrading section](#upgrading-from-adt-core-to-asciidoc-dita-toolkit) below.
+
 3. **Clear package cache:**
    ```bash
    pip cache purge
@@ -143,6 +145,53 @@ adt: command not found
    # Option 3: Using the full package name (if available)
    asciidoc-dita-toolkit --help
    ```
+
+### Upgrading from adt-core to asciidoc-dita-toolkit
+
+**Important:** If you previously had the `adt-core` package installed, you should remove it before installing the new package to avoid conflicts.
+
+**Symptoms of conflict:**
+- "No module named 'modules'" errors
+- Plugin discovery failures
+- Entry point conflicts
+
+**Upgrade Steps:**
+
+1. **Check for old package:**
+   ```bash
+   # Check if old package exists
+   pip list | grep adt-core
+   ```
+
+2. **Remove old package first:**
+   ```bash
+   # If found, remove old package
+   pip uninstall adt-core
+
+   # Also remove any other legacy ADT packages
+   pip uninstall adt asciidoc-dita dita-toolkit
+   ```
+
+3. **Clean installation:**
+   ```bash
+   # Clear package cache to avoid conflicts
+   pip cache purge
+
+   # Install new package
+   pip install asciidoc-dita-toolkit
+   ```
+
+**One-liner for convenience:**
+```bash
+pip uninstall adt-core -y && pip cache purge && pip install asciidoc-dita-toolkit
+```
+
+**Verify successful upgrade:**
+```bash
+# Should work without errors
+adt --help
+adt --list-plugins
+```
 
 ## Runtime Issues
 
