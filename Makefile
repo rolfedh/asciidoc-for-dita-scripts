@@ -37,7 +37,7 @@ help:
 	@echo "  build      - Build distribution packages"
 	@echo "  publish-check - Check publishing prerequisites (twine, credentials)"
 	@echo "  bump-version - Bump version in both pyproject.toml and __init__.py (VERSION=x.y.z to specify)"
-	@echo "  publish    - Complete automated release: setup environment, auto-bump patch version (or VERSION=x.y.z), update changelog, build package for validation, commit changes, create & push tag, create GitHub release. PyPI publishing handled automatically by GitHub Actions (MAINTAINERS ONLY)"
+	@echo "  publish    - Complete automated release: setup environment, auto-bump patch version (or VERSION=x.y.z), update changelog, build package for validation, create working branch, commit changes to branch, create & push tag, create GitHub release. PyPI publishing handled automatically by GitHub Actions (MAINTAINERS ONLY)"
 	@echo "  github-release - Create GitHub release for current version (VERSION=x.y.z to override)"
 	@echo "  check      - Run comprehensive quality checks"
 	@echo "  changelog  - Generate changelog entry for latest version"
@@ -318,7 +318,13 @@ publish: publish-check
 	fi; \
 	echo "✅ Package built successfully (for validation only)"; \
 	echo ""; \
-	echo "Step 9: Committing version changes..."; \
+	echo "Step 9: Creating working branch for release..."; \
+	branch_name="release/v$$new_version-$$(date +%Y%m%d-%H%M%S)"; \
+	echo "Creating and switching to branch: $$branch_name"; \
+	git checkout -b "$$branch_name"; \
+	echo "✅ Working branch created"; \
+	echo ""; \
+	echo "Step 10: Committing version changes..."; \
 	git add pyproject.toml; \
 	if [ -f asciidoc_dita_toolkit/adt_core/__init__.py ]; then \
 		git add asciidoc_dita_toolkit/adt_core/__init__.py; \
@@ -327,9 +333,9 @@ publish: publish-check
 		git add CHANGELOG.md; \
 	fi; \
 	git commit -m "chore: bump version to $$new_version" || echo "No changes to commit"; \
-	echo "✅ Changes committed"; \
+	echo "✅ Changes committed to branch $$branch_name"; \
 	echo ""; \
-	echo "Step 10: Creating and pushing tag to trigger automated PyPI publish..."; \
+	echo "Step 11: Creating and pushing tag to trigger automated PyPI publish..."; \
 	current_version="$$new_version"; \
 	tag_name="v$$current_version"; \
 	echo "Creating tag $$tag_name to trigger GitHub Actions PyPI publish..."; \
@@ -339,10 +345,11 @@ publish: publish-check
 		echo "Creating new tag $$tag_name..."; \
 		git tag $$tag_name; \
 	fi; \
+	git push origin "$$branch_name"; \
 	git push origin $$tag_name; \
-	echo "✅ Tag pushed - GitHub Actions will handle PyPI publishing"; \
+	echo "✅ Branch and tag pushed - GitHub Actions will handle PyPI publishing"; \
 	echo ""; \
-	echo "Step 11: Creating GitHub release..."; \
+	echo "Step 12: Creating GitHub release..."; \
 	release_notes=""; \
 	if [ -f "CHANGELOG.md" ]; then \
 		release_notes=$$(awk "/^## \[$$current_version\]/ $(CHANGELOG_AWK_PATTERN)" CHANGELOG.md | head -20); \
@@ -361,6 +368,9 @@ publish: publish-check
 	echo ""; \
 	echo "📦 PyPI publishing and container builds will be handled automatically by GitHub Actions"; \
 	echo "📦 Monitor progress: https://github.com/rolfedh/asciidoc-dita-toolkit/actions"; \
+	echo ""; \
+	echo "⚠️  NOTE: Version changes are on branch '$$branch_name' - not on main"; \
+	echo "⚠️  You may want to create a PR to merge these changes to main if needed"; \
 	echo ""; \
 	echo "✅ Release process complete! GitHub Actions will:"; \
 	echo "   1. Build and publish package to PyPI"; \
