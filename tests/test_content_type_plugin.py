@@ -254,7 +254,7 @@ class TestContentTypeProcessor(unittest.TestCase):
             self.assertIn('detection_result', analysis)
             self.assertIn('existing_attribute', analysis)
 
-            self.assertEqual(analysis['title'], "Installing Software")
+            self.assertIsNone(analysis['title'])  # Title extraction was removed
             self.assertIsNone(analysis['existing_attribute'])
 
         finally:
@@ -297,14 +297,12 @@ class TestContentTypeConfig(unittest.TestCase):
         self.assertIn(("proc_", "proc-"), config.filename_prefixes)
         self.assertEqual(config.filename_prefixes[("proc_", "proc-")], "PROCEDURE")
 
-        self.assertIn("PROCEDURE", config.title_patterns)
         self.assertIn("REFERENCE", config.content_patterns)
 
     def test_custom_config(self):
         """Test custom configuration."""
         config = ContentTypeConfig(
             filename_prefixes={("custom_",): "CUSTOM_TYPE"},
-            title_patterns={"CUSTOM_TYPE": [r"custom pattern"]},
             content_patterns={"CUSTOM_TYPE": [r"custom content"]},
         )
 

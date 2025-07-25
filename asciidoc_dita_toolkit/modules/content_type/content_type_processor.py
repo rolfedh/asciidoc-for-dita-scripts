@@ -243,7 +243,7 @@ class ContentTypeProcessor:
             Dictionary with analysis results
         """
         filename = os.path.basename(filepath)
-        title = self.detector.extract_document_title(lines)
+        title = None  # Title extraction removed - no longer used for detection
         content = '\n'.join([text for text, _ in lines])
 
         detection_result = self.detector.get_comprehensive_suggestion(
