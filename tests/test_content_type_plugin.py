@@ -87,66 +87,6 @@ class TestContentTypeDetector(unittest.TestCase):
         self.assertEqual(result.value, "REFERENCE")
         self.assertEqual(result.attribute_type, "commented")
 
-    def test_detect_from_title_procedure(self):
-        """Test title-based detection for procedure."""
-        result = self.detector.detect_from_title("Installing Red Hat Enterprise Linux")
-        self.assertEqual(result.suggested_type, "PROCEDURE")
-        self.assertGreater(result.confidence, 0.5)
-
-    def test_detect_from_title_reference(self):
-        """Test title-based detection for reference."""
-        result = self.detector.detect_from_title("Command Line Reference")
-        self.assertEqual(result.suggested_type, "REFERENCE")
-        self.assertGreater(result.confidence, 0.5)
-
-    def test_detect_from_content_assembly(self):
-        """Test content-based detection for assembly."""
-        content = """
-        = Getting Started Guide
-        
-        include::modules/overview.adoc[]
-        include::modules/installation.adoc[]
-        """
-        result = self.detector.detect_from_content(content)
-        self.assertEqual(result.suggested_type, "ASSEMBLY")
-        self.assertGreater(result.confidence, 0.8)
-
-    def test_detect_from_content_procedure(self):
-        """Test content-based detection for procedure."""
-        content = """= Installing Software
-
-.Prerequisites
-* System access
-
-.Procedure
-1. Download the software
-2. Install the package
-3. Configure the service
-"""
-        result = self.detector.detect_from_content(content)
-        self.assertEqual(result.suggested_type, "PROCEDURE")
-        self.assertGreater(result.confidence, 0.5)
-
-    def test_extract_document_title(self):
-        """Test document title extraction."""
-        lines = [
-            ("= Installing Red Hat Enterprise Linux", "\n"),
-            ("", "\n"),
-            ("This guide covers installation.", "\n"),
-        ]
-        result = self.detector.extract_document_title(lines)
-        self.assertEqual(result, "Installing Red Hat Enterprise Linux")
-
-    def test_extract_document_title_markdown(self):
-        """Test document title extraction from markdown format."""
-        lines = [
-            ("# Installing Red Hat Enterprise Linux", "\n"),
-            ("", "\n"),
-            ("This guide covers installation.", "\n"),
-        ]
-        result = self.detector.extract_document_title(lines)
-        self.assertEqual(result, "Installing Red Hat Enterprise Linux")
-
     def test_get_comprehensive_suggestion_filename_priority(self):
         """Test comprehensive suggestion prioritizes filename detection."""
         filename = "proc_install_software.adoc"
@@ -314,7 +254,7 @@ class TestContentTypeProcessor(unittest.TestCase):
             self.assertIn('detection_result', analysis)
             self.assertIn('existing_attribute', analysis)
 
-            self.assertEqual(analysis['title'], "Installing Software")
+            self.assertIsNone(analysis['title'])  # Title extraction was removed
             self.assertIsNone(analysis['existing_attribute'])
 
         finally:
@@ -357,14 +297,12 @@ class TestContentTypeConfig(unittest.TestCase):
         self.assertIn(("proc_", "proc-"), config.filename_prefixes)
         self.assertEqual(config.filename_prefixes[("proc_", "proc-")], "PROCEDURE")
 
-        self.assertIn("PROCEDURE", config.title_patterns)
         self.assertIn("REFERENCE", config.content_patterns)
 
     def test_custom_config(self):
         """Test custom configuration."""
         config = ContentTypeConfig(
             filename_prefixes={("custom_",): "CUSTOM_TYPE"},
-            title_patterns={"CUSTOM_TYPE": [r"custom pattern"]},
             content_patterns={"CUSTOM_TYPE": [r"custom content"]},
         )
 
