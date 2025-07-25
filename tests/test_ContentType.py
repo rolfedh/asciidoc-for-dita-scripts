@@ -81,50 +81,6 @@ class TestContentTypePlugin(unittest.TestCase):
                     actual = (None, None, None)
                 self.assertEqual(actual, expected)
 
-    def test_analyze_title_style(self):
-        """Test content type suggestions based on title analysis."""
-        test_cases = [
-            ("= Creating a new project", "PROCEDURE"),
-            ("= Docker commands reference", "REFERENCE"),
-            ("= Getting started guide", "ASSEMBLY"),
-            ("= What is containerization", "CONCEPT"),
-            (None, None),
-        ]
-
-        for title, expected in test_cases:
-            with self.subTest(title=title):
-                result = self.detector.detect_from_title(title)
-                self.assertEqual(result.suggested_type, expected)
-
-    def test_analyze_content_patterns(self):
-        """Test content type suggestions based on content analysis."""
-        test_cases = [
-            ("This document includes:\ninclude::other.adoc[]", "ASSEMBLY"),
-            ("1. First step\n2. Second step\n.Procedure", "PROCEDURE"),
-            ("|====\n|Column 1|Column 2\n|Value 1|Value 2\n|====", "REFERENCE"),
-            ("This is just regular content.", None),
-        ]
-
-        for content, expected in test_cases:
-            with self.subTest(content=content):
-                result = self.detector.detect_from_content(content)
-                self.assertEqual(result.suggested_type, expected)
-
-    def test_get_document_title(self):
-        """Test extraction of document title from file lines."""
-        test_cases = [
-            ([("= Main Title", "\n"), ("content", "\n")], "Main Title"),
-            ([("# Markdown Title", "\n"), ("content", "\n")], "Markdown Title"),
-            ([("content", "\n"), ("= Title Later", "\n")], "Title Later"),
-            ([("content", "\n"), ("no title", "\n")], None),
-            ([], None),
-        ]
-
-        for lines, expected in test_cases:
-            with self.subTest(lines=lines):
-                result = self.detector.extract_document_title(lines)
-                self.assertEqual(result, expected)
-
     def test_ensure_blank_line_below(self):
         """Test ensuring blank line after content type attribute."""
         # Test case: line at end of file

@@ -18,7 +18,6 @@ class ContentTypeConfig:
     """Configuration for content type detection patterns."""
 
     filename_prefixes: Dict[Tuple[str, ...], str]
-    title_patterns: Dict[str, List[str]]
     content_patterns: Dict[str, List[str]]
 
     @classmethod
@@ -31,22 +30,6 @@ class ContentTypeConfig:
                 ("proc_", "proc-"): "PROCEDURE",
                 ("ref_", "ref-"): "REFERENCE",
                 ("snip_", "snip-"): "SNIPPET",
-            },
-            title_patterns={
-                "PROCEDURE": [
-                    r'^(Creating|Installing|Configuring|Setting up|Building|Deploying|Managing|Updating|Upgrading)',
-                    r'^(Adding|Removing|Deleting|Enabling|Disabling|Starting|Stopping|Restarting)',
-                    r'^(Implementing|Establishing|Defining|Developing|Generating|Publishing)',
-                ],
-                "REFERENCE": [
-                    r'(reference|commands?|options?|parameters?|settings?|configuration)',
-                    r'(syntax|examples?|list of|table of|glossary)',
-                    r'(api|cli|command.?line)',
-                ],
-                "ASSEMBLY": [
-                    r'(guide|tutorial|walkthrough|workflow)',
-                    r'(getting started|quick start|step.?by.?step)',
-                ],
             },
             content_patterns={
                 "ASSEMBLY": [r'include::'],
@@ -159,98 +142,6 @@ class ContentTypeDetector:
         logger.debug("No existing content type attributes found")
         return None
 
-    def detect_from_title(self, title: str) -> DetectionResult:
-        """
-        Analyze title style to suggest content type.
-
-        Args:
-            title: The document title (H1 heading)
-
-        Returns:
-            DetectionResult with suggestion and reasoning
-        """
-        logger.debug("Analyzing title: %s", title)
-
-        if not title:
-            return DetectionResult(None, 0.0, ["No title found"])
-
-        title = title.strip()
-        # Remove title prefix (= or #) and clean up
-        title = re.sub(r'^[=# ]+', '', title).strip()
-
-        reasoning = []
-
-        for content_type, patterns in self.config.title_patterns.items():
-            for pattern in patterns:
-                if re.search(pattern, title, re.IGNORECASE):
-                    reasoning.append(
-                        f"Title matches {content_type.lower()} pattern: {pattern}"
-                    )
-                    logger.debug("Title suggests content type: %s", content_type)
-                    return DetectionResult(content_type, 0.8, reasoning)
-
-        # Default to concept for other noun phrases
-        reasoning.append("Title doesn't match specific patterns, defaulting to CONCEPT")
-        logger.debug("No specific title patterns matched, suggesting CONCEPT")
-        return DetectionResult("CONCEPT", 0.3, reasoning)
-
-    def detect_from_content(self, content: str) -> DetectionResult:
-        """
-        Analyze content structure to suggest content type.
-
-        Args:
-            content: Full file content as string
-
-        Returns:
-            DetectionResult with suggestion and reasoning
-        """
-        logger.debug("Analyzing content patterns")
-
-        reasoning = []
-
-        # Check assembly indicators first (most specific)
-        assembly_patterns = self.config.content_patterns.get("ASSEMBLY", [])
-        for pattern in assembly_patterns:
-            if re.search(pattern, content, re.MULTILINE):
-                reasoning.append(f"Found assembly pattern: {pattern}")
-                logger.debug("Content suggests ASSEMBLY type")
-                return DetectionResult("ASSEMBLY", 0.9, reasoning)
-
-        # Check procedure indicators
-        procedure_patterns = self.config.content_patterns.get("PROCEDURE", [])
-        procedure_matches = 0
-        for pattern in procedure_patterns:
-            if re.search(pattern, content, re.MULTILINE):
-                procedure_matches += 1
-                reasoning.append(f"Found procedure pattern: {pattern}")
-
-        if procedure_matches >= 2:  # Multiple procedure indicators
-            logger.debug("Content suggests PROCEDURE type")
-            return DetectionResult("PROCEDURE", 0.8, reasoning)
-
-        # Check reference indicators
-        reference_patterns = self.config.content_patterns.get("REFERENCE", [])
-        reference_matches = 0
-        for pattern in reference_patterns:
-            if re.search(pattern, content, re.MULTILINE):
-                reference_matches += 1
-                reasoning.append(f"Found reference pattern: {pattern}")
-
-        # Count definition lists (::)
-        definition_count = len(re.findall(r'::\s*$', content, re.MULTILINE))
-        if definition_count > 3:
-            reasoning.append(f"Found {definition_count} definition lists")
-            reference_matches += 1
-
-        if reference_matches >= 1:
-            logger.debug("Content suggests REFERENCE type")
-            return DetectionResult("REFERENCE", 0.7, reasoning)
-
-        # No clear patterns found
-        reasoning.append("No specific content patterns detected")
-        logger.debug("No specific content patterns detected")
-        return DetectionResult(None, 0.0, reasoning)
-
     def get_comprehensive_suggestion(
         self, filename: str, title: Optional[str], content: str
     ) -> DetectionResult:
@@ -274,48 +165,10 @@ class ContentTypeDetector:
                 filename_type, 0.95, [f"Detected from filename prefix"]
             )
 
-        # Try content analysis (high confidence)
-        content_result = self.detect_from_content(content)
-        if content_result.suggested_type:
-            return content_result
-
-        # Try title analysis (medium confidence)
-        title_result = (
-            self.detect_from_title(title)
-            if title
-            else DetectionResult(None, 0.0, ["No title"])
-        )
-        if title_result.suggested_type:
-            return title_result
-
         # No suggestion found
         return DetectionResult(
-            None, 0.0, ["No patterns matched in filename, title, or content"]
+            None, 0.0, ["No patterns matched in filename"]
         )
-
-    def extract_document_title(self, lines: List[Tuple[str, str]]) -> Optional[str]:
-        """
-        Extract the document title (first H1 heading) from file lines.
-
-        Args:
-            lines: List of (text, ending) tuples from file
-
-        Returns:
-            Title string or None
-        """
-        for text, _ in lines:
-            stripped = text.strip()
-            if stripped.startswith('= '):
-                title = stripped[2:].strip()
-                logger.debug("Found title: %s", title)
-                return title
-            elif stripped.startswith('# '):
-                title = stripped[2:].strip()
-                logger.debug("Found title: %s", title)
-                return title
-
-        logger.debug("No title found")
-        return None
 
 
 def register_subcommand(subparsers):
