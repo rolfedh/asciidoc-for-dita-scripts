@@ -1,0 +1,23 @@
+:_mod-docs-content-type: 
+
+= How to Configure the Server
+:toc:
+
+This document explains how to configure the server.
+
+== Prerequisites
+
+Before you begin, ensure you have:
+
+* Administrative access
+* Required credentials
+
+== Steps
+
+. Open the configuration file
+. Edit the settings
+. Save and restart
+
+== Conclusion
+
+Your server is now configured.
