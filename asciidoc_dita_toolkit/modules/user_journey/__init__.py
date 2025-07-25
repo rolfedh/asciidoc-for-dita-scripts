@@ -465,7 +465,12 @@ class WorkflowManager:
                 self.sequencer.load_configurations('.adt-modules.json', 'adt-user-config.json')
                 self.sequencer.discover_modules()
             except Exception as e:
-                logging.warning(f"Failed to initialize ModuleSequencer: {e}")
+                # For help display and other non-critical operations, just discover modules without config
+                logging.debug(f"Could not load full configuration, using discovery only: {e}")
+                try:
+                    self.sequencer.discover_modules()
+                except Exception as discovery_error:
+                    logging.warning(f"Failed to initialize ModuleSequencer: {discovery_error}")
         else:
             self.sequencer = module_sequencer
 

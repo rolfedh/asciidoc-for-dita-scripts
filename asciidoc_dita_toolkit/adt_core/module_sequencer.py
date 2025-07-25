@@ -119,16 +119,36 @@ class ModuleSequencer:
     ) -> None:
         """Load developer and user configurations."""
         try:
-            # Load developer configuration (required)
-            if not os.path.exists(dev_config_path):
+            # Search for developer configuration in multiple locations
+            dev_config_found = None
+            search_paths = [
+                dev_config_path,  # Current directory (for development)
+                os.path.expanduser(f"~/{dev_config_path}"),  # User home directory
+            ]
+
+            # Add package installation directory
+            try:
+                import asciidoc_dita_toolkit
+                package_dir = os.path.dirname(asciidoc_dita_toolkit.__file__)
+                package_config_path = os.path.join(os.path.dirname(package_dir), dev_config_path)
+                search_paths.append(package_config_path)
+            except ImportError:
+                pass
+
+            for config_path in search_paths:
+                if os.path.exists(config_path):
+                    dev_config_found = config_path
+                    break
+
+            if not dev_config_found:
                 raise ConfigurationError(
-                    f"Developer config file not found: {dev_config_path}"
+                    f"Developer config file not found in any of these locations: {search_paths}"
                 )
 
-            with open(dev_config_path, 'r') as f:
+            with open(dev_config_found, 'r') as f:
                 self.dev_config = json.load(f)
 
-            self.logger.info(f"Loaded developer config from {dev_config_path}")
+            self.logger.info(f"Loaded developer config from {dev_config_found}")
 
             # Load user configuration (optional)
             if user_config_path and os.path.exists(user_config_path):

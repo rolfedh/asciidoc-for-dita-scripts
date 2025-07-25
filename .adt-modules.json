@@ -2,47 +2,25 @@
   "version": "1.0",
   "modules": [
     {
+      "name": "UserJourney",
+      "required": true,
+      "version": ">=1.0.0",
+      "dependencies": [],
+      "init_order": 1,
+      "config": {
+        "workflow_enabled": true,
+        "auto_sequence": true
+      }
+    },
+    {
       "name": "DirectoryConfig",
       "required": true,
       "version": "~1.0.0",
       "dependencies": [],
-      "init_order": 1,
+      "init_order": 2,
       "config": {
         "scan_depth": 5,
         "exclude_patterns": ["*.tmp", "*.log"]
-      }
-    },
-    {
-      "name": "EntityReference",
-      "required": true,
-      "version": ">=1.2.0",
-      "dependencies": ["DirectoryConfig"],
-      "init_order": 2,
-      "config": {
-        "timeout_seconds": 30,
-        "cache_size": 1000
-      }
-    },
-    {
-      "name": "ContentType",
-      "required": false,
-      "version": ">=2.0.0",
-      "dependencies": ["EntityReference"],
-      "init_order": 3,
-      "config": {
-        "cache_enabled": true,
-        "supported_types": ["text", "image", "video"]
-      }
-    },
-    {
-      "name": "ExampleBlock",
-      "required": false,
-      "version": ">=1.0.0",
-      "dependencies": ["DirectoryConfig"],
-      "init_order": 4,
-      "config": {
-        "interactive": true,
-        "verbose": false
       }
     },
     {
@@ -50,11 +28,88 @@
       "required": false,
       "version": ">=1.0.0",
       "dependencies": [],
-      "init_order": 5,
+      "init_order": 3,
       "config": {
         "scan_dirs": ["./modules", "./modules/rn", "./assemblies"],
         "archive_dir": "./archive",
         "archive": false
+      }
+    },
+    {
+      "name": "ContentType",
+      "required": false,
+      "version": ">=2.0.0",
+      "dependencies": ["EntityReference"],
+      "init_order": 4,
+      "config": {
+        "cache_enabled": true,
+        "supported_types": ["text", "image", "video"]
+      }
+    },
+    {
+      "name": "EntityReference",
+      "required": true,
+      "version": ">=1.2.0",
+      "dependencies": ["DirectoryConfig"],
+      "init_order": 5,
+      "config": {
+        "timeout_seconds": 30,
+        "cache_size": 1000
+      }
+    },
+    {
+      "name": "CrossReference",
+      "required": false,
+      "version": ">=2.0.0",
+      "dependencies": ["EntityReference"],
+      "init_order": 6,
+      "config": {
+        "validate_refs": true,
+        "strict_mode": false
+      }
+    },
+    {
+      "name": "ExampleBlock",
+      "required": false,
+      "version": ">=1.0.0",
+      "dependencies": ["DirectoryConfig"],
+      "init_order": 7,
+      "config": {
+        "interactive": true,
+        "verbose": false
+      }
+    },
+    {
+      "name": "ContextAnalyzer",
+      "required": false,
+      "version": ">=1.0.0",
+      "dependencies": ["DirectoryConfig"],
+      "init_order": 8,
+      "config": {
+        "analyze_depth": 3,
+        "report_format": "text"
+      }
+    },
+    {
+      "name": "ContextMigrator",
+      "required": false,
+      "version": ">=1.0.0",
+      "dependencies": ["ContextAnalyzer"],
+      "init_order": 9,
+      "config": {
+        "backup_enabled": true,
+        "dry_run": false
+      }
+    },
+    {
+      "name": "ValeFlagger",
+      "required": false,
+      "version": ">=0.1.0",
+      "dependencies": [],
+      "init_order": 10,
+      "config": {
+        "vale_config": "valeflag-config.yaml",
+        "output_format": "text"
       }
     }
   ],

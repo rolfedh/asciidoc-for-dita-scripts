@@ -69,11 +69,21 @@ adt EntityReference -r
 adt ContentType -r
 ```
 
+## 🛠️ Troubleshooting
+
+If you encounter issues like "Failed to load module" or "No module named 'modules'" errors, see our [Troubleshooting Guide](docs/TROUBLESHOOTING.md) for solutions.
+
+Common fixes:
+- Remove conflicting packages: `pip uninstall adt-core`
+- Clear package cache: `pip cache purge`
+- Reinstall: `pip install --upgrade asciidoc-dita-toolkit`
+
 ## 🤝 Contributing
 
 - **Documentation**: https://rolfedh.github.io/asciidoc-dita-toolkit/
 - **Issues**: https://github.com/rolfedh/asciidoc-dita-toolkit/issues
 - **Contributing Guide**: [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)
+- **Troubleshooting**: [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
 
 ## 📄 License
 
