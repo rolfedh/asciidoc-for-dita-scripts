@@ -132,7 +132,7 @@ class ModuleSequencer:
                 package_dir = os.path.dirname(asciidoc_dita_toolkit.__file__)
                 package_config_path = os.path.join(os.path.dirname(package_dir), dev_config_path)
                 search_paths.append(package_config_path)
-            except:
+            except ImportError:
                 pass
 
             for config_path in search_paths:

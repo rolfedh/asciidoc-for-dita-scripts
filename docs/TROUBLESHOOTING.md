@@ -132,10 +132,15 @@ adt: command not found
 
 3. **Alternative execution methods:**
    ```bash
-   # Run directly with Python
-   python -m asciidoc_dita_toolkit.adt_core.cli --help
+   # Try these alternatives if 'adt' command is not found:
 
-   # Or use the full package name
+   # Option 1: Direct module execution
+   python -m asciidoc_dita_toolkit.adt_core --help
+
+   # Option 2: If package supports top-level execution
+   python -m asciidoc_dita_toolkit --help
+
+   # Option 3: Using the full package name (if available)
    asciidoc-dita-toolkit --help
    ```
 
