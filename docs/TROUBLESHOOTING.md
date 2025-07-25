@@ -263,7 +263,7 @@ adt: command not found
 3. **Alternative: Download the default configuration:**
    ```bash
    # Download the default configuration from the repository
-   curl -sSL https://raw.githubusercontent.com/rolfedh/asciidoc-dita-toolkit/main/.adt-modules.json -o .adt-modules.json
+   curl -sSL https://raw.githubusercontent.com/rolfedh/asciidoc-dita-toolkit/HEAD/.adt-modules.json -o .adt-modules.json
    ```
 
 4. **Verify the fix:**
