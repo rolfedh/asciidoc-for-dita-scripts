@@ -32,6 +32,7 @@ from asciidoc_dita_toolkit.asciidoc_dita.regex_patterns import CompiledPatterns
 # Import ADTModule from core
 try:
     from asciidoc_dita_toolkit.adt_core.module_sequencer import ADTModule
+
     ADT_MODULE_AVAILABLE = True
 except ImportError as e:
     raise ImportError(

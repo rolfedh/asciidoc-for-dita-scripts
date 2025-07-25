@@ -29,7 +29,12 @@ from dataclasses import dataclass, asdict
 
 # Import from ADT core
 try:
-    from asciidoc_dita_toolkit.adt_core.module_sequencer import ModuleSequencer, ModuleState, ModuleResolution, ADTModule
+    from asciidoc_dita_toolkit.adt_core.module_sequencer import (
+        ModuleSequencer,
+        ModuleState,
+        ModuleResolution,
+        ADTModule,
+    )
 except ImportError as e:
     raise ImportError(
         f"Failed to import from asciidoc_dita_toolkit.adt_core.module_sequencer: {e}. "
@@ -41,43 +46,52 @@ except ImportError as e:
 # Exception Classes
 # ============================================================================
 
+
 class UserJourneyError(Exception):
     """Base exception for UserJourney plugin errors."""
+
     pass
 
 
 class WorkflowError(UserJourneyError):
     """Base exception for workflow-related errors."""
+
     pass
 
 
 class WorkflowNotFoundError(WorkflowError):
     """Raised when a workflow cannot be found."""
+
     pass
 
 
 class WorkflowExistsError(WorkflowError):
     """Raised when trying to create a workflow that already exists."""
+
     pass
 
 
 class WorkflowStateError(WorkflowError):
     """Raised when workflow state is corrupted or invalid."""
+
     pass
 
 
 class WorkflowExecutionError(WorkflowError):
     """Raised when workflow execution fails."""
+
     pass
 
 
 class WorkflowPlanningError(WorkflowError):
     """Raised when workflow planning fails (e.g., module sequencing issues)."""
+
     pass
 
 
 class InvalidDirectoryError(UserJourneyError):
     """Raised when directory path is invalid."""
+
     pass
 
 
@@ -85,9 +99,11 @@ class InvalidDirectoryError(UserJourneyError):
 # Data Structures
 # ============================================================================
 
+
 @dataclass
 class ModuleExecutionState:
     """State tracking for individual module execution."""
+
     status: str  # pending, running, completed, failed, skipped
     started_at: Optional[str] = None
     completed_at: Optional[str] = None
@@ -102,6 +118,7 @@ class ModuleExecutionState:
 @dataclass
 class ExecutionResult:
     """Result of module or workflow execution."""
+
     status: str  # success, failed, completed
     message: str
     files_processed: int = 0
@@ -115,6 +132,7 @@ class ExecutionResult:
 @dataclass
 class WorkflowProgress:
     """Progress summary for a workflow."""
+
     total_modules: int
     completed_modules: int
     failed_modules: int
@@ -129,6 +147,7 @@ class WorkflowProgress:
 # ============================================================================
 # Core Classes
 # ============================================================================
+
 
 class WorkflowState:
     """
@@ -158,10 +177,7 @@ class WorkflowState:
         self.modules = self._initialize_module_states(modules)
         self.files_discovered: List[str] = []
         self.directory_config: Optional[Dict] = None
-        self.metadata = {
-            "version": "1.0",
-            "adt_version": self._get_adt_version()
-        }
+        self.metadata = {"version": "1.0", "adt_version": self._get_adt_version()}
 
         # Initialize file discovery and directory config
         self._refresh_file_discovery()
@@ -172,11 +188,13 @@ class WorkflowState:
         try:
             # Try modern importlib.metadata first
             from importlib.metadata import version
+
             return version("asciidoc-dita-toolkit")
         except ImportError:
             # Fallback to pkg_resources for older Python versions
             try:
                 import pkg_resources
+
                 return pkg_resources.get_distribution("asciidoc-dita-toolkit").version
             except Exception:
                 pass
@@ -186,20 +204,22 @@ class WorkflowState:
         # Final fallback version if package not installed or detection fails
         return "2.0.0"
 
-    def _initialize_module_states(self, modules: List[str]) -> Dict[str, ModuleExecutionState]:
+    def _initialize_module_states(
+        self, modules: List[str]
+    ) -> Dict[str, ModuleExecutionState]:
         """Create state tracking for each module with detailed metrics."""
         # Use OrderedDict to preserve execution order
-        return OrderedDict([
-            (module, ModuleExecutionState(status="pending"))
-            for module in modules
-        ])
+        return OrderedDict(
+            [(module, ModuleExecutionState(status="pending")) for module in modules]
+        )
 
     def _refresh_file_discovery(self) -> None:
         """Discover .adoc files using DirectoryConfig if available."""
         try:
             # Try DirectoryConfig first (it's required now)
             from asciidoc_dita_toolkit.asciidoc_dita.plugins.DirectoryConfig import (
-                load_directory_config, get_filtered_adoc_files
+                load_directory_config,
+                get_filtered_adoc_files,
             )
             from asciidoc_dita_toolkit.asciidoc_dita.file_utils import find_adoc_files
 
@@ -210,20 +230,19 @@ class WorkflowState:
                 )
             else:
                 # Fallback to simple discovery
-                self.files_discovered = [
-                    str(f) for f in self.directory.rglob("*.adoc")
-                ]
+                self.files_discovered = [str(f) for f in self.directory.rglob("*.adoc")]
         except (ImportError, Exception) as e:
             # Fallback if DirectoryConfig not available or fails
             logging.debug(f"DirectoryConfig not available, using simple discovery: {e}")
-            self.files_discovered = [
-                str(f) for f in self.directory.rglob("*.adoc")
-            ]
+            self.files_discovered = [str(f) for f in self.directory.rglob("*.adoc")]
 
     def _load_directory_config(self) -> None:
         """Load DirectoryConfig for workflow context."""
         try:
-            from asciidoc_dita_toolkit.asciidoc_dita.plugins.DirectoryConfig import load_directory_config
+            from asciidoc_dita_toolkit.asciidoc_dita.plugins.DirectoryConfig import (
+                load_directory_config,
+            )
+
             self.directory_config = load_directory_config()
         except (ImportError, Exception) as e:
             logging.debug(f"DirectoryConfig not available: {e}")
@@ -281,7 +300,9 @@ class WorkflowState:
         total = len(self.modules)
         completed = sum(1 for s in self.modules.values() if s.status == "completed")
         failed = sum(1 for s in self.modules.values() if s.status == "failed")
-        pending = sum(1 for s in self.modules.values() if s.status in ["pending", "running"])
+        pending = sum(
+            1 for s in self.modules.values() if s.status in ["pending", "running"]
+        )
 
         processed_files = sum(s.files_processed for s in self.modules.values())
         completion_pct = (completed / total * 100) if total > 0 else 0
@@ -294,7 +315,7 @@ class WorkflowState:
             current_module=self.get_next_module(),
             total_files=len(self.files_discovered),
             processed_files=processed_files,
-            completion_percentage=completion_pct
+            completion_percentage=completion_pct,
         )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -305,13 +326,13 @@ class WorkflowState:
             "created": self.created,
             "last_activity": self.last_activity,
             "status": self.status,
-            "module_order": list(self.modules.keys()),  # Preserve module execution order
-            "modules": {
-                name: asdict(state) for name, state in self.modules.items()
-            },
+            "module_order": list(
+                self.modules.keys()
+            ),  # Preserve module execution order
+            "modules": {name: asdict(state) for name, state in self.modules.items()},
             "files_discovered": self.files_discovered,
             "directory_config": self.directory_config,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
     @classmethod
@@ -322,9 +343,7 @@ class WorkflowState:
 
         # Create instance with basic info
         workflow = cls(
-            name=data["name"],
-            directory=data["directory"],
-            modules=module_names
+            name=data["name"], directory=data["directory"], modules=module_names
         )
 
         # Restore state
@@ -337,12 +356,16 @@ class WorkflowState:
 
         # Restore module states in correct order
         modules_data = data.get("modules", {})
-        module_order = data.get("module_order", list(modules_data.keys()))  # Use saved order if available
+        module_order = data.get(
+            "module_order", list(modules_data.keys())
+        )  # Use saved order if available
 
         workflow.modules = OrderedDict()  # Initialize as OrderedDict
         for module_name in module_order:
             if module_name in modules_data:
-                workflow.modules[module_name] = ModuleExecutionState(**modules_data[module_name])
+                workflow.modules[module_name] = ModuleExecutionState(
+                    **modules_data[module_name]
+                )
 
         return workflow
 
@@ -365,7 +388,9 @@ class WorkflowState:
 
             # Write to temp file
             with open(temp_path, 'w') as f:
-                json.dump(self.to_dict(), f, indent=2)  # Removed sort_keys=True to preserve module order
+                json.dump(
+                    self.to_dict(), f, indent=2
+                )  # Removed sort_keys=True to preserve module order
 
             # Atomic rename
             temp_path.rename(storage_path)
@@ -387,7 +412,9 @@ class WorkflowState:
             raise WorkflowStateError(f"Failed to save workflow state: {e}")
 
     @classmethod
-    def load_from_disk(cls, name: str, storage_dir: Optional[Path] = None) -> 'WorkflowState':
+    def load_from_disk(
+        cls, name: str, storage_dir: Optional[Path] = None
+    ) -> 'WorkflowState':
         """Load workflow state with validation and migration."""
         if storage_dir is None:
             if cls._default_storage_dir is not None:
@@ -462,15 +489,21 @@ class WorkflowManager:
             self.sequencer = ModuleSequencer()
             # Load configurations and discover modules
             try:
-                self.sequencer.load_configurations('.adt-modules.json', 'adt-user-config.json')
+                self.sequencer.load_configurations(
+                    '.adt-modules.json', 'adt-user-config.json'
+                )
                 self.sequencer.discover_modules()
             except Exception as e:
                 # For help display and other non-critical operations, just discover modules without config
-                logging.debug(f"Could not load full configuration, using discovery only: {e}")
+                logging.debug(
+                    f"Could not load full configuration, using discovery only: {e}"
+                )
                 try:
                     self.sequencer.discover_modules()
                 except Exception as discovery_error:
-                    logging.warning(f"Failed to initialize ModuleSequencer: {discovery_error}")
+                    logging.warning(
+                        f"Failed to initialize ModuleSequencer: {discovery_error}"
+                    )
         else:
             self.sequencer = module_sequencer
 
@@ -564,8 +597,7 @@ class WorkflowManager:
 
             # Filter to enabled modules in dependency order
             enabled_modules = [
-                r.name for r in resolutions
-                if r.state == ModuleState.ENABLED
+                r.name for r in resolutions if r.state == ModuleState.ENABLED
             ]
 
             # Verify DirectoryConfig is first (it's required now)
@@ -594,10 +626,7 @@ class WorkflowManager:
         """
         next_module = workflow.get_next_module()
         if not next_module:
-            return ExecutionResult(
-                status="completed",
-                message="All modules completed"
-            )
+            return ExecutionResult(status="completed", message="All modules completed")
 
         # Update workflow state
         workflow.mark_module_started(next_module)
@@ -609,9 +638,13 @@ class WorkflowManager:
 
             # Check result status and update workflow state appropriately
             if result.status == "failed":
-                workflow.mark_module_failed(next_module, result.error_message or "Module execution failed")
+                workflow.mark_module_failed(
+                    next_module, result.error_message or "Module execution failed"
+                )
                 workflow.save_to_disk()
-                raise WorkflowExecutionError(f"Module {next_module} failed: {result.error_message}")
+                raise WorkflowExecutionError(
+                    f"Module {next_module} failed: {result.error_message}"
+                )
             else:
                 # Update workflow state with successful results
                 workflow.mark_module_completed(next_module, result)
@@ -621,7 +654,7 @@ class WorkflowManager:
                 status="success",
                 message=f"{next_module} completed successfully",
                 files_processed=result.files_processed,
-                next_action=self._get_next_action(workflow)
+                next_action=self._get_next_action(workflow),
             )
 
         except WorkflowExecutionError:
@@ -633,7 +666,9 @@ class WorkflowManager:
             workflow.save_to_disk()
             raise WorkflowExecutionError(f"Module {next_module} failed: {e}")
 
-    def _execute_module_with_context(self, workflow: WorkflowState, module_name: str) -> ExecutionResult:
+    def _execute_module_with_context(
+        self, workflow: WorkflowState, module_name: str
+    ) -> ExecutionResult:
         """Execute a specific module with full workflow context."""
         try:
             # Build execution context from workflow state
@@ -643,7 +678,7 @@ class WorkflowManager:
                 "files": workflow.files_discovered,
                 "workflow_name": workflow.name,
                 "workflow_state": workflow.to_dict(),
-                "directory_config": workflow.directory_config
+                "directory_config": workflow.directory_config,
             }
 
             # Special handling for DirectoryConfig (interactive)
@@ -662,12 +697,12 @@ class WorkflowManager:
 
         except Exception as e:
             return ExecutionResult(
-                status="failed",
-                error_message=str(e),
-                module_name=module_name
+                status="failed", error_message=str(e), module_name=module_name
             )
 
-    def _execute_directory_config(self, workflow: WorkflowState, context: Dict[str, Any]) -> ExecutionResult:
+    def _execute_directory_config(
+        self, workflow: WorkflowState, context: Dict[str, Any]
+    ) -> ExecutionResult:
         """Execute DirectoryConfig module with special handling."""
         from datetime import datetime
 
@@ -676,29 +711,42 @@ class WorkflowManager:
         try:
             # Get DirectoryConfig module
             if "DirectoryConfig" not in self.sequencer.available_modules:
-                raise WorkflowExecutionError("DirectoryConfig module not found or not available")
+                raise WorkflowExecutionError(
+                    "DirectoryConfig module not found or not available"
+                )
 
-            directory_config_module = self.sequencer.available_modules["DirectoryConfig"]
+            directory_config_module = self.sequencer.available_modules[
+                "DirectoryConfig"
+            ]
 
             # Initialize if needed
-            if not hasattr(directory_config_module, '_initialized') or not directory_config_module._initialized:
+            if (
+                not hasattr(directory_config_module, '_initialized')
+                or not directory_config_module._initialized
+            ):
                 init_result = directory_config_module.initialize()
                 if init_result.get('status') == 'error':
-                    raise WorkflowExecutionError(f"Failed to initialize DirectoryConfig: {init_result.get('message')}")
+                    raise WorkflowExecutionError(
+                        f"Failed to initialize DirectoryConfig: {init_result.get('message')}"
+                    )
 
             # DirectoryConfig is interactive - log this info
-            logging.info("DirectoryConfig module is interactive and may prompt for input")
+            logging.info(
+                "DirectoryConfig module is interactive and may prompt for input"
+            )
             logging.info("This module will help configure which files to process")
 
             # Execute DirectoryConfig in the workflow directory context
             config_context = {
                 **context,
                 "interactive": True,
-                "workflow_directory": str(workflow.directory)
+                "workflow_directory": str(workflow.directory),
             }
 
             # DirectoryConfig typically works on the directory as a whole, not individual files
-            result = directory_config_module.execute(str(workflow.directory), **config_context)
+            result = directory_config_module.execute(
+                str(workflow.directory), **config_context
+            )
 
             # Calculate execution time
             end_time = datetime.now()
@@ -710,7 +758,7 @@ class WorkflowManager:
                     message="DirectoryConfig completed successfully",
                     files_processed=len(workflow.files_discovered),
                     execution_time=execution_time,
-                    module_name="DirectoryConfig"
+                    module_name="DirectoryConfig",
                 )
             else:
                 return ExecutionResult(
@@ -718,7 +766,7 @@ class WorkflowManager:
                     message="DirectoryConfig execution failed",
                     error_message=result.get('message', 'Unknown error'),
                     execution_time=execution_time,
-                    module_name="DirectoryConfig"
+                    module_name="DirectoryConfig",
                 )
 
         except Exception as e:
@@ -730,10 +778,12 @@ class WorkflowManager:
                 message="DirectoryConfig execution failed",
                 error_message=str(e),
                 execution_time=execution_time,
-                module_name="DirectoryConfig"
+                module_name="DirectoryConfig",
             )
 
-    def _execute_standard_module(self, module_name: str, context: Dict[str, Any]) -> ExecutionResult:
+    def _execute_standard_module(
+        self, module_name: str, context: Dict[str, Any]
+    ) -> ExecutionResult:
         """Execute a standard ADT module via ModuleSequencer."""
         from datetime import datetime
 
@@ -742,7 +792,9 @@ class WorkflowManager:
         try:
             # Get the module instance from ModuleSequencer
             if module_name not in self.sequencer.available_modules:
-                raise WorkflowExecutionError(f"Module '{module_name}' not found or not available")
+                raise WorkflowExecutionError(
+                    f"Module '{module_name}' not found or not available"
+                )
 
             module = self.sequencer.available_modules[module_name]
 
@@ -750,7 +802,9 @@ class WorkflowManager:
             if not hasattr(module, '_initialized') or not module._initialized:
                 init_result = module.initialize()
                 if init_result.get('status') == 'error':
-                    raise WorkflowExecutionError(f"Failed to initialize {module_name}: {init_result.get('message')}")
+                    raise WorkflowExecutionError(
+                        f"Failed to initialize {module_name}: {init_result.get('message')}"
+                    )
 
             # Execute module on discovered files
             files = context.get("files", [])
@@ -767,15 +821,22 @@ class WorkflowManager:
 
                     if result.get('status') in ['success', 'completed']:
                         files_processed += 1
-                        if result.get('modified', False) or result.get('files_modified', 0) > 0:
+                        if (
+                            result.get('modified', False)
+                            or result.get('files_modified', 0) > 0
+                        ):
                             files_modified += 1
                     elif result.get('status') == 'error':
                         # Log error but continue with other files
-                        logging.warning(f"Module {module_name} failed on {file_path}: {result.get('message')}")
+                        logging.warning(
+                            f"Module {module_name} failed on {file_path}: {result.get('message')}"
+                        )
 
                 except Exception as e:
                     # Log error but continue processing other files
-                    logging.warning(f"Module {module_name} exception on {file_path}: {e}")
+                    logging.warning(
+                        f"Module {module_name} exception on {file_path}: {e}"
+                    )
                     continue
 
             # Calculate execution time
@@ -788,7 +849,7 @@ class WorkflowManager:
                 files_processed=files_processed,
                 files_modified=files_modified,
                 execution_time=execution_time,
-                module_name=module_name
+                module_name=module_name,
             )
 
         except Exception as e:
@@ -800,7 +861,7 @@ class WorkflowManager:
                 message=f"{module_name} execution failed",
                 error_message=str(e),
                 execution_time=execution_time,
-                module_name=module_name
+                module_name=module_name,
             )
 
     def _get_next_action(self, workflow: WorkflowState) -> str:
@@ -837,7 +898,9 @@ class UserJourneyProcessor:
         try:
             # Validate required arguments
             if not hasattr(args, 'name') or not args.name:
-                self._print_error("Workflow name is required. Use --name=<workflow_name>")
+                self._print_error(
+                    "Workflow name is required. Use --name=<workflow_name>"
+                )
                 return 1
 
             if not hasattr(args, 'directory') or not args.directory:
@@ -853,7 +916,9 @@ class UserJourneyProcessor:
             # Check for existing workflow
             if self.workflow_manager.workflow_exists(args.name):
                 self._print_error(f"Workflow '{args.name}' already exists!")
-                self._print_info("Use 'adt journey resume' to continue an existing workflow")
+                self._print_info(
+                    "Use 'adt journey resume' to continue an existing workflow"
+                )
                 self._print_info("Or choose a different name with --name=<new_name>")
                 return 1
 
@@ -889,7 +954,9 @@ class UserJourneyProcessor:
                 return 1
 
             # Create workflow
-            workflow = self.workflow_manager.start_workflow(args.name, str(directory_path))
+            workflow = self.workflow_manager.start_workflow(
+                args.name, str(directory_path)
+            )
 
             self._print_success(f"✅ Workflow '{args.name}' created successfully!")
             self._print_info(f"Workflow stored in: {workflow.get_storage_path()}")
@@ -925,7 +992,9 @@ class UserJourneyProcessor:
         try:
             # Validate required arguments
             if not hasattr(args, 'name') or not args.name:
-                self._print_error("Workflow name is required. Use --name=<workflow_name>")
+                self._print_error(
+                    "Workflow name is required. Use --name=<workflow_name>"
+                )
                 self._show_available_workflows()
                 return 1
 
@@ -1010,7 +1079,9 @@ class UserJourneyProcessor:
         try:
             # Validate required arguments
             if not hasattr(args, 'name') or not args.name:
-                self._print_error("Workflow name is required. Use --name=<workflow_name>")
+                self._print_error(
+                    "Workflow name is required. Use --name=<workflow_name>"
+                )
                 self._show_available_workflows()
                 return 1
 
@@ -1060,7 +1131,9 @@ class UserJourneyProcessor:
 
             except WorkflowExecutionError as e:
                 self._print_error(f"Module execution failed: {e}")
-                self._print_info("Check the error above and fix any issues, then try again.")
+                self._print_info(
+                    "Check the error above and fix any issues, then try again."
+                )
                 return 1
 
         except Exception as e:
@@ -1083,7 +1156,9 @@ class UserJourneyProcessor:
 
             if not workflows:
                 self._print_info("No workflows found.")
-                self._print_info("Create a new workflow with: adt journey start --name=<name> --directory=<path>")
+                self._print_info(
+                    "Create a new workflow with: adt journey start --name=<name> --directory=<path>"
+                )
                 return 0
 
             self._print_info(f"Found {len(workflows)} workflow(s):")
@@ -1110,9 +1185,15 @@ class UserJourneyProcessor:
 
                     print(f"  {status_icon} {workflow_name:<20} {status_text}")
                     print(f"     Directory: {workflow.directory}")
-                    print(f"     Progress:  {progress.completed_modules}/{progress.total_modules} modules ({progress.completion_percentage:.1f}%)")
-                    print(f"     Files:     {progress.processed_files}/{progress.total_files}")
-                    print(f"     Modified:  {workflow.last_activity[:19].replace('T', ' ')}")
+                    print(
+                        f"     Progress:  {progress.completed_modules}/{progress.total_modules} modules ({progress.completion_percentage:.1f}%)"
+                    )
+                    print(
+                        f"     Files:     {progress.processed_files}/{progress.total_files}"
+                    )
+                    print(
+                        f"     Modified:  {workflow.last_activity[:19].replace('T', ' ')}"
+                    )
                     print()
 
                 except Exception as e:
@@ -1150,7 +1231,9 @@ class UserJourneyProcessor:
                 self._print_error("Specify what to clean up:")
                 self._print_info("  --name=<workflow>  Delete specific workflow")
                 self._print_info("  --completed        Delete all completed workflows")
-                self._print_info("  --all              Delete all workflows (use with caution!)")
+                self._print_info(
+                    "  --all              Delete all workflows (use with caution!)"
+                )
                 return 1
 
             workflows = self.workflow_manager.list_available_workflows()
@@ -1177,12 +1260,16 @@ class UserJourneyProcessor:
                     self._print_info("No completed workflows to clean up.")
                     return 0
 
-                self._print_info(f"Found {len(to_delete)} completed workflow(s) to delete:")
+                self._print_info(
+                    f"Found {len(to_delete)} completed workflow(s) to delete:"
+                )
                 for name in to_delete:
                     print(f"  - {name}")
 
             # Confirm deletion
-            response = input(f"\nDelete {len(to_delete)} workflow(s)? [y/N]: ").strip().lower()
+            response = (
+                input(f"\nDelete {len(to_delete)} workflow(s)? [y/N]: ").strip().lower()
+            )
             if response not in ['y', 'yes']:
                 self._print_info("Operation cancelled.")
                 return 0
@@ -1192,9 +1279,13 @@ class UserJourneyProcessor:
             for workflow_name in to_delete:
                 try:
                     if self.workflow_manager._storage_dir is not None:
-                        storage_path = self.workflow_manager._storage_dir / f"{workflow_name}.json"
+                        storage_path = (
+                            self.workflow_manager._storage_dir / f"{workflow_name}.json"
+                        )
                     else:
-                        storage_path = Path.home() / ".adt" / "workflows" / f"{workflow_name}.json"
+                        storage_path = (
+                            Path.home() / ".adt" / "workflows" / f"{workflow_name}.json"
+                        )
 
                     if storage_path.exists():
                         storage_path.unlink()
@@ -1231,22 +1322,30 @@ class UserJourneyProcessor:
             progress = workflow.get_progress_summary()
 
             self._print_info(f"Workflow: {workflow_name}")
-            self._print_info(f"Status:   {progress.completion_percentage:.1f}% complete")
+            self._print_info(
+                f"Status:   {progress.completion_percentage:.1f}% complete"
+            )
             self._print_info(f"Directory: {workflow.directory}")
 
         except Exception as e:
             self._print_warning(f"Could not load workflow details: {e}")
 
-        response = input(f"\nDelete workflow '{workflow_name}'? [y/N]: ").strip().lower()
+        response = (
+            input(f"\nDelete workflow '{workflow_name}'? [y/N]: ").strip().lower()
+        )
         if response not in ['y', 'yes']:
             self._print_info("Operation cancelled.")
             return 0
 
         try:
             if self.workflow_manager._storage_dir is not None:
-                storage_path = self.workflow_manager._storage_dir / f"{workflow_name}.json"
+                storage_path = (
+                    self.workflow_manager._storage_dir / f"{workflow_name}.json"
+                )
             else:
-                storage_path = Path.home() / ".adt" / "workflows" / f"{workflow_name}.json"
+                storage_path = (
+                    Path.home() / ".adt" / "workflows" / f"{workflow_name}.json"
+                )
 
             if storage_path.exists():
                 storage_path.unlink()
@@ -1271,7 +1370,9 @@ class UserJourneyProcessor:
                 for name in sorted(workflows):
                     print(f"  - {name}")
             else:
-                self._print_info("No workflows found. Create one with 'adt journey start'")
+                self._print_info(
+                    "No workflows found. Create one with 'adt journey start'"
+                )
         except Exception:
             pass  # Don't fail if we can't show available workflows
 
@@ -1297,14 +1398,25 @@ class UserJourneyProcessor:
 
         return 0
 
-    def _show_workflow_status(self, workflow: WorkflowState, progress: WorkflowProgress,
-                             detailed: bool = False, compact: bool = False) -> None:
+    def _show_workflow_status(
+        self,
+        workflow: WorkflowState,
+        progress: WorkflowProgress,
+        detailed: bool = False,
+        compact: bool = False,
+    ) -> None:
         """Show formatted workflow status."""
         if compact:
             # Compact format for multi-workflow display
-            status_indicator = "🎉" if progress.completion_percentage == 100 else "🔄" if progress.completed_modules > 0 else "⏸️"
+            status_indicator = (
+                "🎉"
+                if progress.completion_percentage == 100
+                else "🔄" if progress.completed_modules > 0 else "⏸️"
+            )
             print(f"{status_indicator} {workflow.name}")
-            print(f"   Progress: {progress.completed_modules}/{progress.total_modules} modules ({progress.completion_percentage:.1f}%)")
+            print(
+                f"   Progress: {progress.completed_modules}/{progress.total_modules} modules ({progress.completion_percentage:.1f}%)"
+            )
             if progress.failed_modules > 0:
                 print(f"   Failed:   {progress.failed_modules} modules")
             return
@@ -1346,20 +1458,26 @@ class UserJourneyProcessor:
                     "completed": "✅",
                     "running": "🔄",
                     "failed": "❌",
-                    "pending": "⏸️"
+                    "pending": "⏸️",
                 }.get(module_state.status, "❓")
 
-                print(f"  {status_icon} {module_name:<15} {module_state.status.upper()}")
+                print(
+                    f"  {status_icon} {module_name:<15} {module_state.status.upper()}"
+                )
 
                 if module_state.status == "completed" and module_state.files_processed:
                     print(f"      Files processed: {module_state.files_processed}")
                     if module_state.execution_time:
-                        print(f"      Execution time:  {module_state.execution_time:.2f}s")
+                        print(
+                            f"      Execution time:  {module_state.execution_time:.2f}s"
+                        )
 
                 if module_state.status == "failed" and module_state.error_message:
                     print(f"      Error: {module_state.error_message}")
 
-    def _show_workflow_summary(self, workflow: WorkflowState, progress: WorkflowProgress) -> None:
+    def _show_workflow_summary(
+        self, workflow: WorkflowState, progress: WorkflowProgress
+    ) -> None:
         """Show final workflow completion summary."""
         print(f"\n🎉 Workflow '{workflow.name}' completed successfully!")
         print(f"{'='*50}")
@@ -1416,6 +1534,7 @@ class UserJourneyProcessor:
 # ============================================================================
 # Module Integration (for ADT system compatibility)
 # ============================================================================
+
 
 class UserJourneyModule(ADTModule):
     """
@@ -1494,12 +1613,14 @@ class UserJourneyModule(ADTModule):
         # Add console handler if not already present
         if not logger.handlers:
             console_handler = logging.StreamHandler(sys.stderr)
-            console_handler.setLevel(logging.INFO if not self.verbose else logging.DEBUG)
+            console_handler.setLevel(
+                logging.INFO if not self.verbose else logging.DEBUG
+            )
 
             # Create formatter
             formatter = logging.Formatter(
                 '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                datefmt='%Y-%m-%d %H:%M:%S'
+                datefmt='%Y-%m-%d %H:%M:%S',
             )
             console_handler.setFormatter(formatter)
 
@@ -1514,7 +1635,7 @@ class UserJourneyModule(ADTModule):
 
                 file_formatter = logging.Formatter(
                     '%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S'
+                    datefmt='%Y-%m-%d %H:%M:%S',
                 )
                 file_handler.setFormatter(file_formatter)
 
@@ -1542,7 +1663,7 @@ class UserJourneyModule(ADTModule):
         return {
             "status": "skipped",
             "message": "UserJourney is a CLI orchestrator and should not be executed as a module",
-            "modified": False
+            "modified": False,
         }
 
     def get_cli_parser(self):
@@ -1558,10 +1679,12 @@ class UserJourneyModule(ADTModule):
 
         parser = argparse.ArgumentParser(
             prog="adt journey",
-            description="Workflow orchestration for ADT processing pipelines"
+            description="Workflow orchestration for ADT processing pipelines",
         )
 
-        subparsers = parser.add_subparsers(dest='journey_command', help='Journey commands')
+        subparsers = parser.add_subparsers(
+            dest='journey_command', help='Journey commands'
+        )
 
         # Start command
         start_parser = subparsers.add_parser('start', help='Start a new workflow')
@@ -1569,15 +1692,21 @@ class UserJourneyModule(ADTModule):
         start_parser.add_argument('--directory', required=True, help='Target directory')
 
         # Resume command
-        resume_parser = subparsers.add_parser('resume', help='Resume an existing workflow')
+        resume_parser = subparsers.add_parser(
+            'resume', help='Resume an existing workflow'
+        )
         resume_parser.add_argument('--name', required=True, help='Workflow name')
 
         # Status command
         status_parser = subparsers.add_parser('status', help='Show workflow status')
-        status_parser.add_argument('--name', help='Workflow name (optional, shows all if omitted)')
+        status_parser.add_argument(
+            '--name', help='Workflow name (optional, shows all if omitted)'
+        )
 
         # Continue command
-        continue_parser = subparsers.add_parser('continue', help='Continue workflow execution')
+        continue_parser = subparsers.add_parser(
+            'continue', help='Continue workflow execution'
+        )
         continue_parser.add_argument('--name', required=True, help='Workflow name')
 
         # List command
@@ -1587,8 +1716,12 @@ class UserJourneyModule(ADTModule):
         cleanup_parser = subparsers.add_parser('cleanup', help='Clean up workflows')
         cleanup_group = cleanup_parser.add_mutually_exclusive_group(required=True)
         cleanup_group.add_argument('--name', help='Delete specific workflow')
-        cleanup_group.add_argument('--completed', action='store_true', help='Delete completed workflows')
-        cleanup_group.add_argument('--all', action='store_true', help='Delete all workflows')
+        cleanup_group.add_argument(
+            '--completed', action='store_true', help='Delete completed workflows'
+        )
+        cleanup_group.add_argument(
+            '--all', action='store_true', help='Delete all workflows'
+        )
 
         return parser
 

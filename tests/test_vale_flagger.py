@@ -18,15 +18,15 @@ class TestValeFlagger(unittest.TestCase):
                     "Message": "Heading should use sentence-style capitalization.",
                     "Line": 5,
                     "Span": [1, 25],
-                    "Severity": "error"
+                    "Severity": "error",
                 },
                 {
                     "Check": "AsciiDocDITA.Terms.Use",
                     "Message": "Use 'repository' instead of 'repo'.",
                     "Line": 10,
                     "Span": [15, 19],
-                    "Severity": "warning"
-                }
+                    "Severity": "warning",
+                },
             ]
         }
 
@@ -64,17 +64,16 @@ class TestValeFlagger(unittest.TestCase):
             flagger = ValeFlagger()
 
         # Single issue
-        single_issue = [{
-            "Check": "AsciiDocDITA.Headings.Capitalization",
-            "Message": "Test message"
-        }]
+        single_issue = [
+            {"Check": "AsciiDocDITA.Headings.Capitalization", "Message": "Test message"}
+        ]
         flag = flagger._format_flag(single_issue)
         self.assertEqual(flag, "// ADT-FLAG [Headings.Capitalization]: Test message")
 
         # Multiple issues
         multiple_issues = [
             {"Check": "AsciiDocDITA.Rule1", "Message": "Message 1"},
-            {"Check": "AsciiDocDITA.Rule2", "Message": "Message 2"}
+            {"Check": "AsciiDocDITA.Rule2", "Message": "Message 2"},
         ]
         flag = flagger._format_flag(multiple_issues)
         self.assertIn("Rule1, Rule2", flag)
@@ -90,9 +89,7 @@ class TestValeFlagger(unittest.TestCase):
             with patch.object(ValeFlagger, '_check_docker'):
                 flagger = ValeFlagger()
 
-            issues = [
-                {"Check": "Test.Rule", "Message": "Test issue", "Line": 1}
-            ]
+            issues = [{"Check": "Test.Rule", "Message": "Test issue", "Line": 1}]
 
             flagger._flag_file(temp_path, issues)
 
@@ -116,8 +113,7 @@ class TestValeFlagger(unittest.TestCase):
             flagger = ValeFlagger()
 
         config = flagger._build_vale_config(
-            include_rules=["Rule1", "Rule2"],
-            exclude_rules=["Rule3"]
+            include_rules=["Rule1", "Rule2"], exclude_rules=["Rule3"]
         )
 
         self.assertIn("AsciiDocDITA.Rule1 = YES", config)

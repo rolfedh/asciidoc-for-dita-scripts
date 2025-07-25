@@ -22,6 +22,7 @@ from asciidoc_dita_toolkit.asciidoc_dita.workflow_utils import process_adoc_file
 # Import ADTModule from core
 try:
     from asciidoc_dita_toolkit.adt_core.module_sequencer import ADTModule
+
     ADT_MODULE_AVAILABLE = True
 except ImportError as e:
     raise ImportError(
@@ -41,8 +42,12 @@ class UnusedFilesDetector:
     are not referenced by any other files in the project using include:: directives.
     """
 
-    def __init__(self, scan_dirs: List[str], exclude_dirs: Optional[List[str]] = None,
-                 exclude_files: Optional[List[str]] = None):
+    def __init__(
+        self,
+        scan_dirs: List[str],
+        exclude_dirs: Optional[List[str]] = None,
+        exclude_files: Optional[List[str]] = None,
+    ):
         """
         Initialize the detector with configuration.
 
@@ -52,8 +57,12 @@ class UnusedFilesDetector:
             exclude_files: Specific files to exclude from scanning
         """
         self.scan_dirs = scan_dirs
-        self.exclude_dirs = set(os.path.abspath(os.path.normpath(d)) for d in (exclude_dirs or []))
-        self.exclude_files = set(os.path.abspath(os.path.normpath(f)) for f in (exclude_files or []))
+        self.exclude_dirs = set(
+            os.path.abspath(os.path.normpath(d)) for d in (exclude_dirs or [])
+        )
+        self.exclude_files = set(
+            os.path.abspath(os.path.normpath(f)) for f in (exclude_files or [])
+        )
         self.include_pattern = re.compile(r'include::(.+?)\[')
 
     def collect_files(self, directories: List[str], extensions: Set[str]) -> List[str]:
@@ -78,9 +87,12 @@ class UnusedFilesDetector:
                 abs_root = os.path.abspath(root)
 
                 # Exclude directories by absolute path and skip symlinks
-                dirs[:] = [d for d in dirs
-                          if not os.path.islink(os.path.join(root, d))
-                          and os.path.abspath(os.path.join(root, d)) not in self.exclude_dirs]
+                dirs[:] = [
+                    d
+                    for d in dirs
+                    if not os.path.islink(os.path.join(root, d))
+                    and os.path.abspath(os.path.join(root, d)) not in self.exclude_dirs
+                ]
 
                 for f in files:
                     file_path = os.path.normpath(os.path.join(root, f))
@@ -93,7 +105,9 @@ class UnusedFilesDetector:
                     if os.path.splitext(f)[1].lower() in extensions:
                         found_files.append(file_path)
 
-        return list(dict.fromkeys(found_files))  # Remove duplicates while preserving order
+        return list(
+            dict.fromkeys(found_files)
+        )  # Remove duplicates while preserving order
 
     def find_included_files(self, search_dirs: List[str]) -> Set[str]:
         """
@@ -114,7 +128,9 @@ class UnusedFilesDetector:
                     content = f.read()
                     includes = self.include_pattern.findall(content)
                     # Extract just the basename of included files
-                    included_files.update(os.path.basename(include) for include in includes)
+                    included_files.update(
+                        os.path.basename(include) for include in includes
+                    )
             except Exception as e:
                 logger.warning(f"Could not read {file_path}: {e}")
 
@@ -134,8 +150,9 @@ class UnusedFilesDetector:
         included_files = self.find_included_files(['.'])
 
         # Determine unused files
-        unused_files = [f for f in asciidoc_files
-                       if os.path.basename(f) not in included_files]
+        unused_files = [
+            f for f in asciidoc_files if os.path.basename(f) not in included_files
+        ]
 
         # Remove duplicates while preserving order
         return list(dict.fromkeys(unused_files))
@@ -155,11 +172,14 @@ class UnusedFilesArchiver:
         """
         self.archive_dir = archive_dir
 
-    def write_manifest_and_archive(self, unused_files: List[str],
-                                 manifest_prefix: str = 'unused-files',
-                                 archive_prefix: str = 'unused-files',
-                                 archive: bool = False,
-                                 verbose: bool = False) -> Tuple[Optional[str], Optional[str]]:
+    def write_manifest_and_archive(
+        self,
+        unused_files: List[str],
+        manifest_prefix: str = 'unused-files',
+        archive_prefix: str = 'unused-files',
+        archive: bool = False,
+        verbose: bool = False,
+    ) -> Tuple[Optional[str], Optional[str]]:
         """
         Write a manifest of unused files and optionally archive them.
 
@@ -212,13 +232,15 @@ class UnusedFilesArchiver:
         return manifest_path, archive_path
 
 
-def process_unused_files(scan_dirs: List[str],
-                        archive_dir: str = './archive',
-                        archive: bool = False,
-                        exclude_dirs: Optional[List[str]] = None,
-                        exclude_files: Optional[List[str]] = None,
-                        exclude_list: Optional[str] = None,
-                        verbose: bool = False) -> Dict[str, Any]:
+def process_unused_files(
+    scan_dirs: List[str],
+    archive_dir: str = './archive',
+    archive: bool = False,
+    exclude_dirs: Optional[List[str]] = None,
+    exclude_files: Optional[List[str]] = None,
+    exclude_list: Optional[str] = None,
+    verbose: bool = False,
+) -> Dict[str, Any]:
     """
     Main processing function to find and optionally archive unused files.
 
@@ -266,7 +288,7 @@ def process_unused_files(scan_dirs: List[str],
         'unused_count': len(unused_files),
         'manifest_path': manifest_path,
         'archive_path': archive_path,
-        'files_archived': len(unused_files) if archive else 0
+        'files_archived': len(unused_files) if archive else 0,
     }
 
 
@@ -309,7 +331,9 @@ class ArchiveUnusedFilesModule(ADTModule):
             Dict containing processing results and statistics
         """
         # Extract configuration from context
-        scan_dirs = context.get('scan_dirs', ['./modules', './modules/rn', './assemblies'])
+        scan_dirs = context.get(
+            'scan_dirs', ['./modules', './modules/rn', './assemblies']
+        )
         archive_dir = context.get('archive_dir', './archive')
         archive = context.get('archive', False)
         exclude_dirs = context.get('exclude_dirs', [])
@@ -323,7 +347,7 @@ class ArchiveUnusedFilesModule(ADTModule):
             archive=archive,
             exclude_dirs=exclude_dirs,
             exclude_files=exclude_files,
-            exclude_list=exclude_list
+            exclude_list=exclude_list,
         )
 
         return results
@@ -337,34 +361,34 @@ def main():
     parser.add_argument(
         '--archive',
         action='store_true',
-        help='Move unused files to a dated zip in the archive directory'
+        help='Move unused files to a dated zip in the archive directory',
     )
     parser.add_argument(
         '--scan-dirs',
         nargs='+',
         default=['./modules', './modules/rn', './assemblies'],
-        help='Directories to scan for AsciiDoc files (default: ./modules ./modules/rn ./assemblies)'
+        help='Directories to scan for AsciiDoc files (default: ./modules ./modules/rn ./assemblies)',
     )
     parser.add_argument(
         '--archive-dir',
         default='./archive',
-        help='Directory to store archived files (default: ./archive)'
+        help='Directory to store archived files (default: ./archive)',
     )
     parser.add_argument(
         '--exclude-dir',
         action='append',
         default=[],
-        help='Directory to exclude from scanning (can be used multiple times)'
+        help='Directory to exclude from scanning (can be used multiple times)',
     )
     parser.add_argument(
         '--exclude-file',
         action='append',
         default=[],
-        help='Specific file to exclude (can be used multiple times)'
+        help='Specific file to exclude (can be used multiple times)',
     )
     parser.add_argument(
         '--exclude-list',
-        help='Path to file containing directories/files to exclude, one per line'
+        help='Path to file containing directories/files to exclude, one per line',
     )
 
     args = parser.parse_args()
@@ -381,7 +405,7 @@ def main():
         archive=args.archive,
         exclude_dirs=args.exclude_dir,
         exclude_files=args.exclude_file,
-        exclude_list=args.exclude_list
+        exclude_list=args.exclude_list,
     )
 
     # Print summary

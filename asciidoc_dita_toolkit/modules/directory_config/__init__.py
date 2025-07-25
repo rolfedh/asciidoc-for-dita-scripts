@@ -32,6 +32,7 @@ from pathlib import Path
 # Import ADTModule from core - use same path as ModuleSequencer
 try:
     from asciidoc_dita_toolkit.adt_core.module_sequencer import ADTModule
+
     ADT_MODULE_AVAILABLE = True
 except ImportError as e:
     raise ImportError(

@@ -27,7 +27,10 @@ def test_phase_1_warning_suppression():
     print("=" * 60)
 
     try:
-        from asciidoc_dita_toolkit.adt_core.module_sequencer import ModuleSequencer, LEGACY_PLUGINS
+        from asciidoc_dita_toolkit.adt_core.module_sequencer import (
+            ModuleSequencer,
+            LEGACY_PLUGINS,
+        )
 
         # Test 1: Default behavior (warnings suppressed)
         print("\n1. Testing default behavior (warnings suppressed):")

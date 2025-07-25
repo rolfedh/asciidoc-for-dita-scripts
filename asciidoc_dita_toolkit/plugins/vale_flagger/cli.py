@@ -14,7 +14,7 @@ def setup_logging(verbose: bool = False):
     logging.basicConfig(
         level=level,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
+        datefmt='%Y-%m-%d %H:%M:%S',
     )
 
 
@@ -32,46 +32,43 @@ Examples:
   %(prog)s --enable-rules "Headings.Capitalization,Terms.Use"
   %(prog)s --disable-rules "Style.Passive"
   %(prog)s --dry-run                 # Show issues without modifying files
-        """
+        """,
     )
 
     parser.add_argument(
-        '--path', '-p',
+        '--path',
+        '-p',
         default='.',
-        help='Target directory or file to check (default: current directory)'
+        help='Target directory or file to check (default: current directory)',
     )
 
     parser.add_argument(
-        '--enable-rules', '-e',
-        help='Comma-separated list of rules to enable'
+        '--enable-rules', '-e', help='Comma-separated list of rules to enable'
     )
 
     parser.add_argument(
-        '--disable-rules', '-d',
-        help='Comma-separated list of rules to disable'
+        '--disable-rules', '-d', help='Comma-separated list of rules to disable'
     )
 
     parser.add_argument(
-        '--dry-run', '-n',
+        '--dry-run',
+        '-n',
         action='store_true',
-        help='Show what would be flagged without modifying files'
+        help='Show what would be flagged without modifying files',
     )
 
     parser.add_argument(
         '--flag-format',
         default=ValeFlagger.DEFAULT_FLAG_FORMAT,
-        help='Custom flag format (default: "%(default)s")'
+        help='Custom flag format (default: "%(default)s")',
     )
 
     parser.add_argument(
-        '--config', '-c',
-        help='Path to configuration file (YAML format)'
+        '--config', '-c', help='Path to configuration file (YAML format)'
     )
 
     parser.add_argument(
-        '--verbose', '-v',
-        action='store_true',
-        help='Enable verbose output'
+        '--verbose', '-v', action='store_true', help='Enable verbose output'
     )
 
     return parser
@@ -99,7 +96,7 @@ def main(args=None):
         flagger = ValeFlagger(
             config_path=getattr(args, 'config', None),
             flag_format=args.flag_format,
-            dry_run=args.dry_run
+            dry_run=args.dry_run,
         )
 
         # Run Vale
@@ -107,7 +104,7 @@ def main(args=None):
         results = flagger.run(
             target_path=args.path,
             include_rules=include_rules,
-            exclude_rules=exclude_rules
+            exclude_rules=exclude_rules,
         )
 
         # Report results
@@ -115,7 +112,9 @@ def main(args=None):
 
         if args.dry_run:
             print(f"\n{'='*60}")
-            print(f"DRY RUN RESULTS: Found {total_issues} issues in {len(results)} files")
+            print(
+                f"DRY RUN RESULTS: Found {total_issues} issues in {len(results)} files"
+            )
             print(f"{'='*60}")
 
             for file_path, issues in sorted(results.items()):

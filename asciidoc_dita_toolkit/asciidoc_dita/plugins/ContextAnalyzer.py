@@ -26,6 +26,7 @@ from ..regex_patterns import CompiledPatterns
 # Import ADTModule from core
 try:
     from asciidoc_dita_toolkit.adt_core.module_sequencer import ADTModule
+
     ADT_MODULE_AVAILABLE = True
 except ImportError as e:
     raise ImportError(
@@ -647,4 +648,3 @@ def process_context_analyzer_file(filepath: str, analyzer: ContextAnalyzer):
         analyzer: ContextAnalyzer instance
     """
     analyzer.analyze_file(filepath)
-

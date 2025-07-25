@@ -13,11 +13,15 @@ from pathlib import Path
 
 # Try to import from the installed package first, fallback to relative import
 try:
-    from asciidoc_dita_toolkit.asciidoc_dita.plugins.ArchiveUnusedFiles import process_unused_files
+    from asciidoc_dita_toolkit.asciidoc_dita.plugins.ArchiveUnusedFiles import (
+        process_unused_files,
+    )
 except ImportError:
     # Fallback for development/testing when package isn't installed
     sys.path.insert(0, str(Path(__file__).parent.parent))
-    from asciidoc_dita_toolkit.asciidoc_dita.plugins.ArchiveUnusedFiles import process_unused_files
+    from asciidoc_dita_toolkit.asciidoc_dita.plugins.ArchiveUnusedFiles import (
+        process_unused_files,
+    )
 
 
 def main():
@@ -48,54 +52,53 @@ EXCLUSION LIST FORMAT:
     ./modules/archive/obsolete.adoc
     # This is a comment
     ./temp
-"""
+""",
     )
 
     parser.add_argument(
         '--archive',
         action='store_true',
-        help='Move unused files to a dated zip in the archive directory'
+        help='Move unused files to a dated zip in the archive directory',
     )
     parser.add_argument(
         '--scan-dirs',
         nargs='+',
         default=['./modules', './modules/rn', './assemblies'],
-        help='Directories to scan for AsciiDoc files (default: ./modules ./modules/rn ./assemblies)'
+        help='Directories to scan for AsciiDoc files (default: ./modules ./modules/rn ./assemblies)',
     )
     parser.add_argument(
         '--archive-dir',
         default='./archive',
-        help='Directory to store archived files (default: ./archive)'
+        help='Directory to store archived files (default: ./archive)',
     )
     parser.add_argument(
         '--exclude-dir',
         action='append',
         default=[],
-        help='Directory to exclude from scanning (can be used multiple times)'
+        help='Directory to exclude from scanning (can be used multiple times)',
     )
     parser.add_argument(
         '--exclude-file',
         action='append',
         default=[],
-        help='Specific file to exclude (can be used multiple times)'
+        help='Specific file to exclude (can be used multiple times)',
     )
     parser.add_argument(
         '--exclude-list',
-        help='Path to file containing directories/files to exclude, one per line'
+        help='Path to file containing directories/files to exclude, one per line',
     )
     parser.add_argument(
-        '--verbose', '-v',
-        action='store_true',
-        help='Enable verbose output'
+        '--verbose', '-v', action='store_true', help='Enable verbose output'
     )
 
     args = parser.parse_args()
 
     # Set up logging level
     import logging
+
     logging.basicConfig(
         level=logging.DEBUG if args.verbose else logging.INFO,
-        format='%(levelname)s: %(message)s'
+        format='%(levelname)s: %(message)s',
     )
 
     try:
@@ -106,7 +109,7 @@ EXCLUSION LIST FORMAT:
             archive=args.archive,
             exclude_dirs=args.exclude_dir,
             exclude_files=args.exclude_file,
-            exclude_list=args.exclude_list
+            exclude_list=args.exclude_list,
         )
 
         # Print summary
@@ -130,6 +133,7 @@ EXCLUSION LIST FORMAT:
         print(f"Error: {e}", file=sys.stderr)
         if args.verbose:
             import traceback
+
             traceback.print_exc()
         return 1
 

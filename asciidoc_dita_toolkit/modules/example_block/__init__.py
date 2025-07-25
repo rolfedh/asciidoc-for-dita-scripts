@@ -20,6 +20,7 @@ from asciidoc_dita_toolkit.asciidoc_dita.workflow_utils import process_adoc_file
 # Import ADTModule from core
 try:
     from asciidoc_dita_toolkit.adt_core.module_sequencer import ADTModule
+
     ADT_MODULE_AVAILABLE = True
 except ImportError as e:
     raise ImportError(
@@ -725,12 +726,12 @@ class ExampleBlockModule(ADTModule):
             'files_processed': 0,
             'files_modified': 0,
             'issues_found': 0,
-            'issues_fixed': 0
+            'issues_fixed': 0,
         }
 
         processor = create_processor(
             batch_mode=context.get('batch_mode', True),
-            quiet_mode=context.get('quiet_mode', False)
+            quiet_mode=context.get('quiet_mode', False),
         )
 
         for file_path in files:

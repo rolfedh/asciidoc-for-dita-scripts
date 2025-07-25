@@ -15,12 +15,12 @@ class ValeFlaggerConfig:
             'enabled_rules': [],
             'disabled_rules': [],
             'timeout_seconds': 300,  # 5 minute default timeout
-            'docker_image': DEFAULT_DOCKER_IMAGE
+            'docker_image': DEFAULT_DOCKER_IMAGE,
         },
         'valeflag': {
             'flag_format': '// ADT-FLAG [{rule}]: {message}',
-            'backup_files': False
-        }
+            'backup_files': False,
+        },
     }
 
     def __init__(self, config_path: str = None):
@@ -54,12 +54,18 @@ class ValeFlaggerConfig:
 
     @property
     def flag_format(self):
-        return self.config['valeflag'].get('flag_format', self.DEFAULT_CONFIG['valeflag']['flag_format'])
+        return self.config['valeflag'].get(
+            'flag_format', self.DEFAULT_CONFIG['valeflag']['flag_format']
+        )
 
     @property
     def timeout_seconds(self):
-        return self.config['vale'].get('timeout_seconds', self.DEFAULT_CONFIG['vale']['timeout_seconds'])
+        return self.config['vale'].get(
+            'timeout_seconds', self.DEFAULT_CONFIG['vale']['timeout_seconds']
+        )
 
     @property
     def docker_image(self):
-        return self.config['vale'].get('docker_image', self.DEFAULT_CONFIG['vale']['docker_image'])
+        return self.config['vale'].get(
+            'docker_image', self.DEFAULT_CONFIG['vale']['docker_image']
+        )

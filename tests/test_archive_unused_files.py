@@ -16,7 +16,7 @@ from asciidoc_dita_toolkit.modules.archive_unused_files import (
     UnusedFilesDetector,
     UnusedFilesArchiver,
     process_unused_files,
-    ArchiveUnusedFilesModule
+    ArchiveUnusedFilesModule,
 )
 
 
@@ -101,7 +101,7 @@ class TestArchiveUnusedFiles(unittest.TestCase):
         """Test creating manifest without archiving."""
         unused_files = [
             os.path.join(self.modules_dir, 'unused1.adoc'),
-            os.path.join(self.modules_dir, 'unused2.adoc')
+            os.path.join(self.modules_dir, 'unused2.adoc'),
         ]
 
         archiver = UnusedFilesArchiver(self.archive_dir)
@@ -128,9 +128,7 @@ class TestArchiveUnusedFiles(unittest.TestCase):
 
         try:
             results = process_unused_files(
-                scan_dirs=['modules'],
-                archive_dir='archive',
-                archive=False
+                scan_dirs=['modules'], archive_dir='archive', archive=False
             )
 
             # Verify results
@@ -160,7 +158,7 @@ class TestArchiveUnusedFiles(unittest.TestCase):
             context = {
                 'scan_dirs': ['modules'],
                 'archive_dir': 'archive',
-                'archive': False
+                'archive': False,
             }
 
             results = module.execute(context)

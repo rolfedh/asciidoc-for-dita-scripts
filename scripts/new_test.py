@@ -71,29 +71,30 @@ if __name__ == '__main__':
     pytest.main([__file__])
 '''
 
+
 def create_test_file(test_name: str, plugin_name: str = None):
     """Create a new test file with proper template."""
-    
+
     # Determine paths
     project_root = Path(__file__).parent.parent
     tests_dir = project_root / "tests"
-    
+
     # Ensure tests directory exists
     tests_dir.mkdir(exist_ok=True)
-    
+
     # Generate file name
     if not test_name.startswith("test_"):
         test_name = f"test_{test_name}"
     if not test_name.endswith(".py"):
         test_name = f"{test_name}.py"
-    
+
     test_file = tests_dir / test_name
-    
+
     # Check if file already exists
     if test_file.exists():
         print(f"❌ Test file already exists: {test_file}")
         return False
-    
+
     # Determine module and class names
     if plugin_name:
         module_name = plugin_name
@@ -103,17 +104,17 @@ def create_test_file(test_name: str, plugin_name: str = None):
         base_name = test_name.replace("test_", "").replace(".py", "")
         class_name = "".join(word.capitalize() for word in base_name.split("_"))
         module_name = base_name
-    
+
     # Generate content from template
     content = TEST_TEMPLATE.format(
         module_name=module_name,
         class_name=class_name,
-        date=datetime.now().strftime("%Y-%m-%d")
+        date=datetime.now().strftime("%Y-%m-%d"),
     )
-    
+
     # Write the file
     test_file.write_text(content)
-    
+
     print(f"✅ Created test file: {test_file}")
     print(f"📝 Module: {module_name}")
     print(f"🏗️  Class: {class_name}")
@@ -123,8 +124,9 @@ def create_test_file(test_name: str, plugin_name: str = None):
     print("2. Import the module under test")
     print("3. Implement actual test cases")
     print("4. Run: pytest tests/{test_name}")
-    
+
     return True
+
 
 def main():
     """Main entry point."""
@@ -132,18 +134,17 @@ def main():
         description="Create new test files in the correct location"
     )
     parser.add_argument(
-        "test_name", 
-        help="Name of the test (will be prefixed with test_ if needed)"
+        "test_name", help="Name of the test (will be prefixed with test_ if needed)"
     )
     parser.add_argument(
-        "--plugin", "-p",
-        help="Plugin name (for proper imports and class names)"
+        "--plugin", "-p", help="Plugin name (for proper imports and class names)"
     )
-    
+
     args = parser.parse_args()
-    
+
     success = create_test_file(args.test_name, args.plugin)
     sys.exit(0 if success else 1)
+
 
 if __name__ == "__main__":
     main()

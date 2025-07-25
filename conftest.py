@@ -1,6 +1,7 @@
 """
 Pytest configuration for progress notifications during slow tests.
 """
+
 import pytest
 import time
 import threading

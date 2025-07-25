@@ -15,11 +15,20 @@ from unittest.mock import Mock, patch, MagicMock
 
 # Import UserJourney components
 from asciidoc_dita_toolkit.modules.user_journey import (
-    WorkflowState, WorkflowManager, UserJourneyProcessor,
-    ExecutionResult, WorkflowProgress, ModuleExecutionState,
-    UserJourneyError, WorkflowError, WorkflowNotFoundError,
-    WorkflowExistsError, WorkflowStateError, InvalidDirectoryError,
-    WorkflowExecutionError, WorkflowPlanningError
+    WorkflowState,
+    WorkflowManager,
+    UserJourneyProcessor,
+    ExecutionResult,
+    WorkflowProgress,
+    ModuleExecutionState,
+    UserJourneyError,
+    WorkflowError,
+    WorkflowNotFoundError,
+    WorkflowExistsError,
+    WorkflowStateError,
+    InvalidDirectoryError,
+    WorkflowExecutionError,
+    WorkflowPlanningError,
 )
 
 
@@ -38,6 +47,7 @@ class TestUserJourneyProcessor(unittest.TestCase):
 
         # Mock ModuleSequencer
         from asciidoc_dita_toolkit.adt_core.module_sequencer import ModuleState
+
         self.mock_sequencer = Mock()
 
         # Create properly configured mock resolution objects
@@ -51,7 +61,7 @@ class TestUserJourneyProcessor(unittest.TestCase):
 
         self.mock_sequencer.sequence_modules.return_value = (
             [mock_directory_config, mock_content_type],
-            []  # No errors
+            [],  # No errors
         )
 
         self.manager = WorkflowManager(self.mock_sequencer)
@@ -128,7 +138,9 @@ class TestUserJourneyProcessor(unittest.TestCase):
     def test_resume_command_success(self):
         """Test successful workflow resume command."""
         # Create workflow first
-        workflow = self.manager.start_workflow("test_workflow", str(self.test_directory))
+        workflow = self.manager.start_workflow(
+            "test_workflow", str(self.test_directory)
+        )
 
         # Resume it
         args = Mock()
@@ -148,7 +160,9 @@ class TestUserJourneyProcessor(unittest.TestCase):
     def test_continue_command_success(self):
         """Test successful continue command."""
         # Create workflow
-        workflow = self.manager.start_workflow("test_workflow", str(self.test_directory))
+        workflow = self.manager.start_workflow(
+            "test_workflow", str(self.test_directory)
+        )
 
         # Mock successful module execution
         with patch.object(self.manager, 'execute_next_module') as mock_execute:
@@ -156,7 +170,7 @@ class TestUserJourneyProcessor(unittest.TestCase):
                 status="success",
                 message="Module completed",
                 files_processed=2,
-                next_action="Run next module"
+                next_action="Run next module",
             )
 
             args = Mock()
@@ -169,7 +183,9 @@ class TestUserJourneyProcessor(unittest.TestCase):
     def test_continue_command_completed_workflow(self):
         """Test continue command on already completed workflow."""
         # Create and complete workflow
-        workflow = self.manager.start_workflow("test_workflow", str(self.test_directory))
+        workflow = self.manager.start_workflow(
+            "test_workflow", str(self.test_directory)
+        )
 
         # Mark all modules as completed
         for module_name in workflow.modules:
@@ -186,7 +202,9 @@ class TestUserJourneyProcessor(unittest.TestCase):
     def test_status_command_specific_workflow(self):
         """Test status command for specific workflow."""
         # Create workflow
-        workflow = self.manager.start_workflow("test_workflow", str(self.test_directory))
+        workflow = self.manager.start_workflow(
+            "test_workflow", str(self.test_directory)
+        )
 
         args = Mock()
         args.name = "test_workflow"
@@ -258,7 +276,9 @@ class TestUserJourneyProcessor(unittest.TestCase):
     def test_cleanup_command_completed_workflows(self):
         """Test cleanup of completed workflows."""
         # Create and complete workflow
-        workflow = self.manager.start_workflow("completed_workflow", str(self.test_directory))
+        workflow = self.manager.start_workflow(
+            "completed_workflow", str(self.test_directory)
+        )
         for module_name in workflow.modules:
             result = ExecutionResult("success", "Done", files_processed=1)
             workflow.mark_module_completed(module_name, result)
@@ -272,7 +292,7 @@ class TestUserJourneyProcessor(unittest.TestCase):
             args = Mock()
             args.completed = True
             del args.name  # No specific workflow
-            del args.all   # Not all workflows
+            del args.all  # Not all workflows
 
             result = self.processor.process_cleanup_command(args)
             self.assertEqual(result, 0)  # Success
@@ -312,7 +332,9 @@ class TestWorkflowState(unittest.TestCase):
 
     def test_workflow_initialization(self):
         """Test basic workflow state initialization."""
-        workflow = WorkflowState("test_workflow", str(self.test_directory), self.test_modules)
+        workflow = WorkflowState(
+            "test_workflow", str(self.test_directory), self.test_modules
+        )
 
         self.assertEqual(workflow.name, "test_workflow")
         self.assertEqual(workflow.directory, self.test_directory)
@@ -326,7 +348,9 @@ class TestWorkflowState(unittest.TestCase):
 
     def test_module_state_transitions(self):
         """Test module state transitions."""
-        workflow = WorkflowState("test_workflow", str(self.test_directory), self.test_modules)
+        workflow = WorkflowState(
+            "test_workflow", str(self.test_directory), self.test_modules
+        )
 
         # Test marking module as started
         workflow.mark_module_started("DirectoryConfig")
@@ -335,7 +359,9 @@ class TestWorkflowState(unittest.TestCase):
         self.assertIsNotNone(state.started_at)
 
         # Test marking module as completed
-        result = ExecutionResult("success", "Completed successfully", files_processed=2, files_modified=1)
+        result = ExecutionResult(
+            "success", "Completed successfully", files_processed=2, files_modified=1
+        )
         workflow.mark_module_completed("DirectoryConfig", result)
 
         state = workflow.modules["DirectoryConfig"]
@@ -353,7 +379,9 @@ class TestWorkflowState(unittest.TestCase):
 
     def test_get_next_module(self):
         """Test getting next module in sequence."""
-        workflow = WorkflowState("test_workflow", str(self.test_directory), self.test_modules)
+        workflow = WorkflowState(
+            "test_workflow", str(self.test_directory), self.test_modules
+        )
 
         # Should return first module initially
         next_module = workflow.get_next_module()
@@ -377,7 +405,9 @@ class TestWorkflowState(unittest.TestCase):
 
     def test_progress_summary(self):
         """Test progress summary calculation."""
-        workflow = WorkflowState("test_workflow", str(self.test_directory), self.test_modules)
+        workflow = WorkflowState(
+            "test_workflow", str(self.test_directory), self.test_modules
+        )
 
         progress = workflow.get_progress_summary()
         self.assertEqual(progress.total_modules, 3)
@@ -401,7 +431,9 @@ class TestWorkflowState(unittest.TestCase):
         # Mock datetime for consistent testing
         mock_datetime.now.return_value.isoformat.return_value = "2024-01-01T10:00:00"
 
-        workflow = WorkflowState("test_workflow", str(self.test_directory), self.test_modules)
+        workflow = WorkflowState(
+            "test_workflow", str(self.test_directory), self.test_modules
+        )
 
         # Convert to dict
         data = workflow.to_dict()
@@ -417,7 +449,9 @@ class TestWorkflowState(unittest.TestCase):
 
     def test_persistence(self):
         """Test saving and loading workflow state."""
-        workflow = WorkflowState("test_workflow", str(self.test_directory), self.test_modules)
+        workflow = WorkflowState(
+            "test_workflow", str(self.test_directory), self.test_modules
+        )
 
         # Mark some progress
         result = ExecutionResult("success", "Done", files_processed=2)
@@ -432,14 +466,8 @@ class TestWorkflowState(unittest.TestCase):
         # Verify state was preserved
         self.assertEqual(loaded_workflow.name, workflow.name)
         self.assertEqual(loaded_workflow.directory, workflow.directory)
-        self.assertEqual(
-            loaded_workflow.modules["DirectoryConfig"].status,
-            "completed"
-        )
-        self.assertEqual(
-            loaded_workflow.modules["DirectoryConfig"].files_processed,
-            2
-        )
+        self.assertEqual(loaded_workflow.modules["DirectoryConfig"].status, "completed")
+        self.assertEqual(loaded_workflow.modules["DirectoryConfig"].files_processed, 2)
 
 
 class TestWorkflowManager(unittest.TestCase):
@@ -456,6 +484,7 @@ class TestWorkflowManager(unittest.TestCase):
 
         # Mock ModuleSequencer
         from asciidoc_dita_toolkit.adt_core.module_sequencer import ModuleState
+
         self.mock_sequencer = Mock()
 
         # Create properly configured mock resolution objects
@@ -469,7 +498,7 @@ class TestWorkflowManager(unittest.TestCase):
 
         self.mock_sequencer.sequence_modules.return_value = (
             [mock_directory_config, mock_content_type],
-            []  # No errors
+            [],  # No errors
         )
 
         self.manager = WorkflowManager(self.mock_sequencer)
@@ -490,7 +519,9 @@ class TestWorkflowManager(unittest.TestCase):
 
     def test_start_workflow(self):
         """Test starting a new workflow."""
-        workflow = self.manager.start_workflow("test_workflow", str(self.test_directory))
+        workflow = self.manager.start_workflow(
+            "test_workflow", str(self.test_directory)
+        )
 
         self.assertEqual(workflow.name, "test_workflow")
         self.assertEqual(workflow.directory, self.test_directory)
@@ -504,7 +535,9 @@ class TestWorkflowManager(unittest.TestCase):
         self.assertFalse(self.manager.workflow_exists("test_workflow"))
 
         # Create workflow
-        workflow = self.manager.start_workflow("test_workflow", str(self.test_directory))
+        workflow = self.manager.start_workflow(
+            "test_workflow", str(self.test_directory)
+        )
 
         # Now it should exist
         self.assertTrue(self.manager.workflow_exists("test_workflow"))
@@ -532,7 +565,10 @@ class TestWorkflowManager(unittest.TestCase):
 
     def test_module_sequencing_error(self):
         """Test handling of module sequencing errors."""
-        self.mock_sequencer.sequence_modules.return_value = ([], ["Error in sequencing"])
+        self.mock_sequencer.sequence_modules.return_value = (
+            [],
+            ["Error in sequencing"],
+        )
 
         with self.assertRaises(WorkflowPlanningError):
             self.manager.get_planned_modules()
@@ -544,6 +580,7 @@ class TestUserJourneyModule(unittest.TestCase):
     def setUp(self):
         """Set up test environment."""
         from asciidoc_dita_toolkit.modules.user_journey import UserJourneyModule
+
         self.module = UserJourneyModule()
 
     def test_module_properties(self):
@@ -554,8 +591,12 @@ class TestUserJourneyModule(unittest.TestCase):
 
     def test_module_initialization(self):
         """Test module initialization."""
-        with patch('asciidoc_dita_toolkit.modules.user_journey.WorkflowManager') as mock_manager:
-            with patch('asciidoc_dita_toolkit.modules.user_journey.UserJourneyProcessor') as mock_processor:
+        with patch(
+            'asciidoc_dita_toolkit.modules.user_journey.WorkflowManager'
+        ) as mock_manager:
+            with patch(
+                'asciidoc_dita_toolkit.modules.user_journey.UserJourneyProcessor'
+            ) as mock_processor:
                 result = self.module.initialize()
 
                 self.assertEqual(result["status"], "success")
@@ -566,7 +607,9 @@ class TestUserJourneyModule(unittest.TestCase):
         """Test module execution (compatibility mode)."""
         # Initialize first
         with patch('asciidoc_dita_toolkit.modules.user_journey.WorkflowManager'):
-            with patch('asciidoc_dita_toolkit.modules.user_journey.UserJourneyProcessor'):
+            with patch(
+                'asciidoc_dita_toolkit.modules.user_journey.UserJourneyProcessor'
+            ):
                 self.module.initialize()
 
         # Test execution

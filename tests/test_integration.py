@@ -38,10 +38,7 @@ class TestIntegration(unittest.TestCase):
                     "version": "~1.0.0",
                     "dependencies": [],
                     "init_order": 1,
-                    "config": {
-                        "scan_depth": 5,
-                        "exclude_patterns": ["*.tmp", "*.log"]
-                    }
+                    "config": {"scan_depth": 5, "exclude_patterns": ["*.tmp", "*.log"]},
                 },
                 {
                     "name": "EntityReference",
@@ -49,10 +46,7 @@ class TestIntegration(unittest.TestCase):
                     "version": ">=1.2.0",
                     "dependencies": ["DirectoryConfig"],
                     "init_order": 2,
-                    "config": {
-                        "timeout_seconds": 30,
-                        "cache_size": 1000
-                    }
+                    "config": {"timeout_seconds": 30, "cache_size": 1000},
                 },
                 {
                     "name": "ContentType",
@@ -62,14 +56,11 @@ class TestIntegration(unittest.TestCase):
                     "init_order": 3,
                     "config": {
                         "cache_enabled": True,
-                        "supported_types": ["text", "image", "video"]
-                    }
-                }
+                        "supported_types": ["text", "image", "video"],
+                    },
+                },
             ],
-            "global_config": {
-                "max_retries": 3,
-                "log_level": "INFO"
-            }
+            "global_config": {"max_retries": 3, "log_level": "INFO"},
         }
 
         self.test_user_config = {
@@ -79,9 +70,9 @@ class TestIntegration(unittest.TestCase):
             "moduleOverrides": {
                 "ContentType": {
                     "cache_enabled": False,
-                    "supported_types": ["text", "image"]
+                    "supported_types": ["text", "image"],
                 }
-            }
+            },
         }
 
     def test_load_real_configurations(self):
@@ -93,12 +84,23 @@ class TestIntegration(unittest.TestCase):
 
         # Verify that essential modules are present instead of hardcoding count
         loaded_module_names = [m["name"] for m in self.sequencer.dev_config["modules"]]
-        essential_modules = ["DirectoryConfig", "EntityReference", "ContentType", "UserJourney"]
+        essential_modules = [
+            "DirectoryConfig",
+            "EntityReference",
+            "ContentType",
+            "UserJourney",
+        ]
         for module_name in essential_modules:
-            self.assertIn(module_name, loaded_module_names, f"Essential module {module_name} not found in configuration")
+            self.assertIn(
+                module_name,
+                loaded_module_names,
+                f"Essential module {module_name} not found in configuration",
+            )
 
         # Verify we have a reasonable number of modules (at least the essential ones)
-        self.assertGreaterEqual(len(self.sequencer.dev_config["modules"]), len(essential_modules))
+        self.assertGreaterEqual(
+            len(self.sequencer.dev_config["modules"]), len(essential_modules)
+        )
         self.assertIn("DirectoryConfig", self.sequencer.user_config["enabledModules"])
 
     def test_full_sequencing_workflow(self):
@@ -115,13 +117,19 @@ class TestIntegration(unittest.TestCase):
         # Should have 3 modules that we manually added in setUp (DirectoryConfig, EntityReference and ContentType)
         # Only test the 3 modules we have in our mock setup
         enabled_modules = [r for r in resolutions if r.state == ModuleState.ENABLED]
-        test_modules = [r for r in enabled_modules if r.name in ["DirectoryConfig", "EntityReference", "ContentType"]]
+        test_modules = [
+            r
+            for r in enabled_modules
+            if r.name in ["DirectoryConfig", "EntityReference", "ContentType"]
+        ]
         self.assertEqual(len(test_modules), 3)
 
         module_names = [r.name for r in test_modules]
         self.assertIn("EntityReference", module_names)
         self.assertIn("ContentType", module_names)
-        self.assertIn("DirectoryConfig", module_names)  # DirectoryConfig is now required
+        self.assertIn(
+            "DirectoryConfig", module_names
+        )  # DirectoryConfig is now required
 
         # Verify correct initialization order
         entity_ref_order = next(
@@ -240,7 +248,11 @@ class TestIntegration(unittest.TestCase):
 
         # Should have 3 enabled (only the modules we manually added in setUp), rest should be missing
         available_test_modules = ["DirectoryConfig", "EntityReference", "ContentType"]
-        enabled_test_modules = [m for m in status["modules"] if m["name"] in available_test_modules and m["state"] == "enabled"]
+        enabled_test_modules = [
+            m
+            for m in status["modules"]
+            if m["name"] in available_test_modules and m["state"] == "enabled"
+        ]
         self.assertEqual(len(enabled_test_modules), 3)
         self.assertEqual(len(status["errors"]), 0)
 
@@ -343,7 +355,9 @@ class TestIntegration(unittest.TestCase):
         for resolution in enabled_modules:
             # Get module instance from available_modules
             module = fresh_sequencer.available_modules[resolution.name]
-            self.assertIsNotNone(module, f"Module {resolution.name} should have instance")
+            self.assertIsNotNone(
+                module, f"Module {resolution.name} should have instance"
+            )
 
             # Simulate module execution
             if hasattr(module, "run"):

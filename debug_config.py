@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sys
 import os
+
 sys.path.insert(0, os.getcwd())
 
 from asciidoc_dita_toolkit.plugins.vale_flagger.vale_flagger import ValeFlagger

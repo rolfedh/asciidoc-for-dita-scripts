@@ -101,43 +101,26 @@ class MinimalistConsoleUI(UIInterface):
 
         logger.debug("Prompting user for content type selection")
 
-        suggested_type = detection_result.suggested_type
-
-        # Show analysis
-        if suggested_type:
-            reasoning = (
-                detection_result.reasoning[0] if detection_result.reasoning else ""
-            )
-            print(f"Analysis: {suggested_type} ({reasoning})")
-        else:
-            print("Analysis: TBD (content analysis failed)")
+        # Clear instruction to manually inspect file
+        print("\n🔍 You must open and inspect this file to determine the correct content type!")
+        print("   Please check the file content before making your selection.\n")
 
         # Build type menu with emphasized first letters
         type_menu = []
         for letter, type_name in self.content_type_options:
             type_menu.append(f"{letter.upper()}{type_name[1:]}")
 
-        print(f"Type: {', '.join(type_menu)}")
-
-        # Show suggestion
-        if suggested_type:
-            print(f"Suggestion: {suggested_type}.")
-        else:
-            print("Suggestion: TBD.")
-
-        print(
-            "Press: Enter to accept; the first letter of a type; Ctrl+C to quit; or Ctrl+S to skip"
-        )
+        print(f"Available types: {', '.join(type_menu)}")
+        print("Press: Enter for TBD (default); the first letter of a type; Ctrl+C to quit; or Ctrl+S to skip")
 
         while True:
             try:
                 # Try to get single character input
                 choice = self._get_single_char_input()
 
-                # Handle Enter key (accept suggestion)
+                # Handle Enter key (default to TBD)
                 if choice in ['\r', '\n']:
-                    chosen_type = suggested_type or "TBD"
-                    return chosen_type
+                    return "TBD"
 
                 # Handle Ctrl+C (quit)
                 if choice == '\x03':
@@ -155,7 +138,7 @@ class MinimalistConsoleUI(UIInterface):
 
                 # Invalid choice
                 print(
-                    "Invalid choice. Press Enter to accept suggestion, first letter of type, Ctrl+C to quit, or Ctrl+S to skip."
+                    "Invalid choice. Press Enter for TBD, first letter of type, Ctrl+C to quit, or Ctrl+S to skip."
                 )
                 continue
 
@@ -261,7 +244,7 @@ class ConsoleUI(UIInterface):
 
     def prompt_content_type(self, detection_result: DetectionResult) -> Optional[str]:
         """
-        Prompt user to select content type interactively with smart pre-selection.
+        Prompt user to select content type interactively.
 
         Args:
             detection_result: Result of content type detection with suggestions
@@ -271,45 +254,18 @@ class ConsoleUI(UIInterface):
         """
         logger.debug("Prompting user for content type selection")
 
-        suggested_type = detection_result.suggested_type
-        suggested_index = None
+        # Clear instruction to manually inspect file
+        print("\n🔍 You must open and inspect this file to determine the correct content type!")
+        print("   Please check the file content before making your selection.\n")
 
-        if suggested_type and suggested_type in self.content_type_options:
-            suggested_index = self.content_type_options.index(suggested_type) + 1
-
-        # Display context and suggestion
-        if suggested_type:
-            print(
-                f"\nContent type not specified. Based on analysis, this appears to be a {suggested_type}."
-            )
-            if detection_result.reasoning:
-                print(
-                    f"Reasoning: {'; '.join(detection_result.reasoning[:2])}"
-                )  # Show first 2 reasons
-        else:
-            print("\nNo content type detected.")
-
-        # Build the compact option display
+        # Build the option display without suggestions
         options_display = []
         for i, option in enumerate(self.content_type_options, 1):
-            if i == suggested_index:
-                options_display.append(f"{i} {option} 💡")
-            else:
-                options_display.append(f"{i} {option}")
+            options_display.append(f"{i} {option}")
         options_display.append("7 Skip")
 
-        print(f"\nType: {', '.join(options_display)}")
-
-        # Show suggestion line
-        if suggested_index:
-            suggested_option = self.content_type_options[suggested_index - 1]
-            print(
-                f"💡 Suggestion: {suggested_index} — Press Enter to accept, 1–7 to choose, or Ctrl+C to quit"
-            )
-            prompt_msg = ""
-        else:
-            print("Press 1–7 to choose, or Ctrl+C to quit")
-            prompt_msg = ""
+        print(f"Available types: {', '.join(options_display)}")
+        print("Press Enter for TBD (default), 1–7 to choose, or Ctrl+C to quit")
 
         while True:
             try:
@@ -325,12 +281,9 @@ class ConsoleUI(UIInterface):
                 finally:
                     termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
-                # Handle Enter key (accept suggestion)
+                # Handle Enter key (default to TBD)
                 if choice == '\r' or choice == '\n':
-                    if suggested_index:
-                        choice = str(suggested_index)
-                    else:
-                        choice = "6"  # Default to TBD if no suggestion
+                    choice = "6"  # Default to TBD
 
                 # Handle quit (Ctrl+C equivalent)
                 if choice == '\x03':  # Ctrl+C
@@ -380,19 +333,14 @@ class ConsoleUI(UIInterface):
         Returns:
             Selected content type string or None if skipped
         """
-        if suggested_index:
-            prompt_msg = f"[{suggested_index}]: "
-        else:
-            prompt_msg = "Choice: "
+        prompt_msg = "Choice [6 for TBD]: "
 
         while True:
             try:
                 choice = input(prompt_msg).strip()
 
-                # Use suggested default if user just presses Enter
-                if choice == "" and suggested_index:
-                    choice = str(suggested_index)
-                elif choice == "":
+                # Default to TBD if user just presses Enter
+                if choice == "":
                     choice = "6"  # Default to TBD
 
                 if choice == "7":

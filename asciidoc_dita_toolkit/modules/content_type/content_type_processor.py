@@ -42,13 +42,17 @@ class ContentTypeProcessor:
 
     def _default_file_reader(self, filepath: str) -> List[Tuple[str, str]]:
         """Default file reader using the toolkit's file utilities."""
-        from asciidoc_dita_toolkit.asciidoc_dita.file_utils import read_text_preserve_endings
+        from asciidoc_dita_toolkit.asciidoc_dita.file_utils import (
+            read_text_preserve_endings,
+        )
 
         return read_text_preserve_endings(filepath)
 
     def _default_file_writer(self, filepath: str, lines: List[Tuple[str, str]]) -> None:
         """Default file writer using the toolkit's file utilities."""
-        from asciidoc_dita_toolkit.asciidoc_dita.file_utils import write_text_preserve_endings
+        from asciidoc_dita_toolkit.asciidoc_dita.file_utils import (
+            write_text_preserve_endings,
+        )
 
         write_text_preserve_endings(filepath, lines)
 

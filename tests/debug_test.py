@@ -12,6 +12,7 @@ sys.path.insert(0, str(project_root))
 
 from asciidoc_dita_toolkit.adt_core.module_sequencer import ModuleSequencer, ModuleState
 
+
 def debug_integration_test():
     """Debug the integration test to see which module is failing."""
     # The test must be running from the project root, not test_files
@@ -84,6 +85,7 @@ def debug_integration_test():
         print(f"\nFailed results: {failed_results}")
     else:
         print("\nAll modules executed successfully!")
+
 
 if __name__ == '__main__':
     debug_integration_test()

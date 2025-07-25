@@ -76,14 +76,18 @@ class ValeFlaggerModule:
                 "status": "success" if exit_code == 0 else "warning",
                 "exit_code": exit_code,
                 "modified_files": [] if args and "--dry-run" in args else [],
-                "message": "ValeFlagger completed successfully" if exit_code == 0 else "ValeFlagger found issues"
+                "message": (
+                    "ValeFlagger completed successfully"
+                    if exit_code == 0
+                    else "ValeFlagger found issues"
+                ),
             }
         except Exception as e:
             return {
                 "status": "error",
                 "exit_code": 1,
                 "error": str(e),
-                "message": f"ValeFlagger failed: {e}"
+                "message": f"ValeFlagger failed: {e}",
             }
 
     def cleanup(self) -> Dict[str, Any]:
@@ -147,21 +151,18 @@ def register_subcommand(subparsers):
 
     # Add ValeFlagger-specific arguments
     parser.add_argument(
-        "--enable-rules", "-e",
-        help="Comma-separated list of rules to enable"
+        "--enable-rules", "-e", help="Comma-separated list of rules to enable"
     )
     parser.add_argument(
-        "--disable-rules",
-        help="Comma-separated list of rules to disable"
+        "--disable-rules", help="Comma-separated list of rules to disable"
     )
     parser.add_argument(
-        "--config", "-c",
-        help="Path to configuration file (YAML format)"
+        "--config", "-c", help="Path to configuration file (YAML format)"
     )
     parser.add_argument(
         "--execute-changes",
         action="store_true",
-        help="Actually modify files (default is dry-run mode)"
+        help="Actually modify files (default is dry-run mode)",
     )
 
     parser.set_defaults(func=main)

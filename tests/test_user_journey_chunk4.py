@@ -27,12 +27,22 @@ from concurrent.futures import ThreadPoolExecutor
 
 # Import UserJourney components
 from asciidoc_dita_toolkit.modules.user_journey import (
-    WorkflowState, WorkflowManager, UserJourneyProcessor,
-    ExecutionResult, WorkflowProgress, ModuleExecutionState,
-    UserJourneyError, WorkflowError, WorkflowNotFoundError,
-    WorkflowExistsError, WorkflowStateError, InvalidDirectoryError,
-    WorkflowExecutionError, WorkflowPlanningError
+    WorkflowState,
+    WorkflowManager,
+    UserJourneyProcessor,
+    ExecutionResult,
+    WorkflowProgress,
+    ModuleExecutionState,
+    UserJourneyError,
+    WorkflowError,
+    WorkflowNotFoundError,
+    WorkflowExistsError,
+    WorkflowStateError,
+    InvalidDirectoryError,
+    WorkflowExecutionError,
+    WorkflowPlanningError,
 )
+
 
 class TestFixtureLoader:
     """Utility class for loading test fixtures."""
@@ -45,14 +55,18 @@ class TestFixtureLoader:
     @staticmethod
     def load_workflow_state_fixture(name):
         """Load a workflow state fixture by name."""
-        fixture_path = TestFixtureLoader.get_fixture_path() / "workflow_states" / f"{name}.json"
+        fixture_path = (
+            TestFixtureLoader.get_fixture_path() / "workflow_states" / f"{name}.json"
+        )
         with open(fixture_path) as f:
             return json.load(f)
 
     @staticmethod
     def load_mock_response_fixture(name):
         """Load a mock response fixture by name."""
-        fixture_path = TestFixtureLoader.get_fixture_path() / "mock_responses" / f"{name}.json"
+        fixture_path = (
+            TestFixtureLoader.get_fixture_path() / "mock_responses" / f"{name}.json"
+        )
         with open(fixture_path) as f:
             return json.load(f)
 
@@ -166,11 +180,15 @@ class TestStatePersistenceAdvanced(unittest.TestCase):
         workflow.save_to_disk()
 
         # Create existing backup file (simulating previous backup)
-        backup_path = self.storage_dir / f"{self.workflow_name}.backup"  # Changed from .json.backup to .backup
+        backup_path = (
+            self.storage_dir / f"{self.workflow_name}.backup"
+        )  # Changed from .json.backup to .backup
         backup_path.write_text('{"old": "backup"}')
 
         # Modify and save workflow again
-        workflow.mark_module_completed("DirectoryConfig", ExecutionResult("success", "Done"))
+        workflow.mark_module_completed(
+            "DirectoryConfig", ExecutionResult("success", "Done")
+        )
         workflow.save_to_disk()
 
         # Verify backup was cleaned up (since a new one was created and then removed)
@@ -189,10 +207,14 @@ class TestStatePersistenceAdvanced(unittest.TestCase):
 
         # Create initial state
         workflow.save_to_disk()
-        original_data = json.loads((self.storage_dir / f"{self.workflow_name}.json").read_text())
+        original_data = json.loads(
+            (self.storage_dir / f"{self.workflow_name}.json").read_text()
+        )
 
         # Modify workflow
-        workflow.mark_module_completed("DirectoryConfig", ExecutionResult("success", "Done"))
+        workflow.mark_module_completed(
+            "DirectoryConfig", ExecutionResult("success", "Done")
+        )
 
         # Mock file write failure
         with patch('builtins.open', side_effect=PermissionError("Disk full")):
@@ -200,13 +222,19 @@ class TestStatePersistenceAdvanced(unittest.TestCase):
                 workflow.save_to_disk()
 
         # Verify original state still exists
-        current_data = json.loads((self.storage_dir / f"{self.workflow_name}.json").read_text())
+        current_data = json.loads(
+            (self.storage_dir / f"{self.workflow_name}.json").read_text()
+        )
         self.assertEqual(current_data, original_data)
 
     def test_load_with_corruption_recovery(self):
         """Test loading corrupted state file with recovery."""
         # Copy corrupted fixture
-        corrupted_fixture = TestFixtureLoader.get_fixture_path() / "workflow_states" / "corrupted_workflow.json"
+        corrupted_fixture = (
+            TestFixtureLoader.get_fixture_path()
+            / "workflow_states"
+            / "corrupted_workflow.json"
+        )
         corrupted_target = self.storage_dir / f"{self.workflow_name}.json"
         shutil.copy2(corrupted_fixture, corrupted_target)
 
@@ -248,7 +276,9 @@ class TestStatePersistenceAdvanced(unittest.TestCase):
         def modify_workflow(module_name, delay=0):
             time.sleep(delay)
             wf = WorkflowState.load_from_disk(self.workflow_name)
-            wf.mark_module_completed(module_name, ExecutionResult("success", f"Completed {module_name}"))
+            wf.mark_module_completed(
+                module_name, ExecutionResult("success", f"Completed {module_name}")
+            )
             wf.save_to_disk()
             return wf
 
@@ -262,8 +292,11 @@ class TestStatePersistenceAdvanced(unittest.TestCase):
 
         # Load final state - should have both modifications or one overwrote other
         final_workflow = WorkflowState.load_from_disk(self.workflow_name)
-        completed_modules = [name for name, state in final_workflow.modules.items()
-                           if state.status == "completed"]
+        completed_modules = [
+            name
+            for name, state in final_workflow.modules.items()
+            if state.status == "completed"
+        ]
 
         # At least one should be completed (depending on timing)
         self.assertGreaterEqual(len(completed_modules), 1)
@@ -281,8 +314,7 @@ class TestWorkflowStateMethods(unittest.TestCase):
         """Test get_next_module respects dependency order."""
         # Complete DirectoryConfig first
         self.workflow.mark_module_completed(
-            "DirectoryConfig",
-            ExecutionResult("success", "Done", files_processed=5)
+            "DirectoryConfig", ExecutionResult("success", "Done", files_processed=5)
         )
 
         next_module = self.workflow.get_next_module()
@@ -298,8 +330,7 @@ class TestWorkflowStateMethods(unittest.TestCase):
 
         # Complete one module
         self.workflow.mark_module_completed(
-            "DirectoryConfig",
-            ExecutionResult("success", "Done", files_processed=5)
+            "DirectoryConfig", ExecutionResult("success", "Done", files_processed=5)
         )
 
         progress = self.workflow.get_progress_summary()
@@ -310,7 +341,7 @@ class TestWorkflowStateMethods(unittest.TestCase):
         # Fail one module
         self.workflow.mark_module_failed(
             "ContentType",
-            ExecutionResult("error", "Processing failed", error_message="Test error")
+            ExecutionResult("error", "Processing failed", error_message="Test error"),
         )
 
         progress = self.workflow.get_progress_summary()
@@ -328,8 +359,9 @@ class TestWorkflowStateMethods(unittest.TestCase):
         self.assertIsNotNone(state.started_at)
 
         # Complete module
-        result = ExecutionResult("success", "Completed successfully",
-                               files_processed=10, execution_time=30.5)
+        result = ExecutionResult(
+            "success", "Completed successfully", files_processed=10, execution_time=30.5
+        )
         self.workflow.mark_module_completed(module_name, result)
 
         state = self.workflow.modules[module_name]
@@ -343,12 +375,16 @@ class TestWorkflowStateMethods(unittest.TestCase):
         module_name = "ContentType"
 
         # First failure
-        result = ExecutionResult("error", "First failure", error_message="Network timeout")
+        result = ExecutionResult(
+            "error", "First failure", error_message="Network timeout"
+        )
         self.workflow.mark_module_failed(module_name, result)
         self.assertEqual(self.workflow.modules[module_name].retry_count, 1)
 
         # Second failure
-        result = ExecutionResult("error", "Second failure", error_message="Invalid input")
+        result = ExecutionResult(
+            "error", "Second failure", error_message="Invalid input"
+        )
         self.workflow.mark_module_failed(module_name, result)
         self.assertEqual(self.workflow.modules[module_name].retry_count, 2)
 
@@ -391,7 +427,9 @@ class TestModuleSequencerIntegration(unittest.TestCase):
         workflow = manager.start_workflow("test_standard", str(self.test_directory))
 
         mock_sequencer.sequence_modules.assert_called_once()
-        self.assertEqual(len(workflow.modules), 3)  # DirectoryConfig, ContentType, CrossReference
+        self.assertEqual(
+            len(workflow.modules), 3
+        )  # DirectoryConfig, ContentType, CrossReference
 
         # All modules should start as pending
         for module_state in workflow.modules.values():
@@ -427,14 +465,15 @@ class TestModuleSequencerIntegration(unittest.TestCase):
         # Note: We also mock save_to_disk to avoid Mock object serialization issues
         # when the test framework tries to serialize Mock objects to JSON state files.
         # This test focuses on context propagation, not disk persistence functionality.
-        with patch.object(manager, '_execute_module_with_context') as mock_execute, \
-             patch.object(workflow, 'save_to_disk') as mock_save:
+        with patch.object(
+            manager, '_execute_module_with_context'
+        ) as mock_execute, patch.object(workflow, 'save_to_disk') as mock_save:
 
             mock_execute.return_value = ExecutionResult(
                 status="success",
                 message="Processed successfully",
                 files_processed=2,
-                execution_time=0.1
+                execution_time=0.1,
             )
 
             # Execute next module
@@ -461,7 +500,7 @@ class TestModuleSequencerIntegration(unittest.TestCase):
         mock_directory_config.execute.return_value = {
             "status": "success",
             "files_discovered": ["/test/doc1.adoc", "/test/doc2.adoc"],
-            "config": {"source_dir": "/test", "output_dir": "/output"}
+            "config": {"source_dir": "/test", "output_dir": "/output"},
         }
         mock_directory_config._initialized = True  # Skip initialization
         mock_sequencer.available_modules["DirectoryConfig"] = mock_directory_config
@@ -484,7 +523,9 @@ class TestCLICommandsComprehensive(unittest.TestCase):
     def setUp(self):
         """Set up test environment."""
         self.temp_dir = tempfile.mkdtemp()
-        self.test_directory = TestFixtureLoader.get_test_directory_fixture("simple_project")
+        self.test_directory = TestFixtureLoader.get_test_directory_fixture(
+            "simple_project"
+        )
 
         self.mock_sequencer = MockModuleSequencerFactory.create_standard_mock()
         self.manager = WorkflowManager(self.mock_sequencer)
@@ -556,10 +597,13 @@ class TestCLICommandsComprehensive(unittest.TestCase):
         workflow_name = "status_test_workflow"
 
         workflow = self.manager.start_workflow(workflow_name, str(self.test_directory))
-        workflow.mark_module_completed("DirectoryConfig",
-                                     ExecutionResult("success", "Done", files_processed=2))
-        workflow.mark_module_failed("ContentType",
-                                  ExecutionResult("error", "Failed", error_message="Test error"))
+        workflow.mark_module_completed(
+            "DirectoryConfig", ExecutionResult("success", "Done", files_processed=2)
+        )
+        workflow.mark_module_failed(
+            "ContentType",
+            ExecutionResult("error", "Failed", error_message="Test error"),
+        )
         workflow.save_to_disk()
 
         args = Mock()
@@ -579,7 +623,7 @@ class TestCLICommandsComprehensive(unittest.TestCase):
         self.assertIn('✅', output_text)  # Completed module
         self.assertIn('❌', output_text)  # Failed module
         self.assertIn('⏸️', output_text)  # Pending module
-        self.assertIn('%', output_text)   # Progress percentage
+        self.assertIn('%', output_text)  # Progress percentage
 
     def test_continue_command_error_handling(self):
         """Test continue command handles various error conditions."""
@@ -596,7 +640,9 @@ class TestCLICommandsComprehensive(unittest.TestCase):
 
         # Mark all modules completed
         for module_name in workflow.modules.keys():
-            workflow.mark_module_completed(module_name, ExecutionResult("success", "Done"))
+            workflow.mark_module_completed(
+                module_name, ExecutionResult("success", "Done")
+            )
         workflow.save_to_disk()
 
         args.name = workflow_name
@@ -610,7 +656,9 @@ class TestCLICommandsComprehensive(unittest.TestCase):
         for i, wf_name in enumerate(workflows):
             wf = self.manager.start_workflow(wf_name, str(self.test_directory))
             if i % 2 == 0:  # Complete some modules in alternate workflows
-                wf.mark_module_completed("DirectoryConfig", ExecutionResult("success", "Done"))
+                wf.mark_module_completed(
+                    "DirectoryConfig", ExecutionResult("success", "Done")
+                )
             wf.save_to_disk()
 
         args = Mock()
@@ -638,8 +686,12 @@ class TestScenarioTests(unittest.TestCase):
     def setUp(self):
         """Set up test environment."""
         self.temp_dir = tempfile.mkdtemp()
-        self.simple_project = TestFixtureLoader.get_test_directory_fixture("simple_project")
-        self.complex_project = TestFixtureLoader.get_test_directory_fixture("complex_project")
+        self.simple_project = TestFixtureLoader.get_test_directory_fixture(
+            "simple_project"
+        )
+        self.complex_project = TestFixtureLoader.get_test_directory_fixture(
+            "complex_project"
+        )
 
         self.workflow_dir = Path(self.temp_dir) / ".adt" / "workflows"
         self.workflow_dir.mkdir(parents=True)
@@ -669,8 +721,12 @@ class TestScenarioTests(unittest.TestCase):
             next_module = workflow.get_next_module()
 
             # Mock successful execution
-            result = ExecutionResult("success", f"Processed {next_module}",
-                                   files_processed=2, execution_time=10.0)
+            result = ExecutionResult(
+                "success",
+                f"Processed {next_module}",
+                files_processed=2,
+                execution_time=10.0,
+            )
             workflow.mark_module_completed(next_module, result)
 
         # Verify completion
@@ -690,8 +746,10 @@ class TestScenarioTests(unittest.TestCase):
         workflow = manager.start_workflow(workflow_name, str(self.complex_project))
 
         # Complete first module
-        workflow.mark_module_completed("DirectoryConfig",
-                                     ExecutionResult("success", "Config complete", files_processed=6))
+        workflow.mark_module_completed(
+            "DirectoryConfig",
+            ExecutionResult("success", "Config complete", files_processed=6),
+        )
 
         # Start second module but don't complete (simulating interruption)
         workflow.mark_module_started("ContentType")
@@ -701,15 +759,21 @@ class TestScenarioTests(unittest.TestCase):
         reloaded_workflow = WorkflowState.load_from_disk(workflow_name)
 
         # Verify state preserved
-        self.assertEqual(reloaded_workflow.modules["DirectoryConfig"].status, "completed")
+        self.assertEqual(
+            reloaded_workflow.modules["DirectoryConfig"].status, "completed"
+        )
         self.assertEqual(reloaded_workflow.modules["ContentType"].status, "running")
         self.assertEqual(reloaded_workflow.modules["CrossReference"].status, "pending")
 
         # Resume and complete
-        reloaded_workflow.mark_module_completed("ContentType",
-                                              ExecutionResult("success", "Content complete", files_processed=6))
-        reloaded_workflow.mark_module_completed("CrossReference",
-                                              ExecutionResult("success", "Refs complete", files_processed=6))
+        reloaded_workflow.mark_module_completed(
+            "ContentType",
+            ExecutionResult("success", "Content complete", files_processed=6),
+        )
+        reloaded_workflow.mark_module_completed(
+            "CrossReference",
+            ExecutionResult("success", "Refs complete", files_processed=6),
+        )
 
         # Verify final completion
         progress = reloaded_workflow.get_progress_summary()
@@ -726,27 +790,33 @@ class TestScenarioTests(unittest.TestCase):
         workflow = manager.start_workflow(workflow_name, str(self.simple_project))
 
         # Complete DirectoryConfig
-        workflow.mark_module_completed("DirectoryConfig",
-                                     ExecutionResult("success", "Config complete"))
+        workflow.mark_module_completed(
+            "DirectoryConfig", ExecutionResult("success", "Config complete")
+        )
 
         # Fail ContentType multiple times
         for i in range(3):
-            workflow.mark_module_failed("ContentType",
-                                      ExecutionResult("error", f"Attempt {i+1} failed",
-                                                    error_message=f"Test error {i+1}"))
+            workflow.mark_module_failed(
+                "ContentType",
+                ExecutionResult(
+                    "error", f"Attempt {i+1} failed", error_message=f"Test error {i+1}"
+                ),
+            )
             self.assertEqual(workflow.modules["ContentType"].retry_count, i + 1)
 
         # Finally succeed
-        workflow.mark_module_completed("ContentType",
-                                     ExecutionResult("success", "Finally worked"))
+        workflow.mark_module_completed(
+            "ContentType", ExecutionResult("success", "Finally worked")
+        )
 
         # Verify retry count reset and progress continues
         self.assertEqual(workflow.modules["ContentType"].retry_count, 0)
         self.assertEqual(workflow.modules["ContentType"].status, "completed")
 
         # Complete remaining module
-        workflow.mark_module_completed("CrossReference",
-                                     ExecutionResult("success", "Refs complete"))
+        workflow.mark_module_completed(
+            "CrossReference", ExecutionResult("success", "Refs complete")
+        )
 
         progress = workflow.get_progress_summary()
         self.assertEqual(progress.completion_percentage, 100.0)
@@ -783,7 +853,9 @@ class TestPerformanceValidation(unittest.TestCase):
         workflow = manager.start_workflow("perf_test", str(test_dir))
         creation_time = time.time() - start_time
 
-        self.assertLess(creation_time, 1.0, "Workflow creation took longer than 1 second")
+        self.assertLess(
+            creation_time, 1.0, "Workflow creation took longer than 1 second"
+        )
         self.assertIsNotNone(workflow)
 
     def test_status_display_performance(self):
@@ -791,14 +863,18 @@ class TestPerformanceValidation(unittest.TestCase):
         # Create workflow with some progress
         modules = ["DirectoryConfig", "ContentType", "CrossReference"]
         workflow = WorkflowState("perf_test", "/test/docs", modules)
-        workflow.mark_module_completed("DirectoryConfig", ExecutionResult("success", "Done"))
+        workflow.mark_module_completed(
+            "DirectoryConfig", ExecutionResult("success", "Done")
+        )
         workflow.save_to_disk()
 
         start_time = time.time()
         progress = workflow.get_progress_summary()
         display_time = time.time() - start_time
 
-        self.assertLess(display_time, 0.5, "Status display took longer than 0.5 seconds")
+        self.assertLess(
+            display_time, 0.5, "Status display took longer than 0.5 seconds"
+        )
         self.assertIsNotNone(progress)
 
     def test_state_save_performance(self):
@@ -808,8 +884,9 @@ class TestPerformanceValidation(unittest.TestCase):
 
         # Add some data to make save more realistic
         workflow.files_discovered = [f"/test/doc{i}.adoc" for i in range(10)]
-        workflow.mark_module_completed("DirectoryConfig",
-                                     ExecutionResult("success", "Done", files_processed=10))
+        workflow.mark_module_completed(
+            "DirectoryConfig", ExecutionResult("success", "Done", files_processed=10)
+        )
 
         start_time = time.time()
         workflow.save_to_disk()

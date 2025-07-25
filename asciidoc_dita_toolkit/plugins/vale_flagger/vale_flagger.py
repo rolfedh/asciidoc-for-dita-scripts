@@ -39,7 +39,9 @@ class ValeFlagger:
 
     DEFAULT_FLAG_FORMAT = "// ADT-FLAG [{rule}]: {message}"
 
-    def __init__(self, config_path: str = None, flag_format: str = None, dry_run: bool = False):
+    def __init__(
+        self, config_path: str = None, flag_format: str = None, dry_run: bool = False
+    ):
         """
         Initialize ValeFlagger with configuration.
 
@@ -56,20 +58,25 @@ class ValeFlagger:
     def _check_docker(self):
         """Verify Docker is available."""
         try:
-            subprocess.run(["docker", "--version"],
-                         capture_output=True,
-                         check=True,
-                         timeout=5)
-        except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
+            subprocess.run(
+                ["docker", "--version"], capture_output=True, check=True, timeout=5
+            )
+        except (
+            subprocess.CalledProcessError,
+            FileNotFoundError,
+            subprocess.TimeoutExpired,
+        ):
             raise RuntimeError(
                 "Docker is not installed or not running. "
                 "Please install Docker and ensure it's running."
             )
 
-    def run(self,
-            target_path: str = ".",
-            include_rules: List[str] = None,
-            exclude_rules: List[str] = None) -> Dict[str, List[dict]]:
+    def run(
+        self,
+        target_path: str = ".",
+        include_rules: List[str] = None,
+        exclude_rules: List[str] = None,
+    ) -> Dict[str, List[dict]]:
         """
         Run Vale with configuration-based rules.
 
@@ -96,10 +103,12 @@ class ValeFlagger:
 
         return vale_output
 
-    def _run_vale(self,
-                  target_path: Path,
-                  include_rules: List[str] = None,
-                  exclude_rules: List[str] = None) -> Dict[str, List[dict]]:
+    def _run_vale(
+        self,
+        target_path: Path,
+        include_rules: List[str] = None,
+        exclude_rules: List[str] = None,
+    ) -> Dict[str, List[dict]]:
         """Execute Vale via Docker and parse JSON output."""
         # Validate and sanitize the target path to prevent directory traversal
         safe_parent = target_path.parent.resolve()
@@ -107,10 +116,13 @@ class ValeFlagger:
             raise ValueError(f"Target directory does not exist: {safe_parent}")
 
         cmd = [
-            "docker", "run", "--rm",
-            "-v", f"{safe_parent}:/docs",
+            "docker",
+            "run",
+            "--rm",
+            "-v",
+            f"{safe_parent}:/docs",
             self.config.docker_image,
-            "--output=JSON"
+            "--output=JSON",
         ]
 
         # Build dynamic .vale.ini content if rules specified OR no local config exists
@@ -134,7 +146,7 @@ class ValeFlagger:
                 capture_output=True,
                 text=True,
                 input=input_text,
-                timeout=self.config.timeout_seconds
+                timeout=self.config.timeout_seconds,
             )
 
             if result.returncode not in (0, 1):  # Vale returns 1 if issues found
@@ -157,16 +169,16 @@ class ValeFlagger:
                 f"or processing smaller file sets."
             )
 
-    def _build_vale_config(self,
-                          include_rules: List[str] = None,
-                          exclude_rules: List[str] = None) -> str:
+    def _build_vale_config(
+        self, include_rules: List[str] = None, exclude_rules: List[str] = None
+    ) -> str:
         """Build dynamic Vale configuration."""
         config = [
             "StylesPath = /root/.local/share/vale/styles",
             "MinAlertLevel = suggestion",
             "",
             "[*.adoc]",
-            "BasedOnStyles = AsciiDocDITA"
+            "BasedOnStyles = AsciiDocDITA",
         ]
 
         if include_rules:
@@ -236,13 +248,12 @@ class ValeFlagger:
         if len(issues) == 1:
             return self.flag_format.format(
                 rule=issues[0]['Check'].replace('AsciiDocDITA.', ''),
-                message=issues[0]['Message']
+                message=issues[0]['Message'],
             )
         else:
             # Multiple issues on same line
             rules = [i['Check'].replace('AsciiDocDITA.', '') for i in issues]
             messages = [i['Message'] for i in issues]
             return self.flag_format.format(
-                rule=', '.join(rules),
-                message=' | '.join(messages)
+                rule=', '.join(rules), message=' | '.join(messages)
             )

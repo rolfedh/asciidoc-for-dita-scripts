@@ -129,8 +129,11 @@ class ModuleSequencer:
             # Add package installation directory
             try:
                 import asciidoc_dita_toolkit
+
                 package_dir = os.path.dirname(asciidoc_dita_toolkit.__file__)
-                package_config_path = os.path.join(os.path.dirname(package_dir), dev_config_path)
+                package_config_path = os.path.join(
+                    os.path.dirname(package_dir), dev_config_path
+                )
                 search_paths.append(package_config_path)
             except ImportError:
                 pass

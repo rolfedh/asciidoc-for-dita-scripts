@@ -34,7 +34,9 @@ sys.path.insert(0, str(project_root))
 
 try:
     from asciidoc_dita_toolkit.modules.user_journey import (
-        UserJourneyProcessor, WorkflowManager, UserJourneyError
+        UserJourneyProcessor,
+        WorkflowManager,
+        UserJourneyError,
     )
 except ImportError as e:
     print(f"❌ Failed to import UserJourney components: {e}")
@@ -67,107 +69,87 @@ Examples:
       Remove all completed workflows to save disk space
 
 For more information, visit: https://github.com/rolfedh/asciidoc-dita-toolkit
-        """
+        """,
     )
 
     parser.add_argument(
-        '--verbose', '-v',
-        action='store_true',
-        help='Enable verbose logging output'
+        '--verbose', '-v', action='store_true', help='Enable verbose logging output'
     )
 
     parser.add_argument(
-        '--quiet', '-q',
-        action='store_true',
-        help='Suppress all but error messages'
+        '--quiet', '-q', action='store_true', help='Suppress all but error messages'
     )
 
     # Create subcommands
     subparsers = parser.add_subparsers(
-        dest='command',
-        help='Available commands',
-        metavar='COMMAND'
+        dest='command', help='Available commands', metavar='COMMAND'
     )
 
     # Start command
     start_parser = subparsers.add_parser(
         'start',
         help='Start a new workflow',
-        description='Create and start a new UserJourney workflow'
+        description='Create and start a new UserJourney workflow',
     )
     start_parser.add_argument(
-        '--name',
-        required=True,
-        help='Unique name for the workflow'
+        '--name', required=True, help='Unique name for the workflow'
     )
     start_parser.add_argument(
-        '--directory',
-        required=True,
-        help='Directory containing .adoc files to process'
+        '--directory', required=True, help='Directory containing .adoc files to process'
     )
 
     # Resume command
     resume_parser = subparsers.add_parser(
         'resume',
         help='Resume an existing workflow',
-        description='Load and display status of an existing workflow'
+        description='Load and display status of an existing workflow',
     )
     resume_parser.add_argument(
-        '--name',
-        required=True,
-        help='Name of the workflow to resume'
+        '--name', required=True, help='Name of the workflow to resume'
     )
 
     # Continue command
     continue_parser = subparsers.add_parser(
         'continue',
         help='Continue workflow execution',
-        description='Execute the next pending module in a workflow'
+        description='Execute the next pending module in a workflow',
     )
     continue_parser.add_argument(
-        '--name',
-        required=True,
-        help='Name of the workflow to continue'
+        '--name', required=True, help='Name of the workflow to continue'
     )
 
     # Status command
     status_parser = subparsers.add_parser(
         'status',
         help='Show workflow status',
-        description='Display detailed status information for workflows'
+        description='Display detailed status information for workflows',
     )
     status_parser.add_argument(
-        '--name',
-        help='Name of specific workflow to show (if omitted, shows all)'
+        '--name', help='Name of specific workflow to show (if omitted, shows all)'
     )
 
     # List command
     list_parser = subparsers.add_parser(
         'list',
         help='List all workflows',
-        description='Display summary of all available workflows'
+        description='Display summary of all available workflows',
     )
 
     # Cleanup command
     cleanup_parser = subparsers.add_parser(
         'cleanup',
         help='Clean up workflows',
-        description='Remove workflow files to free up disk space'
+        description='Remove workflow files to free up disk space',
     )
     cleanup_group = cleanup_parser.add_mutually_exclusive_group(required=True)
+    cleanup_group.add_argument('--name', help='Name of specific workflow to delete')
     cleanup_group.add_argument(
-        '--name',
-        help='Name of specific workflow to delete'
-    )
-    cleanup_group.add_argument(
-        '--completed',
-        action='store_true',
-        help='Delete all completed workflows'
+        '--completed', action='store_true', help='Delete all completed workflows'
     )
     cleanup_group.add_argument(
         '--all',
         action='store_true',
-        help='Delete ALL workflows (use with extreme caution!)'
+        help='Delete ALL workflows (use with extreme caution!)',
     )
 
     return parser
@@ -186,7 +168,7 @@ def setup_logging(verbose: bool = False, quiet: bool = False) -> None:
     logging.basicConfig(
         level=log_level,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
+        datefmt='%Y-%m-%d %H:%M:%S',
     )
 
     # Reduce noise from other libraries
@@ -217,8 +199,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
         # Setup logging
         setup_logging(
-            verbose=getattr(args, 'verbose', False),
-            quiet=getattr(args, 'quiet', False)
+            verbose=getattr(args, 'verbose', False), quiet=getattr(args, 'quiet', False)
         )
 
         # Handle case where no subcommand provided
@@ -241,7 +222,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             'continue': processor.process_continue_command,
             'status': processor.process_status_command,
             'list': processor.process_list_command,
-            'cleanup': processor.process_cleanup_command
+            'cleanup': processor.process_cleanup_command,
         }
 
         handler = command_handlers.get(args.command)

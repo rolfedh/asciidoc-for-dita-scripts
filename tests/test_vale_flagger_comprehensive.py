@@ -9,8 +9,15 @@ from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock, call
 
 from asciidoc_dita_toolkit.plugins.vale_flagger import ValeFlagger
-from asciidoc_dita_toolkit.plugins.vale_flagger.config import ValeFlaggerConfig, DEFAULT_DOCKER_IMAGE
-from asciidoc_dita_toolkit.plugins.vale_flagger.cli import main, create_parser, setup_logging
+from asciidoc_dita_toolkit.plugins.vale_flagger.config import (
+    ValeFlaggerConfig,
+    DEFAULT_DOCKER_IMAGE,
+)
+from asciidoc_dita_toolkit.plugins.vale_flagger.cli import (
+    main,
+    create_parser,
+    setup_logging,
+)
 
 
 class TestValeFlagger(unittest.TestCase):
@@ -24,15 +31,15 @@ class TestValeFlagger(unittest.TestCase):
                     "Message": "Heading should use sentence-style capitalization.",
                     "Line": 5,
                     "Span": [1, 25],
-                    "Severity": "error"
+                    "Severity": "error",
                 },
                 {
                     "Check": "AsciiDocDITA.Terms.Use",
                     "Message": "Use 'repository' instead of 'repo'.",
                     "Line": 10,
                     "Span": [15, 19],
-                    "Severity": "warning"
-                }
+                    "Severity": "warning",
+                },
             ]
         }
 
@@ -52,6 +59,7 @@ class TestValeFlagger(unittest.TestCase):
     def test_docker_timeout_check(self, mock_run):
         """Test Docker timeout during availability check."""
         import subprocess
+
         mock_run.side_effect = subprocess.TimeoutExpired('docker', 5)
         with self.assertRaises(RuntimeError):
             ValeFlagger()
@@ -119,6 +127,7 @@ class TestValeFlagger(unittest.TestCase):
     def test_run_vale_timeout(self, mock_run):
         """Test Vale execution timeout."""
         import subprocess
+
         mock_run.side_effect = subprocess.TimeoutExpired('docker', 300)
 
         with patch.object(ValeFlagger, '_check_docker'):
@@ -161,17 +170,16 @@ class TestValeFlagger(unittest.TestCase):
             flagger = ValeFlagger()
 
         # Single issue
-        single_issue = [{
-            "Check": "AsciiDocDITA.Headings.Capitalization",
-            "Message": "Test message"
-        }]
+        single_issue = [
+            {"Check": "AsciiDocDITA.Headings.Capitalization", "Message": "Test message"}
+        ]
         flag = flagger._format_flag(single_issue)
         self.assertEqual(flag, "// ADT-FLAG [Headings.Capitalization]: Test message")
 
         # Multiple issues
         multiple_issues = [
             {"Check": "AsciiDocDITA.Rule1", "Message": "Message 1"},
-            {"Check": "AsciiDocDITA.Rule2", "Message": "Message 2"}
+            {"Check": "AsciiDocDITA.Rule2", "Message": "Message 2"},
         ]
         flag = flagger._format_flag(multiple_issues)
         self.assertIn("Rule1, Rule2", flag)
@@ -182,10 +190,7 @@ class TestValeFlagger(unittest.TestCase):
         with patch.object(ValeFlagger, '_check_docker'):
             flagger = ValeFlagger(flag_format="// CUSTOM [{rule}]: {message}")
 
-        single_issue = [{
-            "Check": "AsciiDocDITA.Test.Rule",
-            "Message": "Test message"
-        }]
+        single_issue = [{"Check": "AsciiDocDITA.Test.Rule", "Message": "Test message"}]
         flag = flagger._format_flag(single_issue)
         self.assertEqual(flag, "// CUSTOM [Test.Rule]: Test message")
 
@@ -199,9 +204,7 @@ class TestValeFlagger(unittest.TestCase):
             with patch.object(ValeFlagger, '_check_docker'):
                 flagger = ValeFlagger()
 
-            issues = [
-                {"Check": "Test.Rule", "Message": "Test issue", "Line": 1}
-            ]
+            issues = [{"Check": "Test.Rule", "Message": "Test issue", "Line": 1}]
 
             flagger._flag_file(temp_path, issues)
 
@@ -228,9 +231,7 @@ class TestValeFlagger(unittest.TestCase):
             with patch.object(ValeFlagger, '_check_docker'):
                 flagger = ValeFlagger()
 
-            issues = [
-                {"Check": "Test.Rule", "Message": "Test issue", "Line": 1}
-            ]
+            issues = [{"Check": "Test.Rule", "Message": "Test issue", "Line": 1}]
 
             flagger._flag_file(temp_path, issues)
 
@@ -254,7 +255,7 @@ class TestValeFlagger(unittest.TestCase):
 
             issues = [
                 {"Check": "Test.Rule1", "Message": "Issue on line 1", "Line": 1},
-                {"Check": "Test.Rule2", "Message": "Issue on line 3", "Line": 3}
+                {"Check": "Test.Rule2", "Message": "Issue on line 3", "Line": 3},
             ]
 
             flagger._flag_file(temp_path, issues)
@@ -288,8 +289,7 @@ class TestValeFlagger(unittest.TestCase):
             flagger = ValeFlagger()
 
         config = flagger._build_vale_config(
-            include_rules=["Rule1", "Rule2"],
-            exclude_rules=["Rule3"]
+            include_rules=["Rule1", "Rule2"], exclude_rules=["Rule3"]
         )
 
         self.assertIn("AsciiDocDITA.Rule1 = YES", config)
@@ -342,12 +342,12 @@ class TestValeFlaggerConfig(unittest.TestCase):
                 'enabled_rules': ['Rule1', 'Rule2'],
                 'disabled_rules': ['Rule3'],
                 'timeout_seconds': 600,
-                'docker_image': 'custom:latest'
+                'docker_image': 'custom:latest',
             },
             'valeflag': {
                 'flag_format': '// CUSTOM [{rule}]: {message}',
-                'backup_files': True
-            }
+                'backup_files': True,
+            },
         }
 
         with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as tf:
@@ -376,11 +376,7 @@ class TestValeFlaggerConfig(unittest.TestCase):
 
     def test_config_partial_yaml(self):
         """Test configuration with partial YAML file."""
-        config_data = {
-            'vale': {
-                'enabled_rules': ['Rule1']
-            }
-        }
+        config_data = {'vale': {'enabled_rules': ['Rule1']}}
 
         with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as tf:
             yaml.dump(config_data, tf)
@@ -416,15 +412,22 @@ class TestCLI(unittest.TestCase):
         """Test parser with various arguments."""
         parser = create_parser()
 
-        args = parser.parse_args([
-            '--path', 'test.adoc',
-            '--enable-rules', 'Rule1,Rule2',
-            '--disable-rules', 'Rule3',
-            '--dry-run',
-            '--verbose',
-            '--config', 'config.yaml',
-            '--flag-format', '// CUSTOM: {message}'
-        ])
+        args = parser.parse_args(
+            [
+                '--path',
+                'test.adoc',
+                '--enable-rules',
+                'Rule1,Rule2',
+                '--disable-rules',
+                'Rule3',
+                '--dry-run',
+                '--verbose',
+                '--config',
+                'config.yaml',
+                '--flag-format',
+                '// CUSTOM: {message}',
+            ]
+        )
 
         self.assertEqual(args.path, 'test.adoc')
         self.assertEqual(args.enable_rules, 'Rule1,Rule2')
@@ -450,7 +453,9 @@ class TestCLI(unittest.TestCase):
     def test_main_with_issues(self, mock_flagger_class):
         """Test main function when issues are found."""
         mock_flagger = Mock()
-        mock_flagger.run.return_value = {"test.adoc": [{"Check": "Rule", "Message": "Issue"}]}
+        mock_flagger.run.return_value = {
+            "test.adoc": [{"Check": "Rule", "Message": "Issue"}]
+        }
         mock_flagger_class.return_value = mock_flagger
 
         result = main(['--path', 'test.adoc'])
@@ -463,12 +468,14 @@ class TestCLI(unittest.TestCase):
         """Test main function in dry-run mode."""
         mock_flagger = Mock()
         mock_flagger.run.return_value = {
-            "test.adoc": [{
-                "Check": "AsciiDocDITA.Rule",
-                "Message": "Test issue",
-                "Line": 1,
-                "Severity": "error"
-            }]
+            "test.adoc": [
+                {
+                    "Check": "AsciiDocDITA.Rule",
+                    "Message": "Test issue",
+                    "Line": 1,
+                    "Severity": "error",
+                }
+            ]
         }
         mock_flagger_class.return_value = mock_flagger
 
@@ -489,10 +496,9 @@ class TestCLI(unittest.TestCase):
         mock_flagger.run.return_value = {}
         mock_flagger_class.return_value = mock_flagger
 
-        result = main([
-            '--enable-rules', 'Rule1,Rule2',
-            '--disable-rules', 'Rule3,Rule4'
-        ])
+        result = main(
+            ['--enable-rules', 'Rule1,Rule2', '--disable-rules', 'Rule3,Rule4']
+        )
 
         self.assertEqual(result, 0)
 

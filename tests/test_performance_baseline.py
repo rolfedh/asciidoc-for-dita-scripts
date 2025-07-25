@@ -82,13 +82,13 @@ def cleanup_test_files(test_files: List[str]) -> None:
 
 class TestPerformanceBaseline(unittest.TestCase):
     """Test class for performance baseline comparisons."""
-    
+
     def setUp(self):
         """Set up test files for performance testing."""
         self.test_files = create_test_files(
             num_files=5, entities_per_file=10
         )  # Smaller for faster tests
-    
+
     def tearDown(self):
         """Clean up test files after each test."""
         cleanup_test_files(self.test_files)
@@ -100,7 +100,6 @@ def measure_execution_time(func, *args, **kwargs) -> Tuple[float, any]:
     result = func(*args, **kwargs)
     end_time = time.perf_counter()
     return end_time - start_time, result
-
 
     def test_legacy_performance(self) -> None:
         """Test legacy plugin performance."""
@@ -163,13 +162,20 @@ def measure_execution_time(func, *args, **kwargs) -> Tuple[float, any]:
             }
 
             # Basic performance assertions
-            self.assertGreater(stats["mean"], 0, "Legacy performance test should take some time")
-            self.assertLess(stats["mean"], 10.0, "Legacy performance should complete within 10 seconds")
-            self.assertEqual(len(stats["times"]), 5, "Should have 5 performance measurements")
+            self.assertGreater(
+                stats["mean"], 0, "Legacy performance test should take some time"
+            )
+            self.assertLess(
+                stats["mean"],
+                10.0,
+                "Legacy performance should complete within 10 seconds",
+            )
+            self.assertEqual(
+                len(stats["times"]), 5, "Should have 5 performance measurements"
+            )
 
         except Exception as e:
             self.fail(f"Error testing legacy performance: {e}")
-
 
     def test_adtmodule_performance(self) -> None:
         """Test ADTModule plugin performance."""
@@ -229,9 +235,17 @@ def measure_execution_time(func, *args, **kwargs) -> Tuple[float, any]:
             }
 
             # Basic performance assertions
-            self.assertGreater(stats["mean"], 0, "ADTModule performance test should take some time")
-            self.assertLess(stats["mean"], 10.0, "ADTModule performance should complete within 10 seconds")
-            self.assertEqual(len(stats["times"]), 5, "Should have 5 performance measurements")
+            self.assertGreater(
+                stats["mean"], 0, "ADTModule performance test should take some time"
+            )
+            self.assertLess(
+                stats["mean"],
+                10.0,
+                "ADTModule performance should complete within 10 seconds",
+            )
+            self.assertEqual(
+                len(stats["times"]), 5, "Should have 5 performance measurements"
+            )
 
         except Exception as e:
             self.fail(f"Error testing ADTModule performance: {e}")

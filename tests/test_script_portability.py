@@ -20,7 +20,7 @@ class TestScriptPortability(unittest.TestCase):
         self.scripts_to_test = [
             "migrate_modules.sh",
             "update_all_imports.sh",
-            "fix_broken_imports.sh"
+            "fix_broken_imports.sh",
         ]
 
     def test_scripts_use_dynamic_paths(self):
@@ -36,14 +36,23 @@ class TestScriptPortability(unittest.TestCase):
                 content = f.read()
 
             # Check that it doesn't contain hardcoded absolute paths
-            self.assertNotIn('/home/rolfedh/asciidoc-dita-toolkit', content,
-                           f"Script {script_name} still contains hardcoded absolute path")
+            self.assertNotIn(
+                '/home/rolfedh/asciidoc-dita-toolkit',
+                content,
+                f"Script {script_name} still contains hardcoded absolute path",
+            )
 
             # Check that it uses dynamic path detection
-            self.assertIn('SCRIPT_DIR=', content,
-                         f"Script {script_name} should use SCRIPT_DIR for dynamic path detection")
-            self.assertIn('$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)', content,
-                         f"Script {script_name} should use proper script directory detection")
+            self.assertIn(
+                'SCRIPT_DIR=',
+                content,
+                f"Script {script_name} should use SCRIPT_DIR for dynamic path detection",
+            )
+            self.assertIn(
+                '$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)',
+                content,
+                f"Script {script_name} should use proper script directory detection",
+            )
 
     def test_scripts_work_from_different_directories(self):
         """Test that scripts work when executed from different directories."""
@@ -68,15 +77,21 @@ class TestScriptPortability(unittest.TestCase):
                     try:
                         # Run with dry-run/help to avoid actual modifications
                         result = subprocess.run(
-                            ['bash', '-c', f'cd {temp_project} && echo "Testing script location detection"'],
+                            [
+                                'bash',
+                                '-c',
+                                f'cd {temp_project} && echo "Testing script location detection"',
+                            ],
                             capture_output=True,
                             text=True,
-                            timeout=5
+                            timeout=5,
                         )
                         # If the script uses proper path detection, this should work
                         self.assertEqual(result.returncode, 0)
                     except subprocess.TimeoutExpired:
-                        self.fail(f"Script {script_name} timed out - may have infinite loop")
+                        self.fail(
+                            f"Script {script_name} timed out - may have infinite loop"
+                        )
                     except Exception as e:
                         # This test is more about validating the pattern than execution
                         # The main validation is that hardcoded paths are removed
@@ -99,7 +114,7 @@ class TestScriptPortability(unittest.TestCase):
                 # Should have some form of error handling or validation
                 self.assertTrue(
                     '||' in content or 'if ' in content or 'set -e' in content,
-                    f"Script {script_name} should have error handling for directory operations"
+                    f"Script {script_name} should have error handling for directory operations",
                 )
 
 

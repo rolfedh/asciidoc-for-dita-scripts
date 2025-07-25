@@ -154,6 +154,5 @@ class TestContentTypePlugin(unittest.TestCase):
         self.assertEqual(len(result), 4)  # Should not add another blank line
 
 
-
 if __name__ == "__main__":
     unittest.main()

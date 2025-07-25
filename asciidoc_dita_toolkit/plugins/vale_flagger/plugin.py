@@ -40,7 +40,7 @@ class ValeFlaggerModule(ADTModule):
             if not files:
                 return {
                     "status": "warning",
-                    "message": "No files provided for ValeFlagger processing"
+                    "message": "No files provided for ValeFlagger processing",
                 }
 
             # Create a ValeFlagger instance
@@ -57,7 +57,7 @@ class ValeFlaggerModule(ADTModule):
                 "status": "success",
                 "exit_code": 0,
                 "modified_files_count": total_modified,
-                "message": f"ValeFlagger processed {len(files)} files, modified {total_modified}"
+                "message": f"ValeFlagger processed {len(files)} files, modified {total_modified}",
             }
 
         except Exception as e:
@@ -65,7 +65,7 @@ class ValeFlaggerModule(ADTModule):
                 "status": "error",
                 "exit_code": 1,
                 "error": str(e),
-                "message": f"ValeFlagger execution failed: {e}"
+                "message": f"ValeFlagger execution failed: {e}",
             }
 
     def cleanup(self):
@@ -117,21 +117,18 @@ def register_subcommand(subparsers):
 
     # Add ValeFlagger-specific arguments
     parser.add_argument(
-        "--enable-rules", "-e",
-        help="Comma-separated list of rules to enable"
+        "--enable-rules", "-e", help="Comma-separated list of rules to enable"
     )
     parser.add_argument(
-        "--disable-rules",
-        help="Comma-separated list of rules to disable"
+        "--disable-rules", help="Comma-separated list of rules to disable"
     )
     parser.add_argument(
-        "--config", "-c",
-        help="Path to configuration file (YAML format)"
+        "--config", "-c", help="Path to configuration file (YAML format)"
     )
     parser.add_argument(
         "--execute-changes",
         action="store_true",
-        help="Actually modify files (default is dry-run mode)"
+        help="Actually modify files (default is dry-run mode)",
     )
 
     parser.set_defaults(func=main)

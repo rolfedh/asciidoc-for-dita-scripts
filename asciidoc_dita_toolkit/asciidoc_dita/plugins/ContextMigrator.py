@@ -33,6 +33,7 @@ from ..regex_patterns import CompiledPatterns
 # Import ADTModule from core
 try:
     from asciidoc_dita_toolkit.adt_core.module_sequencer import ADTModule
+
     ADT_MODULE_AVAILABLE = True
 except ImportError as e:
     raise ImportError(
@@ -937,5 +938,3 @@ def process_context_migrator_file(filepath: str, migrator: ContextMigrator):
     """
     result = migrator.migrate_file(filepath)
     return result
-
-

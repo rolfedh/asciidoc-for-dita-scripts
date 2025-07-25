@@ -19,13 +19,17 @@ from typing import List, Dict, Optional, Set, Any
 import logging
 
 
-from asciidoc_dita_toolkit.asciidoc_dita.file_utils import find_adoc_files, read_text_preserve_endings
+from asciidoc_dita_toolkit.asciidoc_dita.file_utils import (
+    find_adoc_files,
+    read_text_preserve_endings,
+)
 from asciidoc_dita_toolkit.asciidoc_dita.workflow_utils import process_adoc_files
 from asciidoc_dita_toolkit.asciidoc_dita.regex_patterns import CompiledPatterns
 
 # Import ADTModule from core
 try:
     from asciidoc_dita_toolkit.adt_core.module_sequencer import ADTModule
+
     ADT_MODULE_AVAILABLE = True
 except ImportError as e:
     raise ImportError(
@@ -647,4 +651,3 @@ def process_context_analyzer_file(filepath: str, analyzer: ContextAnalyzer):
         analyzer: ContextAnalyzer instance
     """
     analyzer.analyze_file(filepath)
-
