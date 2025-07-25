@@ -7,6 +7,7 @@ This directory contains documentation for developers and maintainers of the Asci
 ### 🚀 Getting Started
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Main developer guide with setup instructions
 - **[RELEASE_MANAGEMENT.md](RELEASE_MANAGEMENT.md)** - Release workflows and `make publish` usage (maintainers only)
+- **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Common installation and runtime issues
 
 ### 🔧 Development Guides
 - **[development/](development/)** - Specialized development documentation

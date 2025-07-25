@@ -1,0 +1,47 @@
+# Include configuration files in package distribution
+include .adt-modules.json
+include adt-user-config.json
+include valeflag-config.yaml
+
+# Include documentation
+include README.md
+include LICENSE
+include CHANGELOG.md
+include SECURITY.md
+
+# Include user guide
+recursive-include user-guide *.md
+recursive-include user-guide *.yaml
+recursive-include user-guide *.yml
+
+# Include docs
+recursive-include docs *.md
+
+# Exclude unnecessary files
+exclude .gitignore
+exclude .pre-commit-config.yaml
+exclude docker-compose.yml
+exclude Dockerfile
+exclude Dockerfile.production
+exclude Makefile
+exclude Gemfile
+exclude conftest.py
+exclude debug_config.py
+
+# Exclude development and testing files
+recursive-exclude tests *
+recursive-exclude .pytest_cache *
+recursive-exclude .github *
+recursive-exclude archive *
+recursive-exclude modules_legacy_backup *
+recursive-exclude scripts *
+recursive-exclude bin *
+recursive-exclude docker *
+exclude fix_*.sh
+exclude update_*.sh
+exclude migrate_*.sh
+
+# Exclude build artifacts
+recursive-exclude dist *
+recursive-exclude build *
+recursive-exclude *.egg-info *
