@@ -2,15 +2,17 @@
 
 # ADT development setup - creates venv and installs dependencies
 
-set -e
+
 
 echo "🚀 Starting ADT development environment setup..."
 echo ""
 
 # Check if we're in the right directory
+
 if [ ! -f "pyproject.toml" ]; then
     echo "❌ Error: pyproject.toml not found. Please run this script from the project root."
-    exit 1
+    read -p "Press Enter to close the terminal..."
+    return 1 2>/dev/null || exit 1
 fi
 
 # Create virtual environment
@@ -30,7 +32,8 @@ echo "🔄 Upgrading pip..."
 if ! pip install --upgrade pip; then
     echo "❌ Error: Failed to upgrade pip. Please check your network connection or pip configuration."
     deactivate
-    exit 1
+    read -p "Press Enter to close the terminal..."
+    return 1 2>/dev/null || exit 1
 fi
 pip install -e .
 pip install -r requirements-dev.txt
