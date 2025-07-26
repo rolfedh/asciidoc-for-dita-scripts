@@ -37,7 +37,7 @@ Use existing fixtures in `tests/fixtures/ExampleBlock/`:
 - `ignore_*.adoc`
 - `report_*.adoc`
 
-**CRITICAL**: The plugin should first analyze the fixtures to understand the which patterns to ignore (`ignore_*.adoc`) and which patterns to detect `report_*.adoc`.
+**CRITICAL**: The plugin should first analyze the fixtures to understand which patterns to ignore (`ignore_*.adoc`) and which patterns to detect `report_*.adoc`.
 
 ### Comment Template
 When automatic fixes aren't possible:
