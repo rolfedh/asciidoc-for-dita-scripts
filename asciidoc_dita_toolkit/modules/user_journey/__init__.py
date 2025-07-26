@@ -198,7 +198,7 @@ class WorkflowState:
         """Discover .adoc files using DirectoryConfig if available."""
         try:
             # Try DirectoryConfig first (it's required now)
-            from asciidoc_dita_toolkit.modules.directory_config import (
+            from asciidoc_dita_toolkit.asciidoc_dita.plugins.DirectoryConfig import (
                 load_directory_config, get_filtered_adoc_files
             )
             from asciidoc_dita_toolkit.asciidoc_dita.file_utils import find_adoc_files
@@ -223,7 +223,7 @@ class WorkflowState:
     def _load_directory_config(self) -> None:
         """Load DirectoryConfig for workflow context."""
         try:
-            from asciidoc_dita_toolkit.modules.directory_config import load_directory_config
+            from asciidoc_dita_toolkit.asciidoc_dita.plugins.DirectoryConfig import load_directory_config
             self.directory_config = load_directory_config()
         except (ImportError, Exception) as e:
             logging.debug(f"DirectoryConfig not available: {e}")
