@@ -385,7 +385,7 @@ def create_user_journey_subcommands(subparsers):
     """Create UserJourney workflow management subcommands."""
     try:
         # Import UserJourney module
-        from asciidoc_dita_toolkit.asciidoc_dita.plugins.UserJourney import UserJourneyModule
+        from asciidoc_dita_toolkit.modules.user_journey import UserJourneyModule
 
         # Initialize UserJourney module
         user_journey_module = UserJourneyModule()
