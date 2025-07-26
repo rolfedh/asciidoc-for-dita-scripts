@@ -9,6 +9,7 @@ import argparse
 import importlib
 import importlib.metadata
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -16,8 +17,41 @@ from .module_sequencer import ModuleSequencer
 
 
 # =============================================================================
-# UTILITY FUNCTIONS
+# UTILITY FUNCTIONS  
 # =============================================================================
+
+def setup_completion_if_needed():
+    """Set up tab completion automatically for end users."""
+    try:
+        # Check if completion is already installed
+        completion_file = Path.home() / ".local/share/bash-completion/completions/adt"
+        
+        if completion_file.exists():
+            return  # Already installed
+        
+        # Find the completion script in the package
+        try:
+            import asciidoc_dita_toolkit
+            package_dir = Path(asciidoc_dita_toolkit.__file__).parent.parent
+            completion_script = package_dir / "scripts" / "install-completion.sh"
+            
+            if completion_script.exists():
+                # Install completion quietly
+                result = subprocess.run(
+                    [str(completion_script)], 
+                    capture_output=True, 
+                    text=True, 
+                    check=False
+                )
+                if result.returncode == 0:
+                    print("✅ Tab completion installed! Try: adt <TAB><TAB>")
+                    print("   (Restart your shell if completion doesn't work immediately)")
+        except (ImportError, FileNotFoundError):
+            # Package not properly installed or script missing
+            pass
+    except Exception:
+        # Silently fail - don't break CLI if completion setup fails
+        pass
 
 def handle_system_exit(component_name: str, component_type: str, exit_exception: SystemExit) -> None:
     """
@@ -536,6 +570,9 @@ class CustomHelpAction(argparse.Action):
 
 def main(args=None):
     """Main entry point for the CLI."""
+    
+    # Set up tab completion automatically for end users
+    setup_completion_if_needed()
 
     parser = argparse.ArgumentParser(
         description="ADT - AsciiDoc DITA Toolkit",

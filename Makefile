@@ -31,7 +31,7 @@ help:
 	@echo "  format     - Format code with black"
 	@echo "  clean      - Clean build artifacts"
 	@echo "  venv       - Create virtual environment (.venv)"
-	@echo "  setup      - Complete setup: venv + install-dev + format + lint + test"
+	@echo "  setup      - Complete setup: venv + install-dev + format + lint + test + tab completion"
 	@echo "  install    - Install package in development mode"
 	@echo "  install-dev - Install package with development dependencies"
 	@echo "  build      - Build distribution packages"
@@ -44,6 +44,7 @@ help:
 	@echo "  changelog-version - Generate changelog for specific version (VERSION=x.y.z)"
 	@echo "  release    - Automated release: bump patch version, commit, tag, push (MAINTAINERS ONLY) (VERSION=x.y.z to override)"
 	@echo "  dev        - Complete development setup (install-dev + format + lint + test)"
+	@echo "  install-completion - Install tab completion for adt CLI"
 	@echo ""
 	@echo "Container targets:"
 	@echo "  container-build     - Build development container"
@@ -141,13 +142,24 @@ setup: venv
 	@.venv/bin/python -m flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude=.venv,venv,debug_env,build,dist,*.egg-info,.git,__pycache__ || true
 	@echo "🧪 Running tests..."
 	@.venv/bin/python -m pytest tests/ -v || true
+	@echo "🎯 Installing tab completion..."
+	@./scripts/install-completion.sh --user
 	@echo ""
 	@echo "✅ Development setup complete!"
 	@echo "💡 To activate the virtual environment: source .venv/bin/activate"
 	@echo "🔧 Then you can use: adt -h"
+	@echo "⚡ Tab completion available: adt <TAB><TAB>"
 
 dev: install-dev format lint test
 	@echo "Development setup complete!"
+
+# Tab completion installation
+install-completion:
+	@echo "🎯 Installing tab completion for adt CLI..."
+	@./scripts/install-completion.sh --user
+	@echo "✅ Tab completion installed!"
+	@echo "   Try: adt <TAB><TAB>"
+	@echo "   Restart your shell if completion doesn't work immediately"
 
 # Build and distribution
 clean:
