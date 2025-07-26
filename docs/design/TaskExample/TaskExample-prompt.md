@@ -11,7 +11,7 @@ DITA 1.3 allows only one <example> element in a task topic. If multiple examples
   - asciidoc_dita_toolkit/asciidoc_dita/plugins/ExampleBlock.py
   - modules/example_block.py
 
-- **Module structure**: Create both core a plugin implementation and module wrapper.
+- **Module structure**: Create both core plugin implementation and module wrapper.
 
 ### Detection Patterns
 Detect and flag these invalid example block patterns:
