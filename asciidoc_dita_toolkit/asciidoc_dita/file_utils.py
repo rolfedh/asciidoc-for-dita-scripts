@@ -194,7 +194,7 @@ def load_directory_config():
         stacklevel=2,
     )
     try:
-        from .plugins.DirectoryConfig import load_directory_config as load_dir_config
+        from asciidoc_dita_toolkit.modules.directory_config import load_directory_config as load_dir_config
 
         return load_dir_config()
     except ImportError:
@@ -211,7 +211,7 @@ def apply_directory_filters(base_path, config):
         stacklevel=2,
     )
     try:
-        from .plugins.DirectoryConfig import apply_directory_filters as apply_filters
+        from asciidoc_dita_toolkit.modules.directory_config import apply_directory_filters as apply_filters
 
         return apply_filters(base_path, config)
     except ImportError:
@@ -228,7 +228,7 @@ def get_filtered_adoc_files(directory_path, config):
         stacklevel=2,
     )
     try:
-        from .plugins.DirectoryConfig import (
+        from asciidoc_dita_toolkit.modules.directory_config import (
             get_filtered_adoc_files as get_filtered_files,
         )
 
