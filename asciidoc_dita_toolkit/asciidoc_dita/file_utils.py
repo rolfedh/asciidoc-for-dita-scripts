@@ -185,11 +185,11 @@ def _validate_config_structure(config):
 
 
 def load_directory_config():
-    """Deprecated: Use plugins.DirectoryConfig.load_directory_config instead."""
+    """Deprecated: Use modules.directory_config.load_directory_config instead."""
     import warnings
 
     warnings.warn(
-        "load_directory_config is deprecated. Use plugins.DirectoryConfig.load_directory_config instead.",
+        "load_directory_config is deprecated. Use modules.directory_config.load_directory_config instead.",
         DeprecationWarning,
         stacklevel=2,
     )
@@ -202,11 +202,11 @@ def load_directory_config():
 
 
 def apply_directory_filters(base_path, config):
-    """Deprecated: Use plugins.DirectoryConfig.apply_directory_filters instead."""
+    """Deprecated: Use modules.directory_config.apply_directory_filters instead."""
     import warnings
 
     warnings.warn(
-        "apply_directory_filters is deprecated. Use plugins.DirectoryConfig.apply_directory_filters instead.",
+        "apply_directory_filters is deprecated. Use modules.directory_config.apply_directory_filters instead.",
         DeprecationWarning,
         stacklevel=2,
     )
@@ -219,11 +219,11 @@ def apply_directory_filters(base_path, config):
 
 
 def get_filtered_adoc_files(directory_path, config):
-    """Deprecated: Use plugins.DirectoryConfig.get_filtered_adoc_files instead."""
+    """Deprecated: Use modules.directory_config.get_filtered_adoc_files instead."""
     import warnings
 
     warnings.warn(
-        "get_filtered_adoc_files is deprecated. Use plugins.DirectoryConfig.get_filtered_adoc_files instead.",
+        "get_filtered_adoc_files is deprecated. Use modules.directory_config.get_filtered_adoc_files instead.",
         DeprecationWarning,
         stacklevel=2,
     )

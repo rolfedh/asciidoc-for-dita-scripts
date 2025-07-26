@@ -36,16 +36,16 @@ def handle_system_exit(component_name: str, component_type: str, exit_exception:
 
 
 
-def get_plugins_for_help():
-    """Get formatted plugin list for help display."""
+def get_modules_for_help():
+    """Get formatted module list for help display."""
     try:
-        plugins = get_new_plugins_for_help()
-        if not plugins:
-            return "    No plugins available"
+        modules = get_new_modules_for_help()
+        if not modules:
+            return "    No modules available"
         
-        # Format plugins for help display
+        # Format modules for help display
         lines = []
-        for name, info in sorted(plugins.items()):
+        for name, info in sorted(modules.items()):
             desc = info['description']
             # Truncate long descriptions for clean help display
             if len(desc) > 50:
@@ -53,24 +53,24 @@ def get_plugins_for_help():
             lines.append(f"    {name:<17} {desc}")
         return "\n".join(lines)
     except Exception:
-        return "    No plugins available"
+        return "    No modules available"
 
 
 def print_custom_help():
-    """Print custom help message with dynamically generated plugin list."""
-    plugins_section = get_plugins_for_help()
+    """Print custom help message with dynamically generated module list."""
+    modules_section = get_modules_for_help()
     
-    help_text = f"""Usage: adt <plugin> [options]
-       adt --list-plugins
+    help_text = f"""Usage: adt <module> [options]
+       adt --list-modules
        adt --version
        adt --help
 
 ADT - AsciiDoc DITA Toolkit
 
-PLUGINS:
-  Run one plugin at a time to process your AsciiDoc files:
+MODULES:
+  Run one module at a time to process your AsciiDoc files:
 
-{plugins_section}
+{modules_section}
 
 TARGET FILES:
   -f, --file FILE       Process a specific file
@@ -82,7 +82,7 @@ VERBOSITY:
 
 OTHER OPTIONS:
   -h, --help            Show this help message and exit
-  --list-plugins        List detailed plugin information
+  --list-modules        List detailed module information
   --version             Show version information
 
 EXAMPLES:
@@ -90,7 +90,7 @@ EXAMPLES:
   adt CrossReference -f myfile.adoc     # Process specific file
   adt EntityReference -d docs/          # Process files in docs/ directory
 
-For plugin-specific help: adt <plugin> -h
+For module-specific help: adt <module> -h
 
 Report bugs or request features: https://github.com/rolfedh/asciidoc-dita-toolkit/issues
 """
@@ -111,8 +111,8 @@ def get_version():
             return "unknown"
 
 
-def print_version_with_plugins():
-    """Print version information including plugin versions."""
+def print_version_with_modules():
+    """Print version information including module versions."""
     # Print main tool version
     version = get_version()
     print(f"adt {version}")
@@ -120,36 +120,36 @@ def print_version_with_plugins():
     print("https://github.com/rolfedh/asciidoc-dita-toolkit")
     print()
 
-    # Get plugin information from the new system
-    new_plugins = get_new_plugins_for_help()
+    # Get module information from the new system
+    new_modules = get_new_modules_for_help()
 
-    # Sort plugins by name
-    all_plugins = []
+    # Sort modules by name
+    all_modules = []
 
-    # Add new plugins
-    for name, info in new_plugins.items():
+    # Add new modules
+    for name, info in new_modules.items():
         desc = info['description']
         version_str = getattr(info['plugin'], 'version', 'unknown')
-        all_plugins.append((name, version_str, desc))
+        all_modules.append((name, version_str, desc))
 
-    if all_plugins:
-        print("AVAILABLE PLUGINS:")
-        # Sort by plugin name
-        all_plugins.sort(key=lambda x: x[0])
+    if all_modules:
+        print("AVAILABLE MODULES:")
+        # Sort by module name
+        all_modules.sort(key=lambda x: x[0])
 
         # Calculate dynamic column widths
-        name_width = max(len(name) for name, _, _ in all_plugins) + 2
-        version_width = max(len(version_str) for _, version_str, _ in all_plugins) + 2
+        name_width = max(len(name) for name, _, _ in all_modules) + 2
+        version_width = max(len(version_str) for _, version_str, _ in all_modules) + 2
 
-        # Print each plugin with dynamic widths
-        for name, version_str, desc in all_plugins:
+        # Print each module with dynamic widths
+        for name, version_str, desc in all_modules:
             print(f"  {name:<{name_width}} v{version_str:<{version_width}} {desc}")
     else:
-        print("No plugins available")
+        print("No modules available")
 
 
-def get_new_plugins_for_help():
-    """Get available plugins from the new plugin system with all warnings suppressed for help display."""
+def get_new_modules_for_help():
+    """Get available modules from the new module system with all warnings suppressed for help display."""
     plugins = {}
 
     try:
@@ -196,8 +196,8 @@ def get_new_plugins_for_help():
     return plugins
 
 
-def get_new_plugins():
-    """Get available plugins from the new plugin system."""
+def get_new_modules():
+    """Get available modules from the new module system."""
     plugins = {}
 
     try:
@@ -228,8 +228,8 @@ def get_new_plugins():
     return plugins
 
 
-def get_new_plugins_with_warnings_control(suppress_warnings: bool = True):
-    """Get available plugins from the new plugin system with warning control."""
+def get_new_modules_with_warnings_control(suppress_warnings: bool = True):
+    """Get available modules from the new module system with warning control."""
     plugins = {}
 
     try:
@@ -261,41 +261,41 @@ def get_new_plugins_with_warnings_control(suppress_warnings: bool = True):
     return plugins
 
 
-def print_plugin_list():
-    """Print a list of all available plugins."""
-    print("Available plugins:")
+def print_module_list():
+    """Print a list of all available modules."""
+    print("Available modules:")
 
-    # Get plugins from new system
-    new_plugins = get_new_plugins()
-    if new_plugins:
-        print("\nPlugins:")
-        for name, info in new_plugins.items():
+    # Get modules from new system
+    new_modules = get_new_modules()
+    if new_modules:
+        print("\nModules:")
+        for name, info in new_modules.items():
             print(f"  {name:20} {info['description']}")
     else:
-        print("  No plugins available")
+        print("  No modules available")
 
 
-def print_detailed_plugin_list(suppress_warnings: bool = True):
-    """Print a detailed, well-formatted list of all available plugins."""
-    print("AVAILABLE PLUGINS:\n")
+def print_detailed_module_list(suppress_warnings: bool = True):
+    """Print a detailed, well-formatted list of all available modules."""
+    print("AVAILABLE MODULES:\n")
 
-    # Get plugins with warnings completely suppressed for help display
-    new_plugins = get_new_plugins_for_help()
+    # Get modules with warnings completely suppressed for help display
+    new_modules = get_new_modules_for_help()
 
-    # Organize plugins
-    all_plugins = {}
+    # Organize modules
+    all_modules = {}
 
-    # Add new plugins
-    for name, info in new_plugins.items():
-        all_plugins[name] = {"description": info['description'], "type": "plugin"}
+    # Add new modules
+    for name, info in new_modules.items():
+        all_modules[name] = {"description": info['description'], "type": "module"}
 
-    if not all_plugins:
-        print("  No plugins available")
+    if not all_modules:
+        print("  No modules available")
         return
 
-    # Print plugins with clear descriptions
-    for name in sorted(all_plugins.keys()):
-        desc = all_plugins[name]['description']
+    # Print modules with clear descriptions
+    for name in sorted(all_modules.keys()):
+        desc = all_modules[name]['description']
         print(f"  {name:<16} {desc}")
 
     print(f"\nUSAGE EXAMPLES:")
@@ -304,31 +304,31 @@ def print_detailed_plugin_list(suppress_warnings: bool = True):
     )
     print(f"  adt CrossReference -f myfile.adoc     # Process specific file")
     print(f"  adt EntityReference -d docs/          # Process files in docs/ directory")
-    print(f"\nOPTIONS FOR EACH PLUGIN:")
+    print(f"\nOPTIONS FOR EACH MODULE:")
     print(f"  -f, --file FILE       Process a specific file")
     print(f"  -r, --recursive       Process all .adoc files recursively")
     print(f"  -d, --directory DIR   Specify root directory (default: current)")
     print(f"  -v, --verbose         Enable verbose output")
-    print(f"\nFor plugin-specific help: adt <plugin> -h")
+    print(f"\nFor module-specific help: adt <module> -h")
 
 
-def print_plugin_list_with_warnings_control(suppress_warnings: bool = True):
-    """Print a list of all available plugins with warning control."""
-    print("Available plugins:")
+def print_module_list_with_warnings_control(suppress_warnings: bool = True):
+    """Print a list of all available modules with warning control."""
+    print("Available modules:")
 
-    # Get plugins from new system
-    new_plugins = get_new_plugins_with_warnings_control(suppress_warnings)
-    if new_plugins:
-        print("\nPlugins:")
-        for name, info in new_plugins.items():
+    # Get modules from new system
+    new_modules = get_new_modules_with_warnings_control(suppress_warnings)
+    if new_modules:
+        print("\nModules:")
+        for name, info in new_modules.items():
             print(f"  {name:20} {info['description']}")
     else:
-        print("  No plugins available")
+        print("  No modules available")
 
 
-def create_new_plugin_subcommand(subparsers, name, plugin_info):
-    """Create a subcommand for a new plugin."""
-    description = plugin_info["description"]
+def create_new_module_subcommand(subparsers, name, module_info):
+    """Create a subcommand for a new module."""
+    description = module_info["description"]
     parser = subparsers.add_parser(name, help=description)
 
     # Add common arguments
@@ -350,35 +350,35 @@ def create_new_plugin_subcommand(subparsers, name, plugin_info):
     )
 
     # Set the function to call
-    def run_new_plugin(args):
+    def run_new_module(args):
         try:
-            # Initialize plugin
-            plugin = plugin_info["plugin"]
+            # Initialize module
+            module = module_info["plugin"]
             config = {"verbose": args.verbose}
-            plugin.initialize(config)
+            module.initialize(config)
 
-            # Execute plugin
+            # Execute module
             context = {
                 "file": args.file,
                 "recursive": args.recursive,
                 "directory": args.directory,
                 "verbose": args.verbose,
             }
-            result = plugin.execute(context)
+            result = module.execute(context)
 
             if args.verbose:
-                print(f"Plugin result: {result}")
+                print(f"Module result: {result}")
 
             # Cleanup
-            plugin.cleanup()
+            module.cleanup()
 
         except SystemExit as e:
-            handle_system_exit(name, "plugin", e)
+            handle_system_exit(name, "module", e)
         except Exception as e:
-            print(f"Error running plugin {name}: {e}", file=sys.stderr)
+            print(f"Error running module {name}: {e}", file=sys.stderr)
             sys.exit(1)
 
-    parser.set_defaults(func=run_new_plugin)
+    parser.set_defaults(func=run_new_module)
 
 
 def create_user_journey_subcommands(subparsers):
@@ -549,9 +549,9 @@ def main(args=None):
     )
 
     parser.add_argument(
-        "--list-plugins",
+        "--list-modules",
         action="store_true",
-        help="List all available plugins with detailed descriptions",
+        help="List all available modules with detailed descriptions",
     )
     parser.add_argument(
         "--version", action="store_true", help="Show version information"
@@ -569,7 +569,7 @@ def main(args=None):
     )
 
     subparsers = parser.add_subparsers(
-        dest="command", required=False, metavar="<plugin>"
+        dest="command", required=False, metavar="<module>"
     )
 
     # Load new modules with warning control
@@ -587,14 +587,14 @@ def main(args=None):
             pass
 
     # For help operations, use the warning-suppressed version
-    if args and ("-h" in args or "--help" in args or "--list-plugins" in args):
-        new_plugins = get_new_plugins_for_help()
+    if args and ("-h" in args or "--help" in args or "--list-modules" in args):
+        new_modules = get_new_modules_for_help()
     else:
-        new_plugins = get_new_plugins_with_warnings_control(suppress_warnings)
+        new_modules = get_new_modules_with_warnings_control(suppress_warnings)
 
-    for name, info in new_plugins.items():
-        # Add plugin subcommand
-        create_new_plugin_subcommand(subparsers, name, info)
+    for name, info in new_modules.items():
+        # Add module subcommand
+        create_new_module_subcommand(subparsers, name, info)
 
     # Add UserJourney CLI commands
     create_user_journey_subcommands(subparsers)
@@ -612,14 +612,14 @@ def main(args=None):
 
     # Handle special flags
     if parsed_args.version:
-        print_version_with_plugins()
+        print_version_with_modules()
         sys.exit(0)
 
-    if parsed_args.list_plugins:
+    if parsed_args.list_modules:
         suppress_warnings = (
             parsed_args.suppress_warnings and not parsed_args.show_warnings
         )
-        print_detailed_plugin_list(suppress_warnings)
+        print_detailed_module_list(suppress_warnings)
         sys.exit(0)
 
     # Execute the selected command

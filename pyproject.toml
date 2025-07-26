@@ -64,7 +64,7 @@ ContextMigrator = "asciidoc_dita_toolkit.modules.context_migrator:ContextMigrato
 CrossReference = "asciidoc_dita_toolkit.modules.cross_reference:CrossReferenceModule"
 ExampleBlock = "asciidoc_dita_toolkit.modules.example_block:ExampleBlockModule"
 UserJourney = "asciidoc_dita_toolkit.modules.user_journey:UserJourneyModule"
-ValeFlagger = "asciidoc_dita_toolkit.modules.vale_flagger_module:ValeFlaggerModule"
+ValeFlagger = "asciidoc_dita_toolkit.modules.vale_flagger:ValeFlaggerModule"
 ArchiveUnusedFiles = "asciidoc_dita_toolkit.modules.archive_unused_files:ArchiveUnusedFilesModule"
 
 [project.optional-dependencies]

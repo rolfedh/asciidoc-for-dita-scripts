@@ -1,8 +1,9 @@
 """
 ValeFlagger Module for AsciiDoc DITA Toolkit.
 
-This module wrapper enables ValeFlagger to be discovered by ModuleSequencer
-by following the expected naming pattern (vale_flagger_module.py).
+This module provides DITA compatibility issue detection using Vale linter.
+It integrates with the ADT module system to provide consistent CLI access
+and workflow orchestration capabilities.
 """
 
 import sys
