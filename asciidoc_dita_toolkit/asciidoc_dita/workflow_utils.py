@@ -85,7 +85,7 @@ def process_adoc_files(args: Any, process_file_func: Callable[[str], None]) -> N
     # Check if DirectoryConfig plugin is enabled
     if is_plugin_enabled("DirectoryConfig"):
         try:
-            from .plugins.DirectoryConfig import (
+            from asciidoc_dita_toolkit.modules.directory_config import (
                 load_directory_config,
                 get_filtered_adoc_files,
                 apply_directory_filters,

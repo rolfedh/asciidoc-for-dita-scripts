@@ -10,6 +10,9 @@ import sys
 import os
 from pathlib import Path
 
+# Add the parent directory to Python path for testing
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 def main():
     """Run smoke tests."""
     print("🔍 Running CI smoke tests...")
@@ -30,13 +33,13 @@ def main():
         print(f"❌ Core modules not accessible: {e}")
         return False
     
-    # Test 3: Plugin directory exists
-    plugin_dir = Path("asciidoc_dita_toolkit/asciidoc_dita/plugins")
-    if plugin_dir.exists():
-        plugins = list(plugin_dir.glob("*.py"))
-        print(f"✅ Plugin directory found with {len(plugins)} files")
+    # Test 3: Modules directory exists
+    modules_dir = Path("asciidoc_dita_toolkit/modules")
+    if modules_dir.exists():
+        module_dirs = [d for d in modules_dir.iterdir() if d.is_dir() and not d.name.startswith('__')]
+        print(f"✅ Modules directory found with {len(module_dirs)} modules")
     else:
-        print("❌ Plugin directory not found")
+        print("❌ Modules directory not found")
         return False
     
     # Test 4: Test directory exists
@@ -50,7 +53,7 @@ def main():
     
     # Test 5: Basic UserJourney import (if available)
     try:
-        from asciidoc_dita_toolkit.asciidoc_dita.plugins.UserJourney import UserJourneyModule
+        from asciidoc_dita_toolkit.modules.user_journey import UserJourneyModule
         print("✅ UserJourney module import successful")
     except ImportError as e:
         print(f"⚠️  UserJourney module not available: {e}")
